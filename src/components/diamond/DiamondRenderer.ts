@@ -1,6 +1,15 @@
 import { Application, Graphics, Text, Container, Ticker } from 'pixi.js';
 import { PlayerScene } from './players/PlayerScene.ts';
 import { SpritePlayerScene } from './sprites/SpritePlayerScene.ts';
+import {
+  tweenBezier,
+  tweenParabolic,
+  tweenGround,
+  tweenAlpha,
+  tweenTo,
+  Easing,
+} from './Tween.ts';
+import type { Point } from './Tween.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────
 // The diamond is rendered in a 600x500 viewport with home plate near the bottom-center.
@@ -101,7 +110,8 @@ export class DiamondRenderer {
   private ballGraphic: Graphics | null = null;
 
   private _animating = false;
-  private _destroyed = false;
+  // Note: _destroyed is not private so it satisfies the tween guard interface { _destroyed: boolean }
+  _destroyed = false;
 
   // ── Constructor ────────────────────────────────────────────────────
 
@@ -633,6 +643,293 @@ export class DiamondRenderer {
     ball.visible = false;
     this.ballLayer.addChild(ball);
     this.ballGraphic = ball;
+  }
+
+  // ── Public ball API (for PlaySequencer) ──────────────────────────
+
+  /** Returns the ball Graphics object. */
+  getBall(): Graphics | null {
+    return this.ballGraphic;
+  }
+
+  /** Make the ball visible. */
+  showBall(): void {
+    if (this.ballGraphic) this.ballGraphic.visible = true;
+  }
+
+  /** Hide the ball immediately. */
+  hideBall(): void {
+    if (this.ballGraphic) this.ballGraphic.visible = false;
+  }
+
+  /** Smoothly fade out and hide the ball. */
+  async fadeBall(duration: number): Promise<void> {
+    if (!this.ballGraphic) return;
+    const ball = this.ballGraphic;
+    ball.visible = true;
+    await tweenAlpha(ball, ball.alpha, 0, duration, Easing.easeOut, this);
+    if (!this._destroyed) ball.visible = false;
+    ball.alpha = 1;
+  }
+
+  /** Tween ball to target position. */
+  async moveBallTo(x: number, y: number, duration: number): Promise<void> {
+    if (!this.ballGraphic || this._destroyed) return;
+    const ball = this.ballGraphic;
+    ball.visible = true;
+    await tweenTo(ball, { x, y }, duration, Easing.easeOutCubic, this);
+  }
+
+  /**
+   * Animate ball along a quadratic bezier path.
+   * Ball is made visible at start and stays visible after (caller must hideBall).
+   */
+  async animateBallBezier(
+    start: Point,
+    control: Point,
+    end: Point,
+    duration: number,
+  ): Promise<void> {
+    if (!this.ballGraphic || this._destroyed) return;
+
+    const ball = this.ballGraphic;
+    ball.x = start.x;
+    ball.y = start.y;
+    ball.scale.set(1);
+    ball.alpha = 1;
+    ball.visible = true;
+    this._animating = true;
+
+    await tweenBezier(ball, start, control, end, duration, Easing.linear, this);
+
+    this._animating = false;
+  }
+
+  /**
+   * Animate ball along a parabolic arc (fly balls, home runs).
+   * Ball scales smaller at apex (depth simulation). Shadow shown beneath.
+   */
+  async animateBallParabolic(
+    start: Point,
+    end: Point,
+    peakHeight: number,
+    duration: number,
+  ): Promise<void> {
+    if (!this.ballGraphic || this._destroyed) return;
+
+    const ball = this.ballGraphic;
+    ball.x = start.x;
+    ball.y = start.y;
+    ball.scale.set(1);
+    ball.alpha = 1;
+    ball.visible = true;
+    this._animating = true;
+
+    // Create shadow
+    const shadow = new Graphics();
+    shadow.ellipse(0, 0, 5, 3);
+    shadow.fill({ color: 0x000000, alpha: 0.4 });
+    shadow.x = start.x;
+    shadow.y = start.y + 3;
+    this.ballLayer?.addChildAt(shadow, 0);
+
+    await tweenParabolic(
+      ball,
+      start,
+      end,
+      peakHeight,
+      duration,
+      this,
+      (_t, heightFraction) => {
+        // Ball shrinks at apex (depth illusion)
+        ball.scale.set(1 - heightFraction * 0.45);
+        // Shadow moves along ground line
+        const groundY = start.y + (end.y - start.y) * _t;
+        shadow.x = ball.x;
+        shadow.y = groundY + 3;
+        shadow.scale.set(1 + heightFraction * 0.7);
+        shadow.alpha = Math.max(0.05, 0.35 - heightFraction * 0.2);
+      },
+    );
+
+    if (!this._destroyed) {
+      shadow.destroy();
+      ball.scale.set(1);
+    }
+    this._animating = false;
+  }
+
+  /**
+   * Animate ball as a rolling/bouncing ground ball.
+   */
+  async animateBallGround(
+    start: Point,
+    end: Point,
+    duration: number,
+    exitVelo = 80,
+  ): Promise<void> {
+    if (!this.ballGraphic || this._destroyed) return;
+
+    const ball = this.ballGraphic;
+    ball.x = start.x;
+    ball.y = start.y;
+    ball.scale.set(1);
+    ball.alpha = 1;
+    ball.visible = true;
+    this._animating = true;
+
+    await tweenGround(ball, start, end, duration, exitVelo, this);
+
+    this._animating = false;
+  }
+
+  /**
+   * Home-run ball arc — travels out of the park with apex sparkle and wall flash.
+   */
+  async animateBallHomeRun(angleDeg: number, distNorm: number): Promise<void> {
+    if (!this.ballGraphic || this._destroyed) return;
+
+    const rad = ((angleDeg - 90) * Math.PI) / 180;
+    const travelDist = 280 + distNorm * 60;
+    const end: Point = {
+      x: HOME_X + Math.cos(rad) * travelDist,
+      y: HOME_Y + Math.sin(rad) * travelDist,
+    };
+    const start: Point = { x: HOME_X, y: HOME_Y };
+
+    const peakHeight = 100 + distNorm * 30;
+    const duration = 900 + distNorm * 200;
+
+    const ball = this.ballGraphic;
+    ball.x = start.x;
+    ball.y = start.y;
+    ball.scale.set(1);
+    ball.alpha = 1;
+    ball.visible = true;
+    this._animating = true;
+
+    const shadow = new Graphics();
+    shadow.ellipse(0, 0, 5, 3);
+    shadow.fill({ color: 0x000000, alpha: 0.4 });
+    this.ballLayer?.addChildAt(shadow, 0);
+
+    let apexFlashed = false;
+    let wallFlashed = false;
+
+    await tweenParabolic(
+      ball,
+      start,
+      end,
+      peakHeight,
+      duration,
+      this,
+      (t, heightFraction) => {
+        ball.scale.set(1 - heightFraction * 0.55);
+        const groundY = start.y + (end.y - start.y) * t;
+        shadow.x = ball.x;
+        shadow.y = groundY + 3;
+        shadow.scale.set(1 + heightFraction * 0.8);
+        shadow.alpha = Math.max(0, 0.35 - heightFraction * 0.2);
+
+        if (!apexFlashed && t >= 0.48 && t <= 0.52) {
+          apexFlashed = true;
+          this._spawnSparkle(ball.x, ball.y, 0xd4a843, 12);
+        }
+        if (!wallFlashed && t >= 0.80) {
+          wallFlashed = true;
+          this._showScreenFlash(0xffd700, 0.18);
+        }
+      },
+    );
+
+    if (!this._destroyed) {
+      shadow.destroy();
+      ball.scale.set(1);
+    }
+    this._animating = false;
+  }
+
+  /**
+   * Show a contact flash (spark burst) at the bat-ball contact point.
+   */
+  showContactFlash(x: number, y: number): void {
+    if (!this.ballLayer || this._destroyed) return;
+    this._spawnSparkle(x, y, 0xffffff, 10);
+  }
+
+  /**
+   * Show a brief golden screen flash for home runs.
+   */
+  showHomeRunFlash(): void {
+    if (this._destroyed) return;
+    this._showScreenFlash(0xffd700, 0.22);
+  }
+
+  // ── Private effects helpers ───────────────────────────────────────
+
+  private _spawnSparkle(cx: number, cy: number, color: number, count: number): void {
+    if (!this.ballLayer) return;
+    const layer = this.ballLayer;
+
+    for (let i = 0; i < count; i++) {
+      const spark = new Graphics();
+      spark.circle(0, 0, 2);
+      spark.fill({ color });
+      spark.x = cx;
+      spark.y = cy;
+      layer.addChild(spark);
+
+      const angle = (i / count) * Math.PI * 2;
+      const speed = 1.2 + Math.random() * 2;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      let life = 0;
+      const lifetime = 380;
+
+      const onTick = (ticker: Ticker) => {
+        if (this._destroyed || spark.destroyed) {
+          Ticker.shared.remove(onTick);
+          return;
+        }
+        life += ticker.deltaMS;
+        const tl = life / lifetime;
+        spark.x += vx;
+        spark.y += vy + tl * 0.5;
+        spark.alpha = Math.max(0, 1 - tl);
+        if (tl >= 1) {
+          Ticker.shared.remove(onTick);
+          if (spark.parent) spark.parent.removeChild(spark);
+          spark.destroy();
+        }
+      };
+      Ticker.shared.add(onTick);
+    }
+  }
+
+  private _showScreenFlash(color: number, maxAlpha: number): void {
+    if (!this.root) return;
+    const flash = new Graphics();
+    flash.rect(-50, -50, 700, 600);
+    flash.fill({ color, alpha: maxAlpha });
+    this.root.addChild(flash);
+
+    let life = 0;
+    const lifetime = 450;
+
+    const onTick = (ticker: Ticker) => {
+      if (this._destroyed || flash.destroyed) {
+        Ticker.shared.remove(onTick);
+        return;
+      }
+      life += ticker.deltaMS;
+      flash.alpha = maxAlpha * (1 - life / lifetime);
+      if (life >= lifetime) {
+        Ticker.shared.remove(onTick);
+        if (flash.parent) flash.parent.removeChild(flash);
+        flash.destroy();
+      }
+    };
+    Ticker.shared.add(onTick);
   }
 
   // ── Animations ────────────────────────────────────────────────────

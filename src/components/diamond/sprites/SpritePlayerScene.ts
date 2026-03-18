@@ -527,6 +527,24 @@ export class SpritePlayerScene {
     }
   }
 
+  // ── Animation: Catcher receive ────────────────────────────────────
+
+  async animateCatcherReceive(): Promise<void> {
+    if (!this._loaded || this._catcher === null || this._destroyed) return;
+
+    const catcher = this._catcher;
+    const receiveFrames = [
+      this.catcherFrames[CATCHER_UMPIRE_FRAMES.catcherCrouch],
+      this.catcherFrames[CATCHER_UMPIRE_FRAMES.catcherReceive],
+      this.catcherFrames[CATCHER_UMPIRE_FRAMES.catcherCrouch],
+    ].filter((t): t is import('pixi.js').Texture => t !== undefined);
+
+    await catcher.playAnimation(receiveFrames, 300, false);
+    if (!this._destroyed) {
+      catcher.setFrame(CATCHER_UMPIRE_FRAMES.catcherCrouch);
+    }
+  }
+
   async animateUmpireBallCall(): Promise<void> {
     if (!this._loaded || this._umpire === null || this._destroyed) return;
 
