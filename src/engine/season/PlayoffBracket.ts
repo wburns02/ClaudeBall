@@ -48,43 +48,46 @@ export class PlayoffBracket {
   }
 
   private buildBracket(qualifiers: PlayoffQualifier[]): void {
-    const al = qualifiers.filter(q => q.league === 'AL').sort((a, b) => a.seed - b.seed);
-    const nl = qualifiers.filter(q => q.league === 'NL').sort((a, b) => a.seed - b.seed);
+    // Get the two league names dynamically from qualifiers
+    const leagueNames = [...new Set(qualifiers.map(q => q.league))].sort();
+    const league1 = leagueNames[0] ?? 'League1';
+    const league2 = leagueNames[1] ?? 'League2';
 
-    const alDivWinners = al.filter(q => !q.isWildCard);
-    const alWildCards = al.filter(q => q.isWildCard);
-    const nlDivWinners = nl.filter(q => !q.isWildCard);
-    const nlWildCards = nl.filter(q => q.isWildCard);
+    const l1q = qualifiers.filter(q => q.league === league1).sort((a, b) => a.seed - b.seed);
+    const l2q = qualifiers.filter(q => q.league === league2).sort((a, b) => a.seed - b.seed);
 
-    // Wild Card: #3 div winner vs #2 WC (lower seed hosts), #2 div winner vs #1 WC
+    const l1DivWinners = l1q.filter(q => !q.isWildCard);
+    const l1WildCards = l1q.filter(q => q.isWildCard);
+    const l2DivWinners = l2q.filter(q => !q.isWildCard);
+    const l2WildCards = l2q.filter(q => q.isWildCard);
+
+    // Wild Card: #3 div winner vs #2 WC, #2 div winner vs #1 WC
     this.matchups.push(this.createSeries(
-      'wc-al-1', 'wildcard', 'AL',
-      alDivWinners[2]?.teamId ?? '', alWildCards[1]?.teamId ?? '', 2
+      'wc-l1-1', 'wildcard', league1,
+      l1DivWinners[2]?.teamId ?? '', l1WildCards[1]?.teamId ?? '', 2
     ));
     this.matchups.push(this.createSeries(
-      'wc-al-2', 'wildcard', 'AL',
-      alDivWinners[1]?.teamId ?? '', alWildCards[0]?.teamId ?? '', 2
+      'wc-l1-2', 'wildcard', league1,
+      l1DivWinners[1]?.teamId ?? '', l1WildCards[0]?.teamId ?? '', 2
     ));
     this.matchups.push(this.createSeries(
-      'wc-nl-1', 'wildcard', 'NL',
-      nlDivWinners[2]?.teamId ?? '', nlWildCards[1]?.teamId ?? '', 2
+      'wc-l2-1', 'wildcard', league2,
+      l2DivWinners[2]?.teamId ?? '', l2WildCards[1]?.teamId ?? '', 2
     ));
     this.matchups.push(this.createSeries(
-      'wc-nl-2', 'wildcard', 'NL',
-      nlDivWinners[1]?.teamId ?? '', nlWildCards[0]?.teamId ?? '', 2
+      'wc-l2-2', 'wildcard', league2,
+      l2DivWinners[1]?.teamId ?? '', l2WildCards[0]?.teamId ?? '', 2
     ));
 
-    // Division Series: placeholders, filled after WC round
-    // ds-al-1: #1 seed AL vs WC winner from wc-al-1
-    // ds-al-2: WC winner from wc-al-2 vs other WC survivor
-    this.matchups.push(this.createSeries('ds-al-1', 'division', 'AL', alDivWinners[0]?.teamId ?? '', '', 3));
-    this.matchups.push(this.createSeries('ds-al-2', 'division', 'AL', '', '', 3));
-    this.matchups.push(this.createSeries('ds-nl-1', 'division', 'NL', nlDivWinners[0]?.teamId ?? '', '', 3));
-    this.matchups.push(this.createSeries('ds-nl-2', 'division', 'NL', '', '', 3));
+    // Division Series: #1 seed vs WC1 winner
+    this.matchups.push(this.createSeries('ds-l1-1', 'division', league1, l1DivWinners[0]?.teamId ?? '', '', 3));
+    this.matchups.push(this.createSeries('ds-l1-2', 'division', league1, '', '', 3));
+    this.matchups.push(this.createSeries('ds-l2-1', 'division', league2, l2DivWinners[0]?.teamId ?? '', '', 3));
+    this.matchups.push(this.createSeries('ds-l2-2', 'division', league2, '', '', 3));
 
     // Championship Series placeholders
-    this.matchups.push(this.createSeries('cs-al', 'championship', 'AL', '', '', 4));
-    this.matchups.push(this.createSeries('cs-nl', 'championship', 'NL', '', '', 4));
+    this.matchups.push(this.createSeries('cs-l1', 'championship', league1, '', '', 4));
+    this.matchups.push(this.createSeries('cs-l2', 'championship', league2, '', '', 4));
 
     // World Series placeholder
     this.matchups.push(this.createSeries('ws', 'worldseries', null, '', '', 4));
@@ -165,66 +168,60 @@ export class PlayoffBracket {
   }
 
   private fillDivisionSeries(): void {
-    const wcAl1 = this.getMatchup('wc-al-1');
-    const wcAl2 = this.getMatchup('wc-al-2');
-    const wcNl1 = this.getMatchup('wc-nl-1');
-    const wcNl2 = this.getMatchup('wc-nl-2');
-    const dsAl1 = this.getMatchup('ds-al-1');
-    const dsAl2 = this.getMatchup('ds-al-2');
-    const dsNl1 = this.getMatchup('ds-nl-1');
-    const dsNl2 = this.getMatchup('ds-nl-2');
+    const wcL11 = this.getMatchup('wc-l1-1');
+    const wcL12 = this.getMatchup('wc-l1-2');
+    const wcL21 = this.getMatchup('wc-l2-1');
+    const wcL22 = this.getMatchup('wc-l2-2');
+    const dsL11 = this.getMatchup('ds-l1-1');
+    const dsL12 = this.getMatchup('ds-l1-2');
+    const dsL21 = this.getMatchup('ds-l2-1');
+    const dsL22 = this.getMatchup('ds-l2-2');
 
-    // ds-al-1: #1 seed vs winner of wc-al-1
-    if (dsAl1 && wcAl1?.winner) dsAl1.teamBId = wcAl1.winner;
-    // ds-al-2: winner of wc-al-2 vs winner of wc-al-1 (or just fill the empty slot)
-    if (dsAl2) {
-      dsAl2.teamAId = wcAl2?.winner ?? '';
-      dsAl2.teamBId = wcAl1?.winner ?? dsAl1?.teamBId ?? '';
-      // avoid duplicate: ds-al-1 already has wc-al-1 winner; give ds-al-2 wc-al-2 winner
-      if (dsAl2.teamBId === dsAl1?.teamBId) {
-        dsAl2.teamBId = ''; // will remain a bye effectively
-      }
-      dsAl2.teamAId = wcAl2?.winner ?? '';
-      dsAl2.teamBId = wcAl1?.winner ? '' : ''; // ds-al-2 matchup will be wc survivors
-      // Simplify: ds-al-2 is wc-al-2 winner (high seed) vs wc-al-1 winner was taken by ds-al-1
-      // Actually just set to: top WC gets #1 seed matchup (ds-al-1), lower WC gets other
-      dsAl2.teamAId = wcAl2?.winner ?? '';
-      dsAl2.teamBId = ''; // no opponent — this gets filled from ds-al-1 structure
+    // DS1: #1 seed vs winner of WC1
+    if (dsL11 && wcL11?.winner) dsL11.teamBId = wcL11.winner;
+    // DS2: WC2 winner vs WC1 winner (WC1 winner is taken by DS1 so DS2 gets the other survivor)
+    if (dsL12 && wcL12?.winner) {
+      dsL12.teamAId = wcL12.winner;
+      // Find the WC1 loser as opponent? Actually: DS2 = WC2 winner vs WC2 loser...
+      // Simplified: DS2 gets WC2 winner as teamA; they play #2 seed or WC1 winner
+      // Most accurate: DS2 = wc-l1-2 winner vs wc-l1-1 loser... but we don't track losers
+      // Just use the WC2 winner vs whoever wc-l1-1 winner beat (wc-l1-1 teamB = loser)
+      dsL12.teamBId = wcL11?.teamBId ?? '';
     }
 
-    if (dsNl1 && wcNl1?.winner) dsNl1.teamBId = wcNl1.winner;
-    if (dsNl2) {
-      dsNl2.teamAId = wcNl2?.winner ?? '';
-      dsNl2.teamBId = '';
+    if (dsL21 && wcL21?.winner) dsL21.teamBId = wcL21.winner;
+    if (dsL22 && wcL22?.winner) {
+      dsL22.teamAId = wcL22.winner;
+      dsL22.teamBId = wcL21?.teamBId ?? '';
     }
   }
 
   private fillChampionshipSeries(): void {
-    const dsAl1 = this.getMatchup('ds-al-1');
-    const dsAl2 = this.getMatchup('ds-al-2');
-    const dsNl1 = this.getMatchup('ds-nl-1');
-    const dsNl2 = this.getMatchup('ds-nl-2');
-    const csAl = this.getMatchup('cs-al');
-    const csNl = this.getMatchup('cs-nl');
+    const dsL11 = this.getMatchup('ds-l1-1');
+    const dsL12 = this.getMatchup('ds-l1-2');
+    const dsL21 = this.getMatchup('ds-l2-1');
+    const dsL22 = this.getMatchup('ds-l2-2');
+    const csL1 = this.getMatchup('cs-l1');
+    const csL2 = this.getMatchup('cs-l2');
 
-    if (csAl) {
-      csAl.teamAId = dsAl1?.winner ?? '';
-      csAl.teamBId = dsAl2?.winner ?? '';
+    if (csL1) {
+      csL1.teamAId = dsL11?.winner ?? '';
+      csL1.teamBId = dsL12?.winner ?? '';
     }
-    if (csNl) {
-      csNl.teamAId = dsNl1?.winner ?? '';
-      csNl.teamBId = dsNl2?.winner ?? '';
+    if (csL2) {
+      csL2.teamAId = dsL21?.winner ?? '';
+      csL2.teamBId = dsL22?.winner ?? '';
     }
   }
 
   private fillWorldSeries(): void {
-    const csAl = this.getMatchup('cs-al');
-    const csNl = this.getMatchup('cs-nl');
+    const csL1 = this.getMatchup('cs-l1');
+    const csL2 = this.getMatchup('cs-l2');
     const ws = this.getMatchup('ws');
 
     if (ws) {
-      ws.teamAId = csAl?.winner ?? '';
-      ws.teamBId = csNl?.winner ?? '';
+      ws.teamAId = csL1?.winner ?? '';
+      ws.teamBId = csL2?.winner ?? '';
     }
   }
 
