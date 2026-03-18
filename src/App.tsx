@@ -15,6 +15,8 @@ import { SettingsPage } from '@/pages/SettingsPage.tsx';
 import { SaveLoadPage } from '@/pages/SaveLoadPage.tsx';
 import { CreatePlayerPage } from '@/pages/CreatePlayerPage.tsx';
 import { CareerDashboardPage } from '@/pages/CareerDashboardPage.tsx';
+import { HistoricalPage } from '@/pages/HistoricalPage.tsx';
+import { FantasyDraftPage } from '@/pages/FantasyDraftPage.tsx';
 import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
@@ -54,6 +56,8 @@ function App() {
         <Route path="/saves" element={<SaveLoadPage />} />
         <Route path="/career/new" element={<CreatePlayerPage />} />
         <Route path="/career" element={<CareerDashboardPage />} />
+        <Route path="/historical" element={<HistoricalPage />} />
+        <Route path="/historical/draft" element={<FantasyDraftPage />} />
       </Routes>
     </BrowserRouter>
   );

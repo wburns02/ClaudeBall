@@ -1,15 +1,14 @@
 import type { Player, Team } from '../types/index.ts';
 import type { RandomProvider } from '../core/RandomProvider.ts';
 import type { TeamRecord } from './StandingsTracker.ts';
-import type { SeasonState } from './SeasonEngine.ts';
+import type { SeasonState } from './SeasonEngine.ts'; // used by advanceYear
 import { getPlayerName } from '../types/player.ts';
 
 export type AwardType = 'MVP' | 'CyYoung' | 'ROY';
-export type LeagueCode = 'AL' | 'NL';
 
 export interface Award {
   type: AwardType;
-  league: LeagueCode;
+  league: string; // actual league name from leagueStructure (e.g. 'American', 'National')
   playerId: string;
   playerName: string;
   teamId: string;
@@ -50,7 +49,7 @@ export class OffseasonEngine {
       }
 
       const leagueTeams = allTeams.filter(t => leagueTeamIds.has(t.id));
-      const lc = league as LeagueCode;
+      const lc = league;
 
       // MVP: best non-pitcher by (contact + power + eye + speed) / 4 * win contribution
       let mvpPlayer: Player | null = null;
@@ -216,9 +215,3 @@ export class OffseasonEngine {
   }
 }
 
-// Augment return type for runOffseason to include awards (populated by caller)
-declare module './OffseasonEngine' {
-  interface OffseasonResult {
-    awards: Award[];
-  }
-}

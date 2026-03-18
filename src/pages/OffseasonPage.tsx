@@ -59,8 +59,12 @@ export function OffseasonPage() {
     return t ? `${t.city} ${t.name}` : id;
   };
 
-  const alAwards = awards.filter(a => a.league === 'AL');
-  const nlAwards = awards.filter(a => a.league === 'NL');
+  // Derive actual league names from awards (dynamic — not hardcoded)
+  const leagueNames = [...new Set(awards.map(a => a.league))].sort();
+  const league1 = leagueNames[0] ?? 'American';
+  const league2 = leagueNames[1] ?? 'National';
+  const league1Awards = awards.filter(a => a.league === league1);
+  const league2Awards = awards.filter(a => a.league === league2);
 
   const handleStartDraft = () => {
     initDraft();
@@ -96,39 +100,24 @@ export function OffseasonPage() {
 
       {/* Awards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <Panel title="AL Awards">
-          <div className="space-y-3">
-            {alAwards.length === 0 ? (
-              <p className="text-cream-dim font-mono text-sm">No awards data</p>
-            ) : (
-              alAwards
-                .sort((a, b) => {
-                  const order = ['MVP', 'CyYoung', 'ROY'];
-                  return order.indexOf(a.type) - order.indexOf(b.type);
-                })
-                .map(a => (
-                  <AwardCard key={`${a.league}-${a.type}`} award={a} getTeamName={getTeamName} />
-                ))
-            )}
-          </div>
-        </Panel>
-
-        <Panel title="NL Awards">
-          <div className="space-y-3">
-            {nlAwards.length === 0 ? (
-              <p className="text-cream-dim font-mono text-sm">No awards data</p>
-            ) : (
-              nlAwards
-                .sort((a, b) => {
-                  const order = ['MVP', 'CyYoung', 'ROY'];
-                  return order.indexOf(a.type) - order.indexOf(b.type);
-                })
-                .map(a => (
-                  <AwardCard key={`${a.league}-${a.type}`} award={a} getTeamName={getTeamName} />
-                ))
-            )}
-          </div>
-        </Panel>
+        {[{ name: league1, awards: league1Awards }, { name: league2, awards: league2Awards }].map(({ name, awards: lgAwards }) => (
+          <Panel key={name} title={`${name} Awards`}>
+            <div className="space-y-3">
+              {lgAwards.length === 0 ? (
+                <p className="text-cream-dim font-mono text-sm">No awards data</p>
+              ) : (
+                lgAwards
+                  .sort((a, b) => {
+                    const order = ['MVP', 'CyYoung', 'ROY'];
+                    return order.indexOf(a.type) - order.indexOf(b.type);
+                  })
+                  .map(a => (
+                    <AwardCard key={`${a.league}-${a.type}`} award={a} getTeamName={getTeamName} />
+                  ))
+              )}
+            </div>
+          </Panel>
+        ))}
       </div>
 
       {/* Retirements */}

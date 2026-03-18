@@ -164,11 +164,34 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
       }
     }
 
+    // Auto-advance CPU picks until the user's first turn
+    let firstUserPick = 0;
+    const userTeamIdNow = get().userTeamId;
+    while (firstUserPick < draftClass.picks.length) {
+      const entry = draftClass.picks[firstUserPick];
+      if (!entry || entry.teamId === userTeamIdNow) break;
+
+      // CPU auto-pick
+      const available = draftClass.prospects.filter(
+        p => !draftClass.picks.some(pk => pk.prospectId === p.id)
+      );
+      if (available.length === 0) break;
+      available.sort((a, b) => b.potentialRating - a.potentialRating);
+      const cpuPick = available[0];
+      const cpuTeam = allTeams.find(t => t.id === entry.teamId);
+      if (cpuPick && cpuTeam) {
+        const cpuPlayer = makePick(draftClass, entry.teamId, cpuPick.id);
+        entry.prospectId = cpuPick.id;
+        if (cpuPlayer) cpuTeam.roster.players.push(cpuPlayer);
+      }
+      firstUserPick++;
+    }
+
     set({
-      draftClass,
+      draftClass: { ...draftClass },
       draftPickOrder: pickOrder,
-      currentDraftPick: 0,
-      draftComplete: false,
+      currentDraftPick: firstUserPick,
+      draftComplete: firstUserPick >= draftClass.picks.length,
     });
   },
 

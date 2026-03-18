@@ -124,20 +124,27 @@ export function PlayoffsPage() {
     if (!isInitialized) navigate('/franchise/new');
   }, [isInitialized, navigate]);
 
-  if (!season || !engine) return null;
-
-  // Ensure playoffs are started
+  // Ensure playoffs are started — must be before any early return (hooks rules)
   useEffect(() => {
-    if (season.phase === 'regular' || season.phase === 'preseason') {
+    if (season && (season.phase === 'regular' || season.phase === 'preseason')) {
       startPlayoffs();
     }
-  }, [season.phase, startPlayoffs]);
+  }, [season, startPlayoffs]);
+
+  if (!season || !engine) return null;
 
   const bracket = season.playoffBracket;
   const champion = bracket?.getChampion();
   const championTeam = champion ? engine.getTeam(champion) : null;
   const isComplete = bracket?.isComplete() ?? false;
   const currentRound = bracket?.getCurrentRound();
+
+  // Derive actual league names from qualifiers (avoid hardcoding 'AL'/'NL')
+  const leagueNames = season.playoffQualifiers
+    ? [...new Set(season.playoffQualifiers.map(q => q.league))].sort()
+    : [];
+  const league1 = leagueNames[0] ?? 'League 1';
+  const league2 = leagueNames[1] ?? 'League 2';
 
   const getAbbr = (id: string) => engine.getTeam(id)?.abbreviation ?? id.toUpperCase().slice(0, 3);
 
@@ -207,26 +214,26 @@ export function PlayoffsPage() {
         </div>
       )}
 
-      {/* Two-column bracket: AL / NL */}
+      {/* Two-column bracket: League 1 / League 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* AL Bracket */}
-        <Panel title="American League" className="space-y-4">
+        {/* League 1 Bracket */}
+        <Panel title={league1} className="space-y-4">
           <div className="space-y-4">
             <RoundSection
               title="Wild Card"
-              matchups={wildcard.filter(m => m.league === 'AL')}
+              matchups={wildcard.filter(m => m.league === league1)}
               getAbbr={getAbbr}
               userTeamId={userTeamId}
             />
             <RoundSection
               title="Division Series"
-              matchups={division.filter(m => m.league === 'AL')}
+              matchups={division.filter(m => m.league === league1)}
               getAbbr={getAbbr}
               userTeamId={userTeamId}
             />
             <RoundSection
-              title="ALCS"
-              matchups={championship.filter(m => m.league === 'AL')}
+              title={`${league1} Championship`}
+              matchups={championship.filter(m => m.league === league1)}
               getAbbr={getAbbr}
               userTeamId={userTeamId}
             />
@@ -242,29 +249,29 @@ export function PlayoffsPage() {
           </div>
           {!isComplete && (
             <p className="text-center font-mono text-xs text-cream-dim/50 mt-4">
-              AL Champion vs NL Champion
+              {league1} Champion vs {league2} Champion
             </p>
           )}
         </Panel>
 
-        {/* NL Bracket */}
-        <Panel title="National League" className="space-y-4">
+        {/* League 2 Bracket */}
+        <Panel title={league2} className="space-y-4">
           <div className="space-y-4">
             <RoundSection
               title="Wild Card"
-              matchups={wildcard.filter(m => m.league === 'NL')}
+              matchups={wildcard.filter(m => m.league === league2)}
               getAbbr={getAbbr}
               userTeamId={userTeamId}
             />
             <RoundSection
               title="Division Series"
-              matchups={division.filter(m => m.league === 'NL')}
+              matchups={division.filter(m => m.league === league2)}
               getAbbr={getAbbr}
               userTeamId={userTeamId}
             />
             <RoundSection
-              title="NLCS"
-              matchups={championship.filter(m => m.league === 'NL')}
+              title={`${league2} Championship`}
+              matchups={championship.filter(m => m.league === league2)}
               getAbbr={getAbbr}
               userTeamId={userTeamId}
             />
@@ -273,10 +280,10 @@ export function PlayoffsPage() {
       </div>
 
       {/* Qualifiers */}
-      {season.playoffQualifiers && (
+      {season.playoffQualifiers && leagueNames.length > 0 && (
         <Panel title="Playoff Qualifiers" className="mb-6">
           <div className="grid grid-cols-2 gap-4">
-            {(['AL', 'NL'] as const).map(league => (
+            {leagueNames.map(league => (
               <div key={league}>
                 <h4 className="font-display text-sm text-gold tracking-widest uppercase mb-2">{league}</h4>
                 <div className="space-y-1">
