@@ -1,5 +1,6 @@
 import { Application, Graphics, Text, Container, Ticker } from 'pixi.js';
 import { PlayerScene } from './players/PlayerScene.ts';
+import { SpritePlayerScene } from './sprites/SpritePlayerScene.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────
 // The diamond is rendered in a 600x500 viewport with home plate near the bottom-center.
@@ -86,8 +87,10 @@ export class DiamondRenderer {
   private ballLayer: Container | null = null;
   private labelLayer: Container | null = null;
 
-  // Player scene (procedural vector figures)
+  // Player scenes — procedural (always created) and sprite-based (async loaded)
   private playerScene: PlayerScene;
+  private spriteScene: SpritePlayerScene | null = null;
+  private _spriteMode = false;
 
   // State
   private fielderDots: Map<string, Graphics> = new Map();
@@ -120,6 +123,12 @@ export class DiamondRenderer {
       autoDensity: true,
     });
 
+    // Guard against destroy() being called during async init (e.g. React StrictMode)
+    if (this._destroyed) {
+      app.destroy(true, { children: true });
+      return;
+    }
+
     this.app = app;
     this.root = new Container();
     app.stage.addChild(this.root);
@@ -135,23 +144,92 @@ export class DiamondRenderer {
     this.createLayers();
     this.drawField();
     this.drawBases();
-    // Initialize player figures (replaces dot-based fielders)
-    this._initPlayerScene(app);
+    // Initialize procedural scene immediately (sync), sprites loaded separately via loadSprites()
+    this._initProceduralScene(app);
+
+    if (this._destroyed) return;
     this.createBall();
   }
 
-  private _initPlayerScene(app: Application): void {
+  /** Initialize the sync procedural player scene as the default / fallback. */
+  private _initProceduralScene(app: Application): void {
     if (!this.fielderLayer) return;
-    // Create the scene — player figures added to fielderLayer
-    const sceneLayer = this.playerScene.createScene(app);
-    this.fielderLayer.addChild(sceneLayer);
+    const layer = this.playerScene.createScene(app);
+    this.fielderLayer.addChild(layer);
+    this._spriteMode = false;
+  }
+
+  /**
+   * Asynchronously load sprite sheets and switch to sprite-based players.
+   * Call this after `init()` resolves. Falls back to procedural if loading fails.
+   * Returns true if sprites loaded successfully, false on failure/abort.
+   */
+  async loadSprites(): Promise<boolean> {
+    if (this._destroyed || !this.fielderLayer) return false;
+
+    try {
+      const spriteScene = new SpritePlayerScene();
+      const spriteLayer = await spriteScene.createScene(this.app!);
+
+      if (this._destroyed) {
+        spriteScene.destroy();
+        return false;
+      }
+
+      // Add sprite layer above the procedural layer (which stays hidden as fallback)
+      if (this.fielderLayer.children.length > 0) {
+        this.fielderLayer.children[0].visible = false;
+      }
+      this.fielderLayer.addChild(spriteLayer);
+      this.spriteScene = spriteScene;
+      this._spriteMode = true;
+      return true;
+    } catch (err) {
+      console.warn('[DiamondRenderer] Sprite load failed, using procedural figures:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Toggle between sprite-based and procedural player figures at runtime.
+   * Pass `true` to use sprites (if loaded), `false` for procedural vectors.
+   */
+  setSpriteMode(enabled: boolean): void {
+    if (enabled && this.spriteScene === null) {
+      console.warn('[DiamondRenderer] setSpriteMode(true) called but sprites not loaded.');
+      return;
+    }
+    this._spriteMode = enabled;
+
+    // Show/hide the appropriate layers
+    // The procedural scene layer is always the first child of fielderLayer,
+    // sprite layer (if loaded) is the second child.
+    if (this.fielderLayer && this.fielderLayer.children.length >= 2) {
+      // First child: procedural layer
+      this.fielderLayer.children[0].visible = !enabled;
+      // Second child: sprite layer
+      this.fielderLayer.children[1].visible = enabled;
+    }
+  }
+
+  get spriteMode(): boolean {
+    return this._spriteMode;
   }
 
   destroy(): void {
     this._destroyed = true;
-    this.playerScene.destroy();
+    // Stop the ticker before destroying scenes to avoid in-flight render errors
     if (this.app) {
-      this.app.destroy(true, { children: true });
+      this.app.ticker.stop();
+    }
+    this.playerScene.destroy();
+    this.spriteScene?.destroy();
+    this.spriteScene = null;
+    if (this.app) {
+      // Pass false so Pixi does NOT remove the canvas element from the DOM —
+      // React controls the canvas lifecycle and reuses the same element on
+      // StrictMode double-mount. Removing it here would leave a dangling ref.
+      this.app.destroy(false, { children: true });
       this.app = null;
     }
     this.root = null;
@@ -210,13 +288,11 @@ export class DiamondRenderer {
     g.lineTo(HOME_X, HOME_Y);
     g.fill({ color: COLORS.outfieldGrass });
 
-    // Infield grass patch (between base paths, inside the dirt)
-    // Drawn after dirt covers it, but we add a secondary grass area:
-    const g2 = new Graphics();
-    // Small grass circle in the center of the infield
-    g2.circle(MOUND_X, MOUND_Y - 10, 28);
-    g2.fill({ color: COLORS.outfieldGrass });
-    this.grassLayer?.parent?.addChildAt(g2, 1); // above grass, below dirt
+    // Infield grass patch — draw directly into the same grassLayer Graphics
+    // (instead of inserting a new child at a specific index, which can cause
+    // Pixi 8 rendering issues when the layer order shifts after async init)
+    g.circle(MOUND_X, MOUND_Y - 10, 28);
+    g.fill({ color: COLORS.outfieldGrass });
   }
 
   private drawInfieldDirt(): void {
@@ -379,8 +455,12 @@ export class DiamondRenderer {
   // ── Fielders ──────────────────────────────────────────────────────
 
   drawFielders(positions: string[]): void {
-    // Delegate to PlayerScene — figures replace dots
-    this.playerScene.positionFielders(positions);
+    // Delegate to whichever player scene is active
+    if (this._spriteMode && this.spriteScene !== null) {
+      this.spriteScene.positionFielders(positions);
+    } else {
+      this.playerScene.positionFielders(positions);
+    }
 
     // Keep labels for positions in the label layer (text overlays remain)
     if (!this.labelLayer) return;
@@ -411,18 +491,24 @@ export class DiamondRenderer {
   // ── Public API ────────────────────────────────────────────────────
 
   updateBases(bases: { first: boolean; second: boolean; third: boolean }): void {
-    // Use PlayerScene figures instead of gold dots
-    this.playerScene.clearRunners();
-
-    const runnerBases: [string, boolean, number][] = [
-      ['first', bases.first, 1],
-      ['second', bases.second, 2],
-      ['third', bases.third, 3],
+    const runnerBases: [boolean, number][] = [
+      [bases.first, 1],
+      [bases.second, 2],
+      [bases.third, 3],
     ];
 
-    for (const [_key, occupied, baseNum] of runnerBases) {
-      if (!occupied) continue;
-      this.playerScene.addRunner(baseNum);
+    if (this._spriteMode && this.spriteScene !== null) {
+      this.spriteScene.clearRunners();
+      for (const [occupied, baseNum] of runnerBases) {
+        if (!occupied) continue;
+        this.spriteScene.addRunner(baseNum);
+      }
+    } else {
+      this.playerScene.clearRunners();
+      for (const [occupied, baseNum] of runnerBases) {
+        if (!occupied) continue;
+        this.playerScene.addRunner(baseNum);
+      }
     }
   }
 

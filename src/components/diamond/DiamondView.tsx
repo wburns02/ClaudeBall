@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import type { GameEvent } from '@/engine/types/index.ts';
 import type { BaseState } from '@/engine/types/game.ts';
 import { DiamondRenderer } from './DiamondRenderer.ts';
@@ -10,6 +10,8 @@ interface DiamondViewProps {
   width?: number;
   height?: number;
   className?: string;
+  /** If true, attempt to use sprite-based players; falls back to procedural on failure. */
+  preferSprites?: boolean;
 }
 
 /** Convert engine BaseState (player ID | null) to simple booleans. */
@@ -27,10 +29,12 @@ export function DiamondView({
   width = 600,
   height = 500,
   className,
+  preferSprites = true,
 }: DiamondViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<DiamondRenderer | null>(null);
   const processedCountRef = useRef(0);
+  const [spriteStatus, setSpriteStatus] = useState<'loading' | 'sprites' | 'procedural'>('loading');
 
   // ── Initialize / Destroy ──────────────────────────────────────────
   useEffect(() => {
@@ -40,16 +44,27 @@ export function DiamondView({
     const renderer = new DiamondRenderer();
     rendererRef.current = renderer;
 
-    renderer.init(canvas, width, height).catch((err: unknown) => {
-      console.error('[DiamondView] Failed to init renderer:', err);
-    });
+    renderer.init(canvas, width, height)
+      .then(async () => {
+        // Procedural scene is now live; optionally load sprites on top
+        if (preferSprites) {
+          const loaded = await renderer.loadSprites();
+          setSpriteStatus(loaded ? 'sprites' : 'procedural');
+        } else {
+          setSpriteStatus('procedural');
+        }
+      })
+      .catch((err: unknown) => {
+        console.error('[DiamondView] Failed to init renderer:', err);
+        setSpriteStatus('procedural');
+      });
 
     return () => {
       renderer.destroy();
       rendererRef.current = null;
       processedCountRef.current = 0;
     };
-  }, [width, height]);
+  }, [width, height, preferSprites]);
 
   // ── Sync base runners ─────────────────────────────────────────────
   useEffect(() => {
@@ -137,11 +152,29 @@ export function DiamondView({
   }, [events, processEvent]);
 
   return (
-    <div className={className} style={{ width, height, background: '#1a2235', borderRadius: 8, overflow: 'hidden' }}>
+    <div
+      className={className}
+      style={{ position: 'relative', width, height, background: '#1a2235', borderRadius: 8, overflow: 'hidden' }}
+    >
       <canvas
         ref={canvasRef}
         style={{ display: 'block', width: '100%', height: '100%' }}
       />
+      {spriteStatus === 'loading' && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            right: 10,
+            fontSize: 10,
+            color: 'rgba(255,255,255,0.4)',
+            fontFamily: 'IBM Plex Mono, monospace',
+            pointerEvents: 'none',
+          }}
+        >
+          loading sprites…
+        </div>
+      )}
     </div>
   );
 }
