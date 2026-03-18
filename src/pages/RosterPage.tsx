@@ -182,32 +182,13 @@ export function RosterPage() {
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
-            {userTeam.city} {userTeam.name} — Roster
-          </h1>
-          <p className="font-mono text-cream-dim text-sm mt-1">
-            {userTeam.roster.players.length} players on roster
-          </p>
-        </div>
-        <div className="flex gap-2 flex-wrap justify-end">
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/create-player')}>
-            + Create Player
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster-manager')}>
-            Roster Manager
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/free-agency')}>
-            Free Agency
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/trade')}>
-            Trade Center
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate('/franchise')}>
-            Dashboard
-          </Button>
-        </div>
+      <div className="mb-6">
+        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
+          {userTeam.city} {userTeam.name} — Roster
+        </h1>
+        <p className="font-mono text-cream-dim text-sm mt-1">
+          {userTeam.roster.players.length} players on roster
+        </p>
       </div>
 
       {/* Position Players */}

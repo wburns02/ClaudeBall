@@ -52,79 +52,23 @@ export function FranchiseDashboard() {
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
-            {userTeam?.city} {userTeam?.name}
-          </h1>
-          <p className="font-mono text-cream-dim text-sm mt-1">
-            Day {season.currentDay} of {season.totalDays} — {season.year} Season
-            {' '}
-            <span className={cn(
-              'uppercase text-xs font-bold ml-1 px-1.5 py-0.5 rounded',
-              season.phase === 'regular' && 'bg-green-light/10 text-green-light',
-              season.phase === 'preseason' && 'bg-cream-dim/10 text-cream-dim',
-              season.phase === 'postseason' && 'bg-gold/10 text-gold',
-              season.phase === 'offseason' && 'bg-navy-lighter text-cream-dim',
-            )}>
-              {season.phase}
-            </span>
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2 justify-end">
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/standings')}>
-            Standings
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster')}>
-            Roster
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/leaders')}>
-            Leaders
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/team-stats/${userTeamId}`)}>
-            Team Stats
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/records')}>
-            Records
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/trade')}>
-            Trades
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/free-agency')}>
-            FA
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster-manager')}>
-            Roster Mgr
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/team/${userTeamId}`)}>
-            Edit Team
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/injuries')}>
-            Injuries
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/minors')}>
-            Minors
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/trade-history')}>
-            Trade Log
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/waivers')}>
-            Waivers
-          </Button>
-          {(isPostseason || regularSeasonComplete) && (
-            <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/playoffs')}>
-              Playoffs
-            </Button>
-          )}
-          {isOffseason && (
-            <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/offseason')}>
-              Offseason
-            </Button>
-          )}
-          <Button size="sm" variant="ghost" onClick={() => navigate('/')}>
-            Menu
-          </Button>
-        </div>
+      <div className="mb-6">
+        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
+          {userTeam?.city} {userTeam?.name}
+        </h1>
+        <p className="font-mono text-cream-dim text-sm mt-1">
+          Day {season.currentDay} of {season.totalDays} — {season.year} Season
+          {' '}
+          <span className={cn(
+            'uppercase text-xs font-bold ml-1 px-1.5 py-0.5 rounded',
+            season.phase === 'regular' && 'bg-green-light/10 text-green-light',
+            season.phase === 'preseason' && 'bg-cream-dim/10 text-cream-dim',
+            season.phase === 'postseason' && 'bg-gold/10 text-gold',
+            season.phase === 'offseason' && 'bg-navy-lighter text-cream-dim',
+          )}>
+            {season.phase}
+          </span>
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

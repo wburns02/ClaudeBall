@@ -35,14 +35,9 @@ export function StandingsPage() {
 
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Standings</h1>
-          <p className="font-mono text-cream-dim text-sm mt-1">{season.year} Season — Day {season.currentDay}</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/franchise')}>
-          Back to Dashboard
-        </Button>
+      <div className="mb-6">
+        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Standings</h1>
+        <p className="font-mono text-cream-dim text-sm mt-1">{season.year} Season — Day {season.currentDay}</p>
       </div>
 
       <div className="space-y-6">

@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
@@ -147,7 +146,6 @@ function FACard({
 }
 
 export function FreeAgencyPage() {
-  const navigate = useNavigate();
   const { teams, userTeamId, engine } = useFranchiseStore();
   const { freeAgentPool, initGM, getFreeAgents, signFreeAgent } = useGMStore();
 
@@ -191,17 +189,11 @@ export function FreeAgencyPage() {
   return (
     <div className="min-h-screen p-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Free Agency</h1>
-          <p className="font-mono text-cream-dim text-sm mt-1">
-            {agents.length} players available
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster')}>Roster</Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate('/franchise')}>Dashboard</Button>
-        </div>
+      <div className="mb-6">
+        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Free Agency</h1>
+        <p className="font-mono text-cream-dim text-sm mt-1">
+          {agents.length} players available
+        </p>
       </div>
 
       {/* Notice banner */}

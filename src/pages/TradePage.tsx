@@ -186,15 +186,9 @@ export function TradePage() {
   return (
     <div className="min-h-screen p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Trade Center</h1>
-          <p className="font-mono text-cream-dim text-sm mt-1">Select players from each team to build a trade</p>
-        </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster')}>Roster</Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate('/franchise')}>Dashboard</Button>
-        </div>
+      <div className="mb-6">
+        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Trade Center</h1>
+        <p className="font-mono text-cream-dim text-sm mt-1">Select players from each team to build a trade</p>
       </div>
 
       {/* Team Selector */}
