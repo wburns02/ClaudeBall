@@ -64,20 +64,20 @@ const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
 //   CF (furthest back):              ~26px → 0.051
 
 const FIELDER_SCALES: Record<string, number> = {
-  P:    0.117,   // pitcher on mound → ~60px
-  C:    0.133,   // catcher at plate → ~68px
-  '1B': 0.094,   // infielder → ~48px
-  '2B': 0.082,   // middle infield, further back
-  SS:   0.082,
-  '3B': 0.094,
-  LF:   0.059,   // outfielder → ~30px
-  CF:   0.051,   // CF furthest back → ~26px
-  RF:   0.059,
+  P:    0.22,    // pitcher on mound — prominent
+  C:    0.25,    // catcher at plate — large
+  '1B': 0.17,   // infielder
+  '2B': 0.15,   // middle infield
+  SS:   0.15,
+  '3B': 0.17,
+  LF:   0.11,   // outfielder
+  CF:   0.09,   // CF furthest back
+  RF:   0.11,
 };
 
-const BATTER_SCALE  = 0.146; // ~75px — biggest near bottom of canvas
-const UMPIRE_SCALE  = 0.133; // ~68px
-const RUNNER_SCALE  = 0.072; // ~37px
+const BATTER_SCALE  = 0.28;  // batter — largest, closest to camera
+const UMPIRE_SCALE  = 0.25;  // umpire behind plate
+const RUNNER_SCALE  = 0.14;  // base runners
 
 // ── Facing / flip rules ───────────────────────────────────────────────────
 // Sprite sheets drawn facing LEFT by default (player faces left).
