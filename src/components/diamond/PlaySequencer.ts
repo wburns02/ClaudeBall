@@ -13,6 +13,7 @@ import type { DiamondRenderer } from './DiamondRenderer.ts';
 import type { SpritePlayerScene } from './sprites/SpritePlayerScene.ts';
 import { delay } from './Tween.ts';
 import type { Point } from './Tween.ts';
+import { soundEngine } from '@/audio/index.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────────────
 
@@ -211,12 +212,14 @@ export class PlaySequencer {
 
     if (this._destroyed) return;
 
-    // Step 2: ball travels (show + animate)
+    // Step 2: ball travels — whoosh when released
+    soundEngine.playPitchThrow();
     await this._throwBallToPlate('fastball');
 
     if (this._destroyed) return;
 
-    // Step 3 + 4: catcher receives, umpire calls ball
+    // Step 3 + 4: catcher receives (leather pop), umpire calls ball
+    soundEngine.playBallInGlove();
     await Promise.all([
       this._catcherReceive(ss),
       delay(this.dur(50)),
@@ -225,6 +228,7 @@ export class PlaySequencer {
     if (!this._destroyed && ss) {
       await ss.animateUmpireBallCall();
     }
+    soundEngine.playUmpireBall();
 
     this.renderer.hideBall();
   }
@@ -239,12 +243,15 @@ export class PlaySequencer {
     await this._pitcherWindup(ss);
     if (this._destroyed) return;
 
+    soundEngine.playPitchThrow();
     await this._throwBallToPlate('fastball');
     if (this._destroyed) return;
 
+    soundEngine.playBallInGlove();
     await this._catcherReceive(ss);
     if (this._destroyed) return;
 
+    soundEngine.playUmpireStrike();
     if (ss) await ss.animateUmpireStrikeCall();
 
     this.renderer.hideBall();
@@ -264,15 +271,18 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     // Ball and swing run concurrently; swing fires slightly after ball starts
+    soundEngine.playPitchThrow();
     const ballPromise = this._throwBallToPlate('fastball');
     const swingPromise = (async () => {
       await delay(this.dur(280));
+      soundEngine.playStrikeoutSwing();
       if (!this._destroyed && ss) await ss.animateBatterSwing('late');
     })();
 
     await Promise.all([ballPromise, swingPromise]);
     if (this._destroyed) return;
 
+    soundEngine.playUmpireStrike();
     await this._catcherReceive(ss);
     await delay(this.dur(150));
 
@@ -303,6 +313,7 @@ export class PlaySequencer {
 
     // Contact flash at plate
     this.renderer.showContactFlash(HOME_X, HOME_Y - 10);
+    soundEngine.playBatCrack();
 
     // Ball pops foul — to the right side (1B side)
     const foulTarget: Point = { x: HOME_X + 80 + Math.random() * 40, y: HOME_Y + 30 };
@@ -341,8 +352,9 @@ export class PlaySequencer {
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // Step 3: contact flash
+    // Step 3: contact flash + bat crack sound
     this.renderer.showContactFlash(HOME_X - 10, HOME_Y - 15);
+    soundEngine.playBatCrack();
 
     // Step 4+: route based on hit type
     if (hitType === 'groundout' || hitType === 'fielders_choice' || hitType === 'double_play') {
@@ -391,14 +403,17 @@ export class PlaySequencer {
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // Big contact flash
+    // Big contact flash + loud bat crack
     this.renderer.showContactFlash(HOME_X - 12, HOME_Y - 18);
     this.renderer.showHomeRunFlash();
+    soundEngine.playBatCrack(1.4);
 
     // Ball arcs out of the park
     await this.renderer.animateBallHomeRun(angle, distance);
     if (this._destroyed) return;
 
+    // Horn blast after ball clears the wall
+    soundEngine.playHomeRunHorn();
     await delay(this.dur(200));
     this.renderer.hideBall();
   }
@@ -418,10 +433,12 @@ export class PlaySequencer {
     }
 
     if (ss) {
+      soundEngine.playCrowdCheer('roar');
       await ss.animateUmpireStrikeCall();
       if (this._destroyed) return;
       await delay(this.dur(400));
     } else {
+      soundEngine.playCrowdCheer('roar');
       await delay(this.dur(600));
     }
   }
@@ -448,6 +465,7 @@ export class PlaySequencer {
 
     this.renderer.reset();
     if (ss) ss.resetToReady();
+    soundEngine.playOrganCharge();
     await delay(this.dur(300));
   }
 
@@ -589,6 +607,7 @@ export class PlaySequencer {
     // Outfielder runs to ball, runner advances concurrently
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
+    soundEngine.playBallInGlove();
 
     if (this._destroyed) return;
     await delay(this.dur(200));
@@ -658,6 +677,7 @@ export class PlaySequencer {
 
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
+    soundEngine.playBallInGlove();
     if (this._destroyed) return;
 
     await delay(this.dur(200));
