@@ -1,4 +1,5 @@
 import { Application, Graphics, Text, Container, Ticker } from 'pixi.js';
+import { PlayerScene } from './players/PlayerScene.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────
 // The diamond is rendered in a 600x500 viewport with home plate near the bottom-center.
@@ -85,6 +86,9 @@ export class DiamondRenderer {
   private ballLayer: Container | null = null;
   private labelLayer: Container | null = null;
 
+  // Player scene (procedural vector figures)
+  private playerScene: PlayerScene;
+
   // State
   private fielderDots: Map<string, Graphics> = new Map();
   private fielderLabels: Map<string, Text> = new Map();
@@ -95,6 +99,12 @@ export class DiamondRenderer {
 
   private _animating = false;
   private _destroyed = false;
+
+  // ── Constructor ────────────────────────────────────────────────────
+
+  constructor() {
+    this.playerScene = new PlayerScene();
+  }
 
   // ── Lifecycle ─────────────────────────────────────────────────────
 
@@ -125,12 +135,21 @@ export class DiamondRenderer {
     this.createLayers();
     this.drawField();
     this.drawBases();
-    this.drawFielders(['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF']);
+    // Initialize player figures (replaces dot-based fielders)
+    this._initPlayerScene(app);
     this.createBall();
+  }
+
+  private _initPlayerScene(app: Application): void {
+    if (!this.fielderLayer) return;
+    // Create the scene — player figures added to fielderLayer
+    const sceneLayer = this.playerScene.createScene(app);
+    this.fielderLayer.addChild(sceneLayer);
   }
 
   destroy(): void {
     this._destroyed = true;
+    this.playerScene.destroy();
     if (this.app) {
       this.app.destroy(true, { children: true });
       this.app = null;
@@ -360,32 +379,22 @@ export class DiamondRenderer {
   // ── Fielders ──────────────────────────────────────────────────────
 
   drawFielders(positions: string[]): void {
-    if (!this.fielderLayer || !this.labelLayer) return;
+    // Delegate to PlayerScene — figures replace dots
+    this.playerScene.positionFielders(positions);
 
-    // Clear existing
-    for (const dot of this.fielderDots.values()) dot.destroy();
+    // Keep labels for positions in the label layer (text overlays remain)
+    if (!this.labelLayer) return;
     for (const lbl of this.fielderLabels.values()) lbl.destroy();
-    this.fielderDots.clear();
     this.fielderLabels.clear();
 
     for (const pos of positions) {
       const coord = FIELDER_POSITIONS[pos];
       if (!coord) continue;
 
-      // Fielder dot
-      const dot = new Graphics();
-      dot.circle(0, 0, 6);
-      dot.fill({ color: COLORS.fielder });
-      dot.x = coord.x;
-      dot.y = coord.y;
-      this.fielderLayer.addChild(dot);
-      this.fielderDots.set(pos, dot);
-
-      // Label
       const label = new Text({
         text: pos,
         style: {
-          fontSize: 9,
+          fontSize: 8,
           fontFamily: 'IBM Plex Mono, monospace',
           fill: COLORS.labelText,
           fontWeight: 'bold',
@@ -393,7 +402,7 @@ export class DiamondRenderer {
       });
       label.anchor.set(0.5, 0);
       label.x = coord.x;
-      label.y = coord.y + 9;
+      label.y = coord.y + 14;
       this.labelLayer.addChild(label);
       this.fielderLabels.set(pos, label);
     }
@@ -402,28 +411,18 @@ export class DiamondRenderer {
   // ── Public API ────────────────────────────────────────────────────
 
   updateBases(bases: { first: boolean; second: boolean; third: boolean }): void {
-    if (!this.runnerLayer) return;
+    // Use PlayerScene figures instead of gold dots
+    this.playerScene.clearRunners();
 
-    // Clear existing runners
-    for (const dot of this.runnerDots.values()) dot.destroy();
-    this.runnerDots.clear();
-
-    const runnerCoords: [string, boolean, { x: number; y: number }][] = [
-      ['first', bases.first, { x: BASE_1_X, y: BASE_1_Y }],
-      ['second', bases.second, { x: BASE_2_X, y: BASE_2_Y }],
-      ['third', bases.third, { x: BASE_3_X, y: BASE_3_Y }],
+    const runnerBases: [string, boolean, number][] = [
+      ['first', bases.first, 1],
+      ['second', bases.second, 2],
+      ['third', bases.third, 3],
     ];
 
-    for (const [key, occupied, coord] of runnerCoords) {
+    for (const [_key, occupied, baseNum] of runnerBases) {
       if (!occupied) continue;
-      const dot = new Graphics();
-      dot.circle(0, 0, 7);
-      dot.fill({ color: COLORS.runner });
-      // Slight offset so the runner doesn't sit exactly on the base
-      dot.x = coord.x;
-      dot.y = coord.y - 12;
-      this.runnerLayer.addChild(dot);
-      this.runnerDots.set(key, dot);
+      this.playerScene.addRunner(baseNum);
     }
   }
 
