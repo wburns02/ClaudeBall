@@ -1,4 +1,4 @@
-import { Application, Graphics, Text, Container, Ticker } from 'pixi.js';
+import { Application, Graphics, Text, Container, Sprite, Ticker } from 'pixi.js';
 import { PlayerScene } from './players/PlayerScene.ts';
 import { SpritePlayerScene } from './sprites/SpritePlayerScene.ts';
 import {
@@ -10,6 +10,8 @@ import {
   Easing,
 } from './Tween.ts';
 import type { Point } from './Tween.ts';
+import { loadSceneAssets, clearSceneAssets } from './sprites/SceneAssets.ts';
+import type { WeatherType } from './sprites/SpriteConfig.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────
 // The diamond is rendered in a 600x500 viewport with home plate near the bottom-center.
@@ -87,6 +89,10 @@ export class DiamondRenderer {
   private root: Container | null = null;
 
   // Layers
+  /** Sky backdrop — bottommost layer; shows a weather panel or gradient. */
+  private skyLayer: Container | null = null;
+  /** Stadium panorama — behind grass, above sky. */
+  private stadiumLayer: Container | null = null;
   private grassLayer: Graphics | null = null;
   private dirtLayer: Graphics | null = null;
   private lineLayer: Graphics | null = null;
@@ -97,6 +103,12 @@ export class DiamondRenderer {
   private labelLayer: Container | null = null;
   /** Particle effects layer — sits above ball/field, below UI overlays. */
   private effectsLayer: Container | null = null;
+
+  // Scene asset sprites (loaded async after init)
+  private _skySprite: Sprite | null = null;
+  private _stadiumSprite: Sprite | null = null;
+  private _scoreboardSprite: Sprite | null = null;
+  private _sceneAssetsLoaded = false;
 
   // Player scenes — procedural (always created) and sprite-based (async loaded)
   private playerScene: PlayerScene;
@@ -249,6 +261,100 @@ export class DiamondRenderer {
   }
 
   /**
+   * Load stadium background, weather sky, scoreboard, and other scene assets.
+   * Called once after initInContainer() resolves. Safe to call multiple times.
+   * Returns true on success, false if assets failed (field still renders fine).
+   */
+  async loadSceneSprites(): Promise<boolean> {
+    if (this._destroyed || this._sceneAssetsLoaded) return this._sceneAssetsLoaded;
+
+    try {
+      const assets = await loadSceneAssets();
+      if (this._destroyed) return false;
+
+      // ── Sky layer (weather backdrop, bottommost) ─────────────────────────
+      if (this.skyLayer && assets.weatherTextures.day !== undefined) {
+        const sky = new Sprite(assets.weatherTextures.day);
+        sky.x = 0;
+        sky.y = 0;
+        // Scale to fill full canvas width, top portion of viewport
+        sky.width = WIDTH;
+        // Show top ~45% of canvas for sky (the rest is covered by field)
+        sky.height = HEIGHT * 0.55;
+        this.skyLayer.addChild(sky);
+        this._skySprite = sky;
+      }
+
+      // ── Stadium panorama (behind grass) ──────────────────────────────────
+      if (this.stadiumLayer && assets.stadiumTexture !== undefined) {
+        const stadium = new Sprite(assets.stadiumTexture);
+        stadium.x = 0;
+        // Position so the wall aligns with outfield grass boundary (~y=80)
+        // The stadium image's outfield wall is roughly the bottom 25% of the image.
+        // We'll position it so its bottom ~30% overlaps the grass start zone.
+        const targetBottom = 115; // px where outfield grass begins
+        const displayH = HEIGHT * 0.40; // display height of stadium image
+        stadium.y = targetBottom - displayH;
+        stadium.width = WIDTH;
+        stadium.height = displayH;
+        stadium.alpha = 0.88; // slight transparency so it blends with field
+        this.stadiumLayer.addChild(stadium);
+        this._stadiumSprite = stadium;
+      }
+
+      // ── Scoreboard (decorative, upper outfield wall area) ────────────────
+      if (this.stadiumLayer && assets.scoreboardTexture !== undefined) {
+        const sb = new Sprite(assets.scoreboardTexture);
+        // Place scoreboard centered in upper-center of diamond, outfield-wall area
+        const sbW = 90; // ~90px wide
+        const sbH = (assets.scoreboardTexture.height / assets.scoreboardTexture.width) * sbW;
+        sb.width = sbW;
+        sb.height = sbH;
+        sb.x = WIDTH / 2 - sbW / 2;
+        sb.y = 22; // near the top (behind outfield)
+        sb.alpha = 0.92;
+        this.stadiumLayer.addChild(sb);
+        this._scoreboardSprite = sb;
+      }
+
+      this._sceneAssetsLoaded = true;
+      return true;
+    } catch (err) {
+      console.warn('[DiamondRenderer] Scene sprites failed, field still renders:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Swap the sky backdrop to a different weather type.
+   * Does nothing if scene sprites haven't loaded yet.
+   */
+  async setWeather(type: WeatherType): Promise<void> {
+    if (!this._skySprite || !this._sceneAssetsLoaded) return;
+
+    try {
+      const assets = await loadSceneAssets();
+      if (this._destroyed) return;
+      const tex = assets.weatherTextures[type];
+      if (tex) {
+        this._skySprite.texture = tex;
+      }
+    } catch {
+      // silently ignore
+    }
+  }
+
+  /** Returns the loaded SceneAssets (for PlaySequencer to use homerun/dust frames). */
+  async getSceneAssets() {
+    if (!this._sceneAssetsLoaded) return null;
+    try {
+      return await loadSceneAssets();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Toggle between sprite-based and procedural player figures at runtime.
    * Pass `true` to use sprites (if loaded), `false` for procedural vectors.
    */
@@ -288,6 +394,12 @@ export class DiamondRenderer {
     this.playerScene.destroy();
     this.spriteScene?.destroy();
     this.spriteScene = null;
+    // Clear cached scene assets (GPU textures)
+    clearSceneAssets();
+    this._skySprite = null;
+    this._stadiumSprite = null;
+    this._scoreboardSprite = null;
+    this._sceneAssetsLoaded = false;
     if (this.app) {
       // Remove Pixi's canvas from its parent container before destroying,
       // so the next Pixi instance gets a clean container div.
@@ -310,6 +422,12 @@ export class DiamondRenderer {
   private createLayers(): void {
     if (!this.root) return;
 
+    // Z-order (bottom → top):
+    //   skyLayer → stadiumLayer → grassLayer → dirtLayer → lineLayer
+    //   → baseLayer → fielderLayer → labelLayer → runnerLayer → ballLayer → effectsLayer
+
+    this.skyLayer = new Container();
+    this.stadiumLayer = new Container();
     this.grassLayer = new Graphics();
     this.dirtLayer = new Graphics();
     this.lineLayer = new Graphics();
@@ -320,16 +438,18 @@ export class DiamondRenderer {
     this.labelLayer = new Container();
     this.effectsLayer = new Container();
 
-    this.root.addChild(this.grassLayer);
-    this.root.addChild(this.dirtLayer);
-    this.root.addChild(this.lineLayer);
-    this.root.addChild(this.baseLayer);
-    this.root.addChild(this.fielderLayer);
-    this.root.addChild(this.labelLayer);
-    this.root.addChild(this.runnerLayer);
-    this.root.addChild(this.ballLayer);
+    this.root.addChild(this.skyLayer);       // 0 — sky backdrop (bottommost)
+    this.root.addChild(this.stadiumLayer);   // 1 — stadium panorama
+    this.root.addChild(this.grassLayer);     // 2
+    this.root.addChild(this.dirtLayer);      // 3
+    this.root.addChild(this.lineLayer);      // 4
+    this.root.addChild(this.baseLayer);      // 5
+    this.root.addChild(this.fielderLayer);   // 6
+    this.root.addChild(this.labelLayer);     // 7
+    this.root.addChild(this.runnerLayer);    // 8
+    this.root.addChild(this.ballLayer);      // 9
     // Effects layer above ball/field, below any UI overlays
-    this.root.addChild(this.effectsLayer);
+    this.root.addChild(this.effectsLayer);   // 10
   }
 
   // ── Field drawing ─────────────────────────────────────────────────

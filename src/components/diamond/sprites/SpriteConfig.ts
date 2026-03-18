@@ -42,6 +42,18 @@ export const SPRITE_SHEETS: Record<string, SpriteSheetConfig> = {
   fielderV2:         { url: '/sprites/fielder-v2.png',           cols: 4, rows: 3 },
   runnerV2:          { url: '/sprites/runner-v2.png',            cols: 2, rows: 4 },
   catcherUmpireV2:   { url: '/sprites/catcher-umpire-v2.png',    cols: 4, rows: 2 },
+
+  // ── Scene / environment assets ───────────────────────────────────────────
+  // stadium1.png — panoramic stadium background (NOT green-screened, use as-is)
+  stadium:           { url: '/sprites/stadium1.png',             cols: 1, rows: 1 },
+  // weather1.png — 2×2 grid: clear day, sunset, night, overcast (NOT green-screened)
+  weather:           { url: '/sprites/weather1.png',             cols: 2, rows: 2 },
+  // scoreboard.png — retro scoreboard on green (#00FF00) background (IS green-screened)
+  scoreboard:        { url: '/sprites/scoreboard.png',           cols: 1, rows: 1 },
+  // homerun1.png — 3×2 grid celebration frames on green background (IS green-screened)
+  homerunEffects:    { url: '/sprites/homerun1.png',             cols: 3, rows: 2 },
+  // dirtdust2.png — irregular dust effects on green background (IS green-screened)
+  dirtDust:          { url: '/sprites/dirtdust2.png',            cols: 1, rows: 1 },
 } as const;
 
 export type SpriteSheetKey = keyof typeof SPRITE_SHEETS;
@@ -224,4 +236,48 @@ export const CATCHER_UMP_V2_FRAMES = {
   umpireStrike:       5,
   umpireBall:         6,
   umpireOut:          7,
+} as const;
+
+// ── Environment / scene asset frame indices ─────────────────────────────────
+
+/**
+ * Frame indices into weather (2×2 grid = 4 frames, row-major).
+ * 0 = clear day (top-left), 1 = sunset (top-right),
+ * 2 = night (bottom-left), 3 = overcast (bottom-right).
+ */
+export const WEATHER_FRAMES = {
+  day:      0,
+  sunset:   1,
+  night:    2,
+  overcast: 3,
+} as const;
+
+export type WeatherType = keyof typeof WEATHER_FRAMES;
+
+/**
+ * Frame indices into homerunEffects (3×2 grid = 6 frames, row-major).
+ * 0 = gold firework, 1 = red/blue firework, 2 = confetti,
+ * 3 = star burst, 4 = crowd wave, 5 = "HOME RUN!" text.
+ */
+export const HOMERUN_EFFECT_FRAMES = {
+  goldFirework:   0,
+  colorFirework:  1,
+  confetti:       2,
+  starBurst:      3,
+  crowdWave:      4,
+  homeRunText:    5,
+} as const;
+
+/**
+ * Manually-defined crop rects for dirtdust2.png (irregular layout, NOT a grid).
+ * Each rect is [x, y, w, h] in pixels — tweak after visual inspection.
+ * These are approximate based on the described layout (scattered effects on green bg).
+ */
+export const DUST_CROP_RECTS = {
+  // Top row: small puff (top-left), medium puff (top-center), large explosion (top-right)
+  smallPuff:      { x: 0,   y: 0,   w: 200, h: 200 },
+  mediumPuff:     { x: 200, y: 0,   w: 200, h: 200 },
+  largeExplosion: { x: 400, y: 0,   w: 200, h: 200 },
+  // Middle row: dirt spray (middle-left)
+  dirtSpray:      { x: 0,   y: 200, w: 200, h: 200 },
 } as const;

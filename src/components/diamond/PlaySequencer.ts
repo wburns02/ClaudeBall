@@ -22,9 +22,13 @@ import {
   spawnStrikeoutK,
   spawnHomeRunFireworks,
 } from './effects/index.ts';
+import { Sprite, Ticker } from 'pixi.js';
+import { HOMERUN_EFFECT_FRAMES, DUST_CROP_RECTS } from './sprites/SpriteConfig.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────────────
 
+const WIDTH = 600;
+const HEIGHT = 500;
 const HOME_X = 300;
 const HOME_Y = 420;
 const MOUND_X = 300;
@@ -441,14 +445,22 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     // Fireworks celebration + horn blast
+    // Procedural particle fireworks run in parallel with sprite-based overlays
     const hrApp = this.renderer.getApp();
     if (hrApp) {
       spawnHomeRunFireworks(hrApp, 600, 500, this._fx());
     }
     soundEngine.playHomeRunHorn();
 
+    // Sprite-based celebration frames (homerun1.png: fireworks, confetti, text)
+    // Run concurrently with the delay — both start immediately after ball clears wall
+    const spriteEffectsPromise = this._playHomeRunSpriteEffects();
+
     await delay(this.dur(200));
     this.renderer.hideBall();
+
+    // Wait for sprite celebration to finish (it lasts ~2.4s)
+    await spriteEffectsPromise;
   }
 
   // ── Strikeout (~1000ms after last pitch) ──────────────────────────────────
@@ -587,8 +599,9 @@ export class PlaySequencer {
     );
     if (this._destroyed) return;
 
-    // Dust cloud where ball hits the dirt
+    // Dust cloud where ball hits the dirt (procedural + sprite overlay)
     spawnDustCloud(this.renderer.getApp()!, clampedLanding.x, clampedLanding.y, 'medium', this._fx());
+    void this._spawnSpriteDust(clampedLanding.x, clampedLanding.y, 'mediumPuff', 350);
 
     // Fielder animates (field + crow hop + throw) concurrently with ball throw
     const fielderAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
@@ -775,6 +788,168 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     await delay(this.dur(150));
+  }
+
+  // ── Sprite-based home-run celebration overlay ─────────────────────────────
+  // Shows the 6 homerun1.png frames as overlays in sequence.
+  // Frame 5 ("HOME RUN!" text) is displayed prominently center-screen for 2s.
+
+  private async _playHomeRunSpriteEffects(): Promise<void> {
+    if (this._destroyed) return;
+
+    const assets = await this.renderer.getSceneAssets();
+    if (!assets || assets.homerunFrames.length === 0) return;
+
+    const app = this.renderer.getApp();
+    const fx = this._fx();
+    if (!app || !fx) return;
+
+    const frames = assets.homerunFrames;
+    const fxKeys = Object.keys(HOMERUN_EFFECT_FRAMES) as (keyof typeof HOMERUN_EFFECT_FRAMES)[];
+
+    // Show firework frames (0–3) briefly as scattered overlays, staggered
+    const fireworkIndices = [
+      HOMERUN_EFFECT_FRAMES.goldFirework,
+      HOMERUN_EFFECT_FRAMES.colorFirework,
+      HOMERUN_EFFECT_FRAMES.confetti,
+      HOMERUN_EFFECT_FRAMES.starBurst,
+    ];
+
+    for (const idx of fireworkIndices) {
+      if (this._destroyed) return;
+      const tex = frames[idx];
+      if (!tex || tex === undefined) continue;
+
+      const sprite = new Sprite(tex);
+      // Random position in upper half of field
+      const sw = 80 + Math.random() * 60;
+      sprite.width = sw;
+      sprite.height = sw * (tex.height / tex.width);
+      sprite.x = 60 + Math.random() * (WIDTH - 180);
+      sprite.y = 30 + Math.random() * 140;
+      sprite.alpha = 0;
+      fx.addChild(sprite);
+
+      // Fade in quickly, hold, fade out
+      void this._fadeSprite(sprite, 150, 300, 250);
+      await delay(this.dur(120));
+    }
+
+    if (this._destroyed) return;
+
+    // Show "HOME RUN!" text (frame 5) prominently centered for 2 seconds
+    const textTex = frames[HOMERUN_EFFECT_FRAMES.homeRunText];
+    if (textTex) {
+      const textSprite = new Sprite(textTex);
+      const tsW = 220;
+      const tsH = tsW * (textTex.height / textTex.width);
+      textSprite.width = tsW;
+      textSprite.height = tsH;
+      textSprite.x = WIDTH / 2 - tsW / 2;
+      textSprite.y = HEIGHT / 2 - tsH / 2 - 40; // slightly above center
+      textSprite.alpha = 0;
+      fx.addChild(textSprite);
+      await this._fadeSprite(textSprite, 200, this.dur(1800), 400);
+    }
+
+    // Crowd wave (frame 4) at the top
+    if (!this._destroyed) {
+      const waveTex = frames[HOMERUN_EFFECT_FRAMES.crowdWave];
+      if (waveTex) {
+        const wave = new Sprite(waveTex);
+        wave.width = WIDTH;
+        wave.height = 60;
+        wave.x = 0;
+        wave.y = 0;
+        wave.alpha = 0;
+        fx.addChild(wave);
+        void this._fadeSprite(wave, 300, this.dur(1200), 500);
+      }
+    }
+
+    // Wait for "HOME RUN!" text to finish
+    await delay(this.dur(2400));
+    void fxKeys; // satisfy lint (used for type narrowing above)
+  }
+
+  /** Fade a sprite in → hold → fade out, then destroy it. Non-blocking helper. */
+  private async _fadeSprite(
+    sprite: Sprite,
+    fadeInMs: number,
+    holdMs: number,
+    fadeOutMs: number,
+  ): Promise<void> {
+    // Fade in
+    await this._animateAlpha(sprite, 0, 1, fadeInMs);
+    if (this._destroyed || sprite.destroyed) return;
+    // Hold
+    await delay(holdMs);
+    if (this._destroyed || sprite.destroyed) return;
+    // Fade out
+    await this._animateAlpha(sprite, 1, 0, fadeOutMs);
+    if (!sprite.destroyed && sprite.parent) {
+      sprite.parent.removeChild(sprite);
+      sprite.destroy();
+    }
+  }
+
+  private _animateAlpha(
+    target: { alpha: number; destroyed?: boolean },
+    from: number,
+    to: number,
+    durationMs: number,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      let elapsed = 0;
+      target.alpha = from;
+      const onTick = (ticker: Ticker) => {
+        if (this._destroyed || (target.destroyed)) {
+          Ticker.shared.remove(onTick);
+          resolve();
+          return;
+        }
+        elapsed += ticker.deltaMS;
+        const t = Math.min(elapsed / Math.max(1, durationMs), 1);
+        target.alpha = from + (to - from) * t;
+        if (t >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+      Ticker.shared.add(onTick);
+    });
+  }
+
+  // ── Sprite-based dust overlay ─────────────────────────────────────────────
+  // Shows a dust sprite from dirtdust2.png at (x, y) and fades it out.
+
+  private async _spawnSpriteDust(
+    x: number,
+    y: number,
+    dustKey: keyof typeof DUST_CROP_RECTS = 'mediumPuff',
+    holdMs = 350,
+  ): Promise<void> {
+    if (this._destroyed) return;
+
+    const assets = await this.renderer.getSceneAssets();
+    if (!assets) return;
+
+    const tex = assets.dustTextures[dustKey];
+    if (!tex) return;
+
+    const fx = this._fx();
+    if (!fx) return;
+
+    const sprite = new Sprite(tex);
+    const sw = 50;
+    sprite.width = sw;
+    sprite.height = sw * (tex.height / Math.max(1, tex.width));
+    sprite.x = x - sw / 2;
+    sprite.y = y - sprite.height / 2;
+    sprite.alpha = 0;
+    fx.addChild(sprite);
+
+    void this._fadeSprite(sprite, 80, holdMs, 300);
   }
 }
 

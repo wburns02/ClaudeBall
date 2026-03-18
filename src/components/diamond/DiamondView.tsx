@@ -73,6 +73,10 @@ export function DiamondView({
 
     renderer.initInContainer(container, w, h)
       .then(async () => {
+        // Load scene/environment assets (stadium, weather, scoreboard) — non-blocking
+        // Fire-and-forget: scene renders fine without them, they just layer on top.
+        void renderer.loadSceneSprites();
+
         if (preferSprites) {
           const loaded = await renderer.loadSprites();
           setSpriteStatus(loaded ? 'sprites' : 'procedural');
