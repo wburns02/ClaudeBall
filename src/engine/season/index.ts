@@ -6,3 +6,7 @@ export { QuickSimEngine } from './QuickSimEngine.ts';
 export type { QuickSimResult } from './QuickSimEngine.ts';
 export { SeasonEngine } from './SeasonEngine.ts';
 export type { SeasonState } from './SeasonEngine.ts';
+export { PlayoffBracket, determinePlayoffQualifiers } from './PlayoffBracket.ts';
+export type { SeriesMatchup, PlayoffQualifier } from './PlayoffBracket.ts';
+export { OffseasonEngine } from './OffseasonEngine.ts';
+export type { Award, RetirementInfo, OffseasonResult } from './OffseasonEngine.ts';

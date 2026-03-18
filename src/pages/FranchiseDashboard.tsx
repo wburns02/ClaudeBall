@@ -10,7 +10,7 @@ import { cn } from '@/lib/cn.ts';
 
 export function FranchiseDashboard() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, isInitialized, advanceDay, simDays } = useFranchiseStore();
+  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs } = useFranchiseStore();
 
   useEffect(() => {
     if (!isInitialized) navigate('/franchise/new');
@@ -36,6 +36,19 @@ export function FranchiseDashboard() {
 
   const handleSimWeek = () => simDays(7);
 
+  const isRegularSeason = season.phase === 'regular' || season.phase === 'preseason';
+  const isPostseason = season.phase === 'postseason';
+  const isOffseason = season.phase === 'offseason';
+
+  const handleStartPlayoffs = () => {
+    startPlayoffs();
+    navigate('/franchise/playoffs');
+  };
+
+  const regularSeasonComplete =
+    season.phase === 'postseason' ||
+    (season.currentDay >= season.totalDays && season.schedule.every(g => g.played));
+
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -46,9 +59,19 @@ export function FranchiseDashboard() {
           </h1>
           <p className="font-mono text-cream-dim text-sm mt-1">
             Day {season.currentDay} of {season.totalDays} — {season.year} Season
+            {' '}
+            <span className={cn(
+              'uppercase text-xs font-bold ml-1 px-1.5 py-0.5 rounded',
+              season.phase === 'regular' && 'bg-green-light/10 text-green-light',
+              season.phase === 'preseason' && 'bg-cream-dim/10 text-cream-dim',
+              season.phase === 'postseason' && 'bg-gold/10 text-gold',
+              season.phase === 'offseason' && 'bg-navy-lighter text-cream-dim',
+            )}>
+              {season.phase}
+            </span>
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/standings')}>
             Standings
           </Button>
@@ -61,6 +84,16 @@ export function FranchiseDashboard() {
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/free-agency')}>
             FA
           </Button>
+          {(isPostseason || regularSeasonComplete) && (
+            <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/playoffs')}>
+              Playoffs
+            </Button>
+          )}
+          {isOffseason && (
+            <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/offseason')}>
+              Offseason
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={() => navigate('/')}>
             Menu
           </Button>
@@ -105,15 +138,48 @@ export function FranchiseDashboard() {
         {/* Actions */}
         <Panel title="Actions">
           <div className="space-y-2">
-            <Button className="w-full" onClick={handleAdvance}>
-              Advance Day {season.currentDay + 1}
-            </Button>
-            <Button className="w-full" variant="secondary" onClick={handleSimWeek}>
-              Sim 7 Days
-            </Button>
-            <Button className="w-full" variant="secondary" onClick={() => simDays(30)}>
-              Sim 30 Days
-            </Button>
+            {isRegularSeason && (
+              <>
+                <Button className="w-full" onClick={handleAdvance}>
+                  Advance Day {season.currentDay + 1}
+                </Button>
+                <Button className="w-full" variant="secondary" onClick={handleSimWeek}>
+                  Sim 7 Days
+                </Button>
+                <Button className="w-full" variant="secondary" onClick={() => simDays(30)}>
+                  Sim 30 Days
+                </Button>
+                {season.currentDay >= season.totalDays - 7 && (
+                  <Button className="w-full" variant="secondary" onClick={() => simDays(183)}>
+                    Finish Season
+                  </Button>
+                )}
+              </>
+            )}
+            {(season.phase === 'postseason' || regularSeasonComplete) && !isOffseason && (
+              <>
+                <Button
+                  className="w-full"
+                  onClick={handleStartPlayoffs}
+                  data-testid="start-playoffs-btn"
+                >
+                  Go to Playoffs
+                </Button>
+              </>
+            )}
+            {isOffseason && (
+              <>
+                <Button className="w-full" onClick={() => navigate('/franchise/offseason')}>
+                  Offseason Hub
+                </Button>
+                <Button className="w-full" variant="secondary" onClick={() => navigate('/franchise/draft')}>
+                  Draft Room
+                </Button>
+                <Button className="w-full" variant="secondary" onClick={() => navigate('/franchise/free-agency')}>
+                  Free Agency
+                </Button>
+              </>
+            )}
           </div>
         </Panel>
 
@@ -141,6 +207,39 @@ export function FranchiseDashboard() {
         )}
       </div>
 
+      {/* Postseason / Offseason banners */}
+      {isPostseason && season.playoffBracket && (
+        <div className="mt-4 p-4 rounded-lg border border-gold/40 bg-gold/5 flex items-center justify-between">
+          <div>
+            <p className="font-display text-gold text-lg">Postseason</p>
+            <p className="font-mono text-cream-dim text-sm">
+              {season.playoffBracket.isComplete()
+                ? `Champion: ${engine.getTeam(season.playoffBracket.getChampion() ?? '')?.name ?? '—'}`
+                : `Current round: ${season.playoffBracket.getCurrentRound()}`
+              }
+            </p>
+          </div>
+          <Button onClick={() => navigate('/franchise/playoffs')}>View Bracket</Button>
+        </div>
+      )}
+
+      {isOffseason && (
+        <div className="mt-4 p-4 rounded-lg border border-navy-lighter bg-navy-light/50 flex items-center justify-between">
+          <div>
+            <p className="font-display text-cream text-lg">Offseason</p>
+            <p className="font-mono text-cream-dim text-sm">
+              {season.offseasonAwards?.length
+                ? `${season.offseasonAwards.length} awards given — ${season.offseasonRetirements?.length ?? 0} retirements`
+                : 'Prepare for next season'
+              }
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => navigate('/franchise/offseason')}>
+            Offseason Hub
+          </Button>
+        </div>
+      )}
+
       {/* Recent & Upcoming */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
         <Panel title="Recent Results">
@@ -167,7 +266,9 @@ export function FranchiseDashboard() {
 
         <Panel title="Upcoming">
           {upcoming.length === 0 ? (
-            <p className="text-cream-dim text-sm font-mono">No upcoming games</p>
+            <p className="text-cream-dim text-sm font-mono">
+              {isRegularSeason ? 'No upcoming games' : 'Regular season complete'}
+            </p>
           ) : (
             <div className="space-y-1 font-mono text-sm">
               {upcoming.map(g => {

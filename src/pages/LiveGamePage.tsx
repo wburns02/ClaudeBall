@@ -10,6 +10,7 @@ import { GameEngine } from '@/engine/core/GameEngine.ts';
 import { getSampleTeams } from '@/engine/data/sampleTeams.ts';
 import { getNeutralBallpark } from '@/engine/data/ballparks.ts';
 import type { GameState, GameEvent } from '@/engine/types/index.ts';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.ts';
 
 export function LiveGamePage() {
   const navigate = useNavigate();
@@ -104,6 +105,15 @@ export function LiveGamePage() {
       logRef.current.scrollTop = logRef.current.scrollHeight;
     }
   }, [events]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onNextAtBat: nextAtBat,
+    onAutoPlay: handleAutoPlay,
+    onSimToEnd: handleSimToEnd,
+    onSpeedSelect: setSpeed,
+    onEscape: () => navigate('/'),
+  });
 
   if (!gameState) return null;
 

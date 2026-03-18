@@ -4,6 +4,10 @@ import { QuickSimEngine } from './QuickSimEngine.ts';
 import { ScheduleGenerator } from './ScheduleGenerator.ts';
 import type { ScheduledGame } from './ScheduleGenerator.ts';
 import { StandingsTracker } from './StandingsTracker.ts';
+import { PlayoffBracket, determinePlayoffQualifiers } from './PlayoffBracket.ts';
+import type { SeriesMatchup, PlayoffQualifier } from './PlayoffBracket.ts';
+import { OffseasonEngine } from './OffseasonEngine.ts';
+import type { Award, RetirementInfo } from './OffseasonEngine.ts';
 
 export interface SeasonState {
   year: number;
@@ -13,10 +17,16 @@ export interface SeasonState {
   standings: StandingsTracker;
   userTeamId: string;
   phase: 'preseason' | 'regular' | 'postseason' | 'offseason';
+  // Postseason state
+  playoffBracket?: PlayoffBracket;
+  playoffQualifiers?: PlayoffQualifier[];
+  // Offseason state
+  offseasonAwards?: Award[];
+  offseasonRetirements?: RetirementInfo[];
 }
 
 /**
- * Manages an entire season: schedule, simulation, standings.
+ * Manages an entire season: schedule, simulation, standings, playoffs, offseason.
  */
 export class SeasonEngine {
   private state: SeasonState;
@@ -28,6 +38,7 @@ export class SeasonEngine {
     teams: Team[],
     leagueStructure: Record<string, Record<string, string[]>>,
     userTeamId: string,
+    year: number = 2026,
     seed: number = Date.now()
   ) {
     this.rng = new RandomProvider(seed);
@@ -37,7 +48,7 @@ export class SeasonEngine {
     const schedule = ScheduleGenerator.generate(leagueStructure, this.rng);
 
     this.state = {
-      year: 2026,
+      year,
       currentDay: 0,
       totalDays: 183,
       schedule,
@@ -67,13 +78,13 @@ export class SeasonEngine {
 
       if (isUserGame) {
         userGame = game;
-        continue; // Don't auto-sim user games
+        continue;
       }
 
       this.simGame(game);
     }
 
-    // Check if season is over
+    // Check if regular season is over
     if (this.state.currentDay >= this.state.totalDays) {
       const remaining = this.state.schedule.filter(g => !g.played);
       if (remaining.length === 0 || remaining.every(g =>
@@ -128,6 +139,86 @@ export class SeasonEngine {
         this.simGame(game);
       }
     }
+
+    // Auto-transition to postseason after simming past end
+    if (this.state.currentDay >= this.state.totalDays && this.state.phase === 'regular') {
+      this.state.phase = 'postseason';
+    }
+  }
+
+  /** Sim remaining regular season days entirely */
+  simRemainingSeason(): void {
+    this.simDays(this.state.totalDays - this.state.currentDay + 1);
+  }
+
+  /** Start playoffs — determine qualifiers and build bracket */
+  startPlayoffs(): PlayoffBracket {
+    // Sim any remaining regular season games
+    if (this.state.currentDay < this.state.totalDays) {
+      this.simRemainingSeason();
+    }
+
+    const qualifiers = determinePlayoffQualifiers(
+      this.leagueStructure,
+      (teamId) => this.state.standings.getRecord(teamId)
+    );
+
+    const allTeams = Array.from(this.teams.values());
+    const bracket = new PlayoffBracket(qualifiers, allTeams, this.rng);
+
+    this.state.playoffBracket = bracket;
+    this.state.playoffQualifiers = qualifiers;
+    this.state.phase = 'postseason';
+
+    return bracket;
+  }
+
+  /** Simulate the next playoff round */
+  simPlayoffRound(): SeriesMatchup[] {
+    if (!this.state.playoffBracket) return [];
+    const results = this.state.playoffBracket.advanceRound();
+
+    if (this.state.playoffBracket.isComplete()) {
+      this.state.phase = 'offseason';
+    }
+
+    return results;
+  }
+
+  /** Start offseason — generate awards, age players, handle retirements */
+  startOffseason(): void {
+    const allTeams = Array.from(this.teams.values());
+    const standingsMap = new Map(
+      allTeams.map(t => [t.id, this.state.standings.getRecord(t.id)!])
+    );
+
+    const awards = OffseasonEngine.generateAwards(standingsMap, allTeams, this.leagueStructure);
+    const result = OffseasonEngine.runOffseason(allTeams, this.rng);
+
+    this.state.offseasonAwards = awards;
+    this.state.offseasonRetirements = result.retirements;
+    this.state.phase = 'offseason';
+  }
+
+  /** Advance to next year — rebuild schedule, reset standings */
+  advanceToNextYear(): void {
+    const allTeams = Array.from(this.teams.values());
+
+    // Rebuild teams map (rosters may have changed due to retirements)
+    this.teams = new Map(allTeams.map(t => [t.id, t]));
+
+    const newYear = this.state.year + 1;
+    const newSchedule = ScheduleGenerator.generate(this.leagueStructure, this.rng);
+
+    this.state = {
+      year: newYear,
+      currentDay: 0,
+      totalDays: 183,
+      schedule: newSchedule,
+      standings: new StandingsTracker(this.leagueStructure),
+      userTeamId: this.state.userTeamId,
+      phase: 'preseason',
+    };
   }
 
   /** Get games for a specific day */
@@ -151,6 +242,18 @@ export class SeasonEngine {
 
   getTeam(id: string): Team | undefined {
     return this.teams.get(id);
+  }
+
+  getAllTeams(): Team[] {
+    return Array.from(this.teams.values());
+  }
+
+  getLeagueStructure(): Record<string, Record<string, string[]>> {
+    return this.leagueStructure;
+  }
+
+  getRng(): RandomProvider {
+    return this.rng;
   }
 
   private isSameDivision(teamA: string, teamB: string): boolean {

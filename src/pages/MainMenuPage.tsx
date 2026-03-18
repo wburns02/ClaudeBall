@@ -40,19 +40,28 @@ export function MainMenuPage() {
             </Button>
 
             <div className="space-y-2 pt-4">
+              <Button
+                variant="secondary"
+                size="md"
+                className="w-64 border-gold/30 hover:border-gold/60"
+                onClick={() => navigate('/career/new')}
+                data-testid="be-a-player-btn"
+              >
+                ⚾ Be A Player
+              </Button>
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/franchise/new')}>
                 New Franchise
               </Button>
-              <Button variant="secondary" size="md" className="w-64" disabled>
-                Load Game
+              <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/saves')}>
+                Save / Load
               </Button>
-              <Button variant="secondary" size="md" className="w-64" disabled>
+              <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/settings')}>
                 Settings
               </Button>
             </div>
 
             <p className="text-cream-dim/50 text-xs font-mono mt-4">
-              Sprints 1-3
+              Sprints 1-8
             </p>
           </div>
         </Panel>

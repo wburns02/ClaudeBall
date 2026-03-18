@@ -8,7 +8,14 @@ import { NewFranchisePage } from '@/pages/NewFranchisePage.tsx';
 import { RosterPage } from '@/pages/RosterPage.tsx';
 import { TradePage } from '@/pages/TradePage.tsx';
 import { FreeAgencyPage } from '@/pages/FreeAgencyPage.tsx';
-import { ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
+import { PlayoffsPage } from '@/pages/PlayoffsPage.tsx';
+import { OffseasonPage } from '@/pages/OffseasonPage.tsx';
+import { DraftPage } from '@/pages/DraftPage.tsx';
+import { SettingsPage } from '@/pages/SettingsPage.tsx';
+import { SaveLoadPage } from '@/pages/SaveLoadPage.tsx';
+import { CreatePlayerPage } from '@/pages/CreatePlayerPage.tsx';
+import { CareerDashboardPage } from '@/pages/CareerDashboardPage.tsx';
+import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -19,7 +26,7 @@ const TEAM_OPTIONS = (() => {
       for (const id of ids) {
         if (seen.has(id)) continue;
         seen.add(id);
-        const t = ALL_TEAMS.find(tm => tm.id === id);
+        const t = ALL_TEAMS.find((tm: typeof ALL_TEAMS[number]) => tm.id === id);
         if (t) opts.push({ id: t.id, city: t.city, name: t.name, abbreviation: t.abbreviation, primaryColor: t.primaryColor, league, division });
       }
     }
@@ -40,6 +47,13 @@ function App() {
         <Route path="/franchise/roster" element={<RosterPage />} />
         <Route path="/franchise/trade" element={<TradePage />} />
         <Route path="/franchise/free-agency" element={<FreeAgencyPage />} />
+        <Route path="/franchise/playoffs" element={<PlayoffsPage />} />
+        <Route path="/franchise/offseason" element={<OffseasonPage />} />
+        <Route path="/franchise/draft" element={<DraftPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/saves" element={<SaveLoadPage />} />
+        <Route path="/career/new" element={<CreatePlayerPage />} />
+        <Route path="/career" element={<CareerDashboardPage />} />
       </Routes>
     </BrowserRouter>
   );
