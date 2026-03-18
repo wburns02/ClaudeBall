@@ -31,8 +31,16 @@ export function MainMenuPage() {
               Quick Test Game
             </Button>
 
+            <Button
+              size="lg"
+              className="w-64"
+              onClick={() => navigate('/game/live')}
+            >
+              Quick Game
+            </Button>
+
             <div className="space-y-2 pt-4">
-              <Button variant="secondary" size="md" className="w-64" disabled>
+              <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/franchise/new')}>
                 New Franchise
               </Button>
               <Button variant="secondary" size="md" className="w-64" disabled>
@@ -44,7 +52,7 @@ export function MainMenuPage() {
             </div>
 
             <p className="text-cream-dim/50 text-xs font-mono mt-4">
-              Sprint 1 — Engine + Test Harness
+              Sprints 1-3
             </p>
           </div>
         </Panel>

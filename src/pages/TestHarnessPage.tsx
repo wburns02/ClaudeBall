@@ -12,6 +12,7 @@ import { getNeutralBallpark } from '@/engine/data/ballparks.ts';
 import type { GameState, GameEvent } from '@/engine/types/index.ts';
 import { fmt3, fmt2 } from '@/engine/util/helpers.ts';
 import { cn } from '@/lib/cn.ts';
+import { DiamondView, baseStateToBools } from '@/components/diamond/DiamondView.tsx';
 
 type Tab = 'single' | 'bulk' | 'pitch';
 
@@ -259,6 +260,14 @@ function PitchByPitchTab() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" data-testid="pbp-dashboard">
           {/* Game Info */}
           <div className="lg:col-span-2 space-y-4">
+            {/* Diamond Renderer */}
+            <DiamondView
+              bases={baseStateToBools(state.inning.bases)}
+              events={events}
+              width={600}
+              height={500}
+            />
+
             <Panel title="Line Score">
               <LineScore game={state} />
             </Panel>
