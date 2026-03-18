@@ -36,6 +36,7 @@ function fractionToAccuracy(yFraction: number): number {
 
 export function AccuracyMeter({ speed, onComplete, active }: AccuracyMeterProps) {
   const [markerY, setMarkerY] = useState(0); // 0 = top, METER_HEIGHT = bottom
+  const markerYRef = useRef(0); // mirror of markerY for use in callbacks
   const directionRef = useRef<1 | -1>(1);
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number | null>(null);
@@ -89,6 +90,7 @@ export function AccuracyMeter({ speed, onComplete, active }: AccuracyMeterProps)
           next = 0;
           directionRef.current = 1;
         }
+        markerYRef.current = next;
         return next;
       });
 
@@ -102,11 +104,8 @@ export function AccuracyMeter({ speed, onComplete, active }: AccuracyMeterProps)
       if (!completedRef.current) {
         completedRef.current = true;
         cancelAnimationFrame(animFrameRef.current);
-        setMarkerY(prev => {
-          const yFraction = prev / (METER_HEIGHT - MARKER_HEIGHT);
-          onComplete(fractionToAccuracy(yFraction));
-          return prev;
-        });
+        const yFraction = markerYRef.current / (METER_HEIGHT - MARKER_HEIGHT);
+        onComplete(fractionToAccuracy(yFraction));
       }
     }, AUTO_RESOLVE_MS);
 

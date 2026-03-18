@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { SprintCTestPage } from '@/SprintCTestPage.tsx';
 import { MainMenuPage } from '@/pages/MainMenuPage.tsx';
 import { TestHarnessPage } from '@/pages/TestHarnessPage.tsx';
 import { LiveGamePage } from '@/pages/LiveGamePage.tsx';
@@ -42,6 +43,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainMenuPage />} />
         <Route path="/test" element={<TestHarnessPage />} />
+        <Route path="/sprint-c" element={<SprintCTestPage />} />
         <Route path="/game/live" element={<LiveGamePage />} />
         <Route path="/franchise/new" element={<NewFranchisePage teamOptions={TEAM_OPTIONS} allTeams={ALL_TEAMS} leagueStructure={LEAGUE_STRUCTURE} />} />
         <Route path="/franchise" element={<FranchiseDashboard />} />
