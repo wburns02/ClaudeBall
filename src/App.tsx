@@ -1,37 +1,50 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { SprintCTestPage } from '@/SprintCTestPage.tsx';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { ToastContainer } from '@/components/ui/Toast.tsx';
+import { SplashScreen } from '@/components/ui/SplashScreen.tsx';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner.tsx';
+import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
+import { FranchiseLayout } from '@/components/layout/FranchiseLayout.tsx';
+import { MainLayout } from '@/components/layout/MainLayout.tsx';
+import { GameLayout } from '@/components/layout/GameLayout.tsx';
+
+// Eager-load critical path pages
 import { MainMenuPage } from '@/pages/MainMenuPage.tsx';
 import { TestHarnessPage } from '@/pages/TestHarnessPage.tsx';
 import { LiveGamePage } from '@/pages/LiveGamePage.tsx';
-import { FranchiseDashboard } from '@/pages/FranchiseDashboard.tsx';
-import { StandingsPage } from '@/pages/StandingsPage.tsx';
 import { NewFranchisePage } from '@/pages/NewFranchisePage.tsx';
-import { RosterPage } from '@/pages/RosterPage.tsx';
-import { TradePage } from '@/pages/TradePage.tsx';
-import { FreeAgencyPage } from '@/pages/FreeAgencyPage.tsx';
-import { PlayoffsPage } from '@/pages/PlayoffsPage.tsx';
-import { OffseasonPage } from '@/pages/OffseasonPage.tsx';
-import { DraftPage } from '@/pages/DraftPage.tsx';
-import { SettingsPage } from '@/pages/SettingsPage.tsx';
-import { SaveLoadPage } from '@/pages/SaveLoadPage.tsx';
-import { CreatePlayerPage } from '@/pages/CreatePlayerPage.tsx';
-import { CreatePlayerPage2 } from '@/pages/CreatePlayerPage2.tsx';
-import { PlayerEditorPage } from '@/pages/PlayerEditorPage.tsx';
-import { TeamEditorPage } from '@/pages/TeamEditorPage.tsx';
-import { RosterManagerPage } from '@/pages/RosterManagerPage.tsx';
-import { CustomLeaguePage } from '@/pages/CustomLeaguePage.tsx';
-import { CareerDashboardPage } from '@/pages/CareerDashboardPage.tsx';
-import { HistoricalPage } from '@/pages/HistoricalPage.tsx';
-import { FantasyDraftPage } from '@/pages/FantasyDraftPage.tsx';
-import { LeagueLeadersPage } from '@/pages/LeagueLeadersPage.tsx';
-import { PlayerStatsPage } from '@/pages/PlayerStatsPage.tsx';
-import { TeamStatsPage } from '@/pages/TeamStatsPage.tsx';
-import { RecordsPage } from '@/pages/RecordsPage.tsx';
-import { InjuryReportPage } from '@/pages/InjuryReportPage.tsx';
-import { MinorLeaguePage } from '@/pages/MinorLeaguePage.tsx';
-import { TradeHistoryPage } from '@/pages/TradeHistoryPage.tsx';
-import { WaiverWirePage } from '@/pages/WaiverWirePage.tsx';
-import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
+import { ExhibitionSetupPage } from '@/pages/ExhibitionSetupPage.tsx';
+import { QuickPlayPage } from '@/pages/QuickPlayPage.tsx';
+
+// Lazy-load heavier pages
+const SprintCTestPage = lazy(() => import('@/SprintCTestPage.tsx').then(m => ({ default: m.SprintCTestPage })));
+const FranchiseDashboard = lazy(() => import('@/pages/FranchiseDashboard.tsx').then(m => ({ default: m.FranchiseDashboard })));
+const StandingsPage = lazy(() => import('@/pages/StandingsPage.tsx').then(m => ({ default: m.StandingsPage })));
+const RosterPage = lazy(() => import('@/pages/RosterPage.tsx').then(m => ({ default: m.RosterPage })));
+const TradePage = lazy(() => import('@/pages/TradePage.tsx').then(m => ({ default: m.TradePage })));
+const FreeAgencyPage = lazy(() => import('@/pages/FreeAgencyPage.tsx').then(m => ({ default: m.FreeAgencyPage })));
+const PlayoffsPage = lazy(() => import('@/pages/PlayoffsPage.tsx').then(m => ({ default: m.PlayoffsPage })));
+const OffseasonPage = lazy(() => import('@/pages/OffseasonPage.tsx').then(m => ({ default: m.OffseasonPage })));
+const DraftPage = lazy(() => import('@/pages/DraftPage.tsx').then(m => ({ default: m.DraftPage })));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage.tsx').then(m => ({ default: m.SettingsPage })));
+const SaveLoadPage = lazy(() => import('@/pages/SaveLoadPage.tsx').then(m => ({ default: m.SaveLoadPage })));
+const CreatePlayerPage = lazy(() => import('@/pages/CreatePlayerPage.tsx').then(m => ({ default: m.CreatePlayerPage })));
+const CreatePlayerPage2 = lazy(() => import('@/pages/CreatePlayerPage2.tsx').then(m => ({ default: m.CreatePlayerPage2 })));
+const PlayerEditorPage = lazy(() => import('@/pages/PlayerEditorPage.tsx').then(m => ({ default: m.PlayerEditorPage })));
+const TeamEditorPage = lazy(() => import('@/pages/TeamEditorPage.tsx').then(m => ({ default: m.TeamEditorPage })));
+const RosterManagerPage = lazy(() => import('@/pages/RosterManagerPage.tsx').then(m => ({ default: m.RosterManagerPage })));
+const CustomLeaguePage = lazy(() => import('@/pages/CustomLeaguePage.tsx').then(m => ({ default: m.CustomLeaguePage })));
+const CareerDashboardPage = lazy(() => import('@/pages/CareerDashboardPage.tsx').then(m => ({ default: m.CareerDashboardPage })));
+const HistoricalPage = lazy(() => import('@/pages/HistoricalPage.tsx').then(m => ({ default: m.HistoricalPage })));
+const FantasyDraftPage = lazy(() => import('@/pages/FantasyDraftPage.tsx').then(m => ({ default: m.FantasyDraftPage })));
+const LeagueLeadersPage = lazy(() => import('@/pages/LeagueLeadersPage.tsx').then(m => ({ default: m.LeagueLeadersPage })));
+const PlayerStatsPage = lazy(() => import('@/pages/PlayerStatsPage.tsx').then(m => ({ default: m.PlayerStatsPage })));
+const TeamStatsPage = lazy(() => import('@/pages/TeamStatsPage.tsx').then(m => ({ default: m.TeamStatsPage })));
+const RecordsPage = lazy(() => import('@/pages/RecordsPage.tsx').then(m => ({ default: m.RecordsPage })));
+const InjuryReportPage = lazy(() => import('@/pages/InjuryReportPage.tsx').then(m => ({ default: m.InjuryReportPage })));
+const MinorLeaguePage = lazy(() => import('@/pages/MinorLeaguePage.tsx').then(m => ({ default: m.MinorLeaguePage })));
+const TradeHistoryPage = lazy(() => import('@/pages/TradeHistoryPage.tsx').then(m => ({ default: m.TradeHistoryPage })));
+const WaiverWirePage = lazy(() => import('@/pages/WaiverWirePage.tsx').then(m => ({ default: m.WaiverWirePage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -50,47 +63,105 @@ const TEAM_OPTIONS = (() => {
   return opts;
 })();
 
-function App() {
+/** Fade wrapper — re-mounts on location change, triggering CSS animation */
+function FadeWrapper({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainMenuPage />} />
-        <Route path="/test" element={<TestHarnessPage />} />
-        <Route path="/sprint-c" element={<SprintCTestPage />} />
-        <Route path="/game/live" element={<LiveGamePage />} />
-        <Route path="/franchise/new" element={<NewFranchisePage teamOptions={TEAM_OPTIONS} allTeams={ALL_TEAMS} leagueStructure={LEAGUE_STRUCTURE} />} />
-        <Route path="/franchise" element={<FranchiseDashboard />} />
-        <Route path="/franchise/standings" element={<StandingsPage />} />
-        <Route path="/franchise/roster" element={<RosterPage />} />
-        <Route path="/franchise/trade" element={<TradePage />} />
-        <Route path="/franchise/free-agency" element={<FreeAgencyPage />} />
-        <Route path="/franchise/playoffs" element={<PlayoffsPage />} />
-        <Route path="/franchise/offseason" element={<OffseasonPage />} />
-        <Route path="/franchise/draft" element={<DraftPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/saves" element={<SaveLoadPage />} />
-        <Route path="/career/new" element={<CreatePlayerPage />} />
-        <Route path="/career" element={<CareerDashboardPage />} />
-        <Route path="/historical" element={<HistoricalPage />} />
-        <Route path="/historical/draft" element={<FantasyDraftPage />} />
-        {/* Player & team customization */}
-        <Route path="/franchise/player/:playerId" element={<PlayerEditorPage />} />
-        <Route path="/franchise/create-player" element={<CreatePlayerPage2 />} />
-        <Route path="/franchise/team/:teamId" element={<TeamEditorPage />} />
-        <Route path="/franchise/roster-manager" element={<RosterManagerPage />} />
-        <Route path="/franchise/custom-league" element={<CustomLeaguePage />} />
-        {/* Deep Season Features */}
-        <Route path="/franchise/injuries" element={<InjuryReportPage />} />
-        <Route path="/franchise/minors" element={<MinorLeaguePage />} />
-        <Route path="/franchise/trade-history" element={<TradeHistoryPage />} />
-        <Route path="/franchise/waivers" element={<WaiverWirePage />} />
-        {/* Stats & Analytics */}
-        <Route path="/franchise/leaders" element={<LeagueLeadersPage />} />
-        <Route path="/franchise/player-stats/:playerId" element={<PlayerStatsPage />} />
-        <Route path="/franchise/team-stats/:teamId" element={<TeamStatsPage />} />
-        <Route path="/franchise/records" element={<RecordsPage />} />
-      </Routes>
-    </BrowserRouter>
+    <div
+      key={location.pathname}
+      style={{ animation: 'routeFadeIn 0.2s ease-out' }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Page-level loading fallback */
+function PageFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner size="lg" text="Loading..." />
+    </div>
+  );
+}
+
+function AppRoutes() {
+  return (
+    <FadeWrapper>
+      <Suspense fallback={<PageFallback />}>
+        <Routes>
+          {/* ── Main / non-franchise routes ─────────────────────────── */}
+          <Route path="/" element={<MainLayout><MainMenuPage /></MainLayout>} />
+          <Route path="/test" element={<MainLayout><TestHarnessPage /></MainLayout>} />
+          <Route path="/sprint-c" element={<MainLayout><SprintCTestPage /></MainLayout>} />
+          <Route path="/career" element={<MainLayout><CareerDashboardPage /></MainLayout>} />
+          <Route path="/career/new" element={<MainLayout><CreatePlayerPage /></MainLayout>} />
+          <Route path="/historical" element={<MainLayout><HistoricalPage /></MainLayout>} />
+          <Route path="/historical/draft" element={<MainLayout><FantasyDraftPage /></MainLayout>} />
+          <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
+          <Route path="/saves" element={<MainLayout><SaveLoadPage /></MainLayout>} />
+
+          {/* ── Live game routes (minimal GameLayout) ───────────────── */}
+          <Route path="/game/live" element={<GameLayout><LiveGamePage /></GameLayout>} />
+          <Route path="/game/setup" element={<MainLayout><ExhibitionSetupPage /></MainLayout>} />
+          <Route path="/game/quick" element={<MainLayout><QuickPlayPage /></MainLayout>} />
+
+          {/* ── New franchise setup (no sidebar yet) ────────────────── */}
+          <Route
+            path="/franchise/new"
+            element={
+              <MainLayout>
+                <NewFranchisePage teamOptions={TEAM_OPTIONS} allTeams={ALL_TEAMS} leagueStructure={LEAGUE_STRUCTURE} />
+              </MainLayout>
+            }
+          />
+
+          {/* ── Franchise routes (with sidebar) ─────────────────────── */}
+          <Route path="/franchise" element={<FranchiseLayout><FranchiseDashboard /></FranchiseLayout>} />
+          <Route path="/franchise/standings" element={<FranchiseLayout><StandingsPage /></FranchiseLayout>} />
+          <Route path="/franchise/roster" element={<FranchiseLayout><RosterPage /></FranchiseLayout>} />
+          <Route path="/franchise/trade" element={<FranchiseLayout><TradePage /></FranchiseLayout>} />
+          <Route path="/franchise/free-agency" element={<FranchiseLayout><FreeAgencyPage /></FranchiseLayout>} />
+          <Route path="/franchise/playoffs" element={<FranchiseLayout><PlayoffsPage /></FranchiseLayout>} />
+          <Route path="/franchise/offseason" element={<FranchiseLayout><OffseasonPage /></FranchiseLayout>} />
+          <Route path="/franchise/draft" element={<FranchiseLayout><DraftPage /></FranchiseLayout>} />
+          <Route path="/franchise/roster-manager" element={<FranchiseLayout><RosterManagerPage /></FranchiseLayout>} />
+          <Route path="/franchise/custom-league" element={<FranchiseLayout><CustomLeaguePage /></FranchiseLayout>} />
+          <Route path="/franchise/injuries" element={<FranchiseLayout><InjuryReportPage /></FranchiseLayout>} />
+          <Route path="/franchise/minors" element={<FranchiseLayout><MinorLeaguePage /></FranchiseLayout>} />
+          <Route path="/franchise/trade-history" element={<FranchiseLayout><TradeHistoryPage /></FranchiseLayout>} />
+          <Route path="/franchise/waivers" element={<FranchiseLayout><WaiverWirePage /></FranchiseLayout>} />
+          <Route path="/franchise/leaders" element={<FranchiseLayout><LeagueLeadersPage /></FranchiseLayout>} />
+          <Route path="/franchise/records" element={<FranchiseLayout><RecordsPage /></FranchiseLayout>} />
+          {/* Player & team detail pages */}
+          <Route path="/franchise/player/:playerId" element={<FranchiseLayout><PlayerEditorPage /></FranchiseLayout>} />
+          <Route path="/franchise/create-player" element={<FranchiseLayout><CreatePlayerPage2 /></FranchiseLayout>} />
+          <Route path="/franchise/team/:teamId" element={<FranchiseLayout><TeamEditorPage /></FranchiseLayout>} />
+          <Route path="/franchise/player-stats/:playerId" element={<FranchiseLayout><PlayerStatsPage /></FranchiseLayout>} />
+          <Route path="/franchise/team-stats/:teamId" element={<FranchiseLayout><TeamStatsPage /></FranchiseLayout>} />
+        </Routes>
+      </Suspense>
+    </FadeWrapper>
+  );
+}
+
+function App() {
+  const [splashDone, setSplashDone] = useState(false);
+
+  // Preload has already started by the time we render; give splash 1.2s
+  useEffect(() => {
+    const t = setTimeout(() => setSplashDone(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <>
+      {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} durationMs={1200} />}
+      <BrowserRouter>
+        <AppRoutes />
+        <ToastContainer />
+      </BrowserRouter>
+    </>
   );
 }
 

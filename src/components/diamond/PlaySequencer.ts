@@ -24,6 +24,8 @@ import {
 } from './effects/index.ts';
 import { Sprite, Ticker } from 'pixi.js';
 import { HOMERUN_EFFECT_FRAMES, DUST_CROP_RECTS } from './sprites/SpriteConfig.ts';
+import type { AtBatCamera } from './AtBatCamera.ts';
+import type { AtBatOverlayState } from '../game/AtBatOverlay.tsx';
 
 // ── Coordinate constants ──────────────────────────────────────────────────────
 // Mirrors DiamondRenderer.ts — tuned for gameplayfield2.png positions.
@@ -119,12 +121,68 @@ export class PlaySequencer {
 
   private _destroyed = false;
 
+  /** Optional camera controller for at-bat zoom. Set externally after init. */
+  camera: AtBatCamera | null = null;
+
+  /** Optional callback to push overlay state updates to React. Set externally. */
+  onOverlayUpdate: ((state: Partial<AtBatOverlayState>) => void) | null = null;
+
+  /** Tracks overlay state (accumulated across calls). */
+  private _overlayState: AtBatOverlayState = {
+    visible: false,
+    pitchType: '',
+    pitchSpeedMph: 0,
+    resultText: '',
+    balls: 0,
+    strikes: 0,
+    batterName: '',
+    pitcherName: '',
+    pitchCount: 0,
+  };
+
+  /** Incremental pitch count per sequencer instance. */
+  private _pitchCount = 0;
+
   constructor(renderer: DiamondRenderer) {
     this.renderer = renderer;
   }
 
   destroy(): void {
     this._destroyed = true;
+    this.camera = null;
+    this.onOverlayUpdate = null;
+  }
+
+  // ── Overlay helpers ────────────────────────────────────────────────────────
+
+  private _updateOverlay(patch: Partial<AtBatOverlayState>): void {
+    this._overlayState = { ...this._overlayState, ...patch };
+    this.onOverlayUpdate?.(this._overlayState);
+  }
+
+  private _showPitchFlash(pitchType: string, speedMph: number): void {
+    this._pitchCount++;
+    this._updateOverlay({
+      pitchType,
+      pitchSpeedMph: speedMph,
+      pitchCount: this._pitchCount,
+      // Clear any prior result
+      resultText: '',
+    });
+  }
+
+  private _showResultFlash(text: string): void {
+    this._updateOverlay({ resultText: text, pitchType: '', pitchSpeedMph: 0 });
+  }
+
+  /** Set batter/pitcher names for the overlay HUD. */
+  setAtBatNames(batterName: string, pitcherName: string): void {
+    this._updateOverlay({ batterName, pitcherName });
+  }
+
+  /** Reset pitch count (call at start of each new pitcher appearance). */
+  resetPitchCount(): void {
+    this._pitchCount = 0;
   }
 
   // ── Duration helper ────────────────────────────────────────────────────────
@@ -149,6 +207,8 @@ export class PlaySequencer {
 
     switch (event.type) {
       case 'pitch':
+        // Update overlay count from event data
+        this._updateOverlay({ balls: event.balls, strikes: event.strikes });
         await this._dispatchPitchEvent(event);
         break;
 
@@ -234,6 +294,10 @@ export class PlaySequencer {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
+    // Zoom to at-bat view + show overlay
+    await this._zoomInForPitch();
+    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
+
     // Step 1: pitcher windup
     await this._pitcherWindup(ss);
 
@@ -257,8 +321,10 @@ export class PlaySequencer {
       await ss.animateUmpireBallCall();
     }
     soundEngine.playUmpireBall();
+    this._showResultFlash('BALL!');
 
     this.renderer.hideBall();
+    await delay(this.dur(200));
   }
 
   // ── Called strike (~1500ms) ────────────────────────────────────────────────
@@ -267,6 +333,9 @@ export class PlaySequencer {
   async playStrikeCalled(): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
+
+    await this._zoomInForPitch();
+    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
 
     await this._pitcherWindup(ss);
     if (this._destroyed) return;
@@ -281,9 +350,11 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     soundEngine.playUmpireStrike();
+    this._showResultFlash('STRIKE!');
     if (ss) await ss.animateUmpireStrikeCall();
 
     this.renderer.hideBall();
+    await delay(this.dur(200));
   }
 
   // ── Swinging strike (~1500ms) ─────────────────────────────────────────────
@@ -295,6 +366,9 @@ export class PlaySequencer {
   async playStrikeSwinging(): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
+
+    await this._zoomInForPitch();
+    this._showPitchFlash('slider', this._randomPitchSpeed('slider'));
 
     await this._pitcherWindup(ss);
     if (this._destroyed) return;
@@ -312,11 +386,13 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     soundEngine.playUmpireStrike();
+    this._showResultFlash('STRIKE!');
     spawnCatchPop(this.renderer.getApp()!, HOME_X, HOME_Y, this._fx());
     await this._catcherReceive(ss);
     await delay(this.dur(150));
 
     this.renderer.hideBall();
+    await delay(this.dur(150));
   }
 
   // ── Foul ball (~1800ms) ────────────────────────────────────────────────────
@@ -330,6 +406,9 @@ export class PlaySequencer {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
+    await this._zoomInForPitch();
+    this._showPitchFlash('curveball', this._randomPitchSpeed('curveball'));
+
     await this._pitcherWindup(ss);
     if (this._destroyed) return;
 
@@ -342,6 +421,7 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     // Contact flash + bat crack particle effect
+    this._showResultFlash('FOUL!');
     this.renderer.showContactFlash(HOME_X, HOME_Y - 10);
     soundEngine.playBatCrack();
     spawnBatCrack(this.renderer.getApp()!, HOME_X, HOME_Y - 10, this._fx());
@@ -366,6 +446,10 @@ export class PlaySequencer {
     const ss = this.renderer.getSpriteScene();
     const angle = 0; // neutral angle for generic plays
 
+    // Zoom in for the pitch
+    await this._zoomInForPitch();
+    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
+
     // Step 1: pitcher winds up (shorter for contact plays)
     if (ss) {
       await ss.animatePitcherWindup();
@@ -384,9 +468,13 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     // Step 3: contact flash + bat crack sound + bat crack particle
+    this._showResultFlash('IN PLAY!');
     this.renderer.showContactFlash(HOME_X - 10, HOME_Y - 15);
     soundEngine.playBatCrack();
     spawnBatCrack(this.renderer.getApp()!, HOME_X - 10, HOME_Y - 15, this._fx());
+
+    // Zoom back to field so we can see the ball in play
+    void this._zoomOutToField(350);
 
     // Step 4+: route based on hit type
     if (hitType === 'groundout' || hitType === 'fielders_choice' || hitType === 'double_play') {
@@ -422,6 +510,10 @@ export class PlaySequencer {
     const ss = this.renderer.getSpriteScene();
     const angle = (Math.random() - 0.5) * 40;
 
+    // Zoom in for pitch
+    await this._zoomInForPitch();
+    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
+
     if (ss) {
       await ss.animatePitcherWindup();
     } else {
@@ -438,11 +530,17 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     // Big contact flash + bat crack particle effect
+    this._showResultFlash('HOME RUN!');
     this.renderer.showContactFlash(HOME_X - 12, HOME_Y - 18);
     this.renderer.showHomeRunFlash();
     soundEngine.playBatCrack(1.4);
     spawnBatCrack(this.renderer.getApp()!, HOME_X - 12, HOME_Y - 18, this._fx());
     if (ss) void ss.animateBatterRunning?.();
+
+    // Zoom to outfield to track ball flight
+    const outfieldDir = angle < -10 ? 'left' : angle > 10 ? 'right' : 'center';
+    void this.camera?.zoomToOutfield(outfieldDir, this.dur(500));
+    this._updateOverlay({ visible: false });
 
     // Ball arcs out of the park
     await this.renderer.animateBallHomeRun(angle, distance);
@@ -463,6 +561,9 @@ export class PlaySequencer {
     await delay(this.dur(200));
     this.renderer.hideBall();
 
+    // Zoom back to full field during celebration
+    void this._zoomOutToField(this.dur(800));
+
     // Wait for sprite celebration to finish (it lasts ~2.4s)
     await spriteEffectsPromise;
   }
@@ -474,6 +575,9 @@ export class PlaySequencer {
   async playStrikeout(looking: boolean): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
+
+    // Show strikeout result flash (while still zoomed in for drama)
+    this._showResultFlash('STRIKEOUT!');
 
     if (!looking && ss) {
       // swinging strikeout — show swing first
@@ -488,11 +592,15 @@ export class PlaySequencer {
       soundEngine.playCrowdCheer('roar');
       await ss.animateUmpireStrikeCall();
       if (this._destroyed) return;
-      await delay(this.dur(400));
+      // Hold the at-bat zoom for dramatic effect
+      await delay(this.dur(500));
     } else {
       soundEngine.playCrowdCheer('roar');
-      await delay(this.dur(600));
+      await delay(this.dur(700));
     }
+
+    // Now zoom back out to field
+    await this._zoomOutToField(this.dur(380));
   }
 
   // ── Walk (~800ms) ─────────────────────────────────────────────────────────
@@ -501,12 +609,17 @@ export class PlaySequencer {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
+    this._showResultFlash('WALK!');
+
     if (ss) {
       await ss.animateBatterTake();
       if (this._destroyed) return;
     }
 
-    await delay(this.dur(400));
+    await delay(this.dur(300));
+
+    // Zoom out as batter walks to first
+    await this._zoomOutToField(this.dur(450));
   }
 
   // ── Inning change (~600ms) ────────────────────────────────────────────────
@@ -514,6 +627,12 @@ export class PlaySequencer {
   async playInningChange(): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
+
+    // Always ensure full field view at inning change
+    if (this.camera) {
+      this._updateOverlay({ visible: false, resultText: '', pitchType: '', pitchSpeedMph: 0 });
+      this.camera.snapToField();
+    }
 
     this.renderer.reset();
     if (ss) ss.resetToReady();
@@ -524,6 +643,39 @@ export class PlaySequencer {
   // ══════════════════════════════════════════════════════════════════════════
   // ── Internal sub-sequences ───────────────────────────────────────────────
   // ══════════════════════════════════════════════════════════════════════════
+
+  // ── Camera zoom helpers ───────────────────────────────────────────────────
+
+  private async _zoomInForPitch(): Promise<void> {
+    if (!this.camera || this.skipAnimations) return;
+    // Only zoom in if not already zoomed — avoids double-zoom on sequential pitches
+    if (!this.camera.isZoomedIn) {
+      // Show overlay immediately
+      this._updateOverlay({ visible: true });
+      await this.camera.zoomToAtBat(this.dur(450));
+    }
+  }
+
+  private async _zoomOutToField(durationMs?: number): Promise<void> {
+    if (!this.camera || this.skipAnimations) return;
+    // Hide overlay then zoom out
+    this._updateOverlay({ visible: false, resultText: '', pitchType: '', pitchSpeedMph: 0 });
+    await this.camera.zoomToField(durationMs ?? this.dur(400));
+  }
+
+  // ── Random pitch speed for flash display ──────────────────────────────────
+  private _randomPitchSpeed(pitchType: string): number {
+    const ranges: Record<string, [number, number]> = {
+      fastball: [89, 97],
+      slider: [80, 88],
+      curveball: [72, 80],
+      changeup: [78, 86],
+      sinker: [87, 94],
+      cutter: [85, 92],
+    };
+    const [lo, hi] = ranges[pitchType] ?? [80, 95];
+    return Math.round(lo + Math.random() * (hi - lo));
+  }
 
   // ── Pitcher windup helper ─────────────────────────────────────────────────
 
