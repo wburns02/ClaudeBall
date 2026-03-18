@@ -663,6 +663,24 @@ const fresnoFalcons = buildTeam('fresno', 'Falcons', 'FRE', 'Fresno', '#8b1a1a',
   rp4: ['Blas',   'Fuentes',    35, { control: 66, movement: 63, repertoire: ['fastball','changeup','cutter'] }],
 }, ['cf','b2','ss','b1','rf','dh','b3','lf','c']);
 
+// Spokane Wolves — balanced NW squad, ground-ball identity
+const spokaneWolves = buildTeam('spokane', 'Wolves', 'SPO', 'Spokane', '#2b3a2b', '#c0a060', {
+  c:   ['Glenn',  'Rowan',      14, { contact_R: 63, eye: 61, clutch: 60 }, { arm_strength: 70, error_rate: 24 }],
+  b1:  ['Lars',   'Petersen',   33, { power_R: 68, contact_R: 65, gap_power: 63 }, {}],
+  b2:  ['Kei',    'Hashimoto',   4, { contact_L: 68, speed: 68, steal: 60, avoid_k: 66 }, { range: 74, turn_dp: 76 }],
+  b3:  ['Owen',   'Swanson',    19, { power_R: 67, clutch: 63 }, { arm_strength: 68, range: 65 }],
+  ss:  ['Tad',    'Renner',      2, { contact_L: 67, speed: 72, steal: 63 }, { range: 77, error_rate: 18 }],
+  lf:  ['Joe',    'Mackey',     27, { power_L: 63, gap_power: 60 }, {}],
+  cf:  ['Leon',   'Abrams',      9, { speed: 80, steal: 72, contact_L: 63 }, { range: 82, error_rate: 14 }],
+  rf:  ['Greg',   'Foss',       40, { power_R: 68, clutch: 63 }, { arm_strength: 70 }],
+  dh:  ['Bjorn',  'Lindqvist',  49, { power_L: 72, power_R: 74, clutch: 65 }, {}],
+  sp:  ['Kent',   'Sorby',      17, { stuff: 67, movement: 71, control: 72, stamina: 72, velocity: 91, groundball_pct: 62, repertoire: ['fastball','sinker','changeup','curveball'] }],
+  rp1: ['Eric',   'Dobbins',    55, { stuff: 64, velocity: 94, repertoire: ['fastball','slider'] }],
+  rp2: ['Dale',   'Horne',      47, { movement: 68, groundball_pct: 62, repertoire: ['sinker','changeup'] }],
+  rp3: ['Trent',  'Akiyama',    63, { stuff: 67, velocity: 95, stamina: 35, repertoire: ['fastball','curveball'] }],
+  rp4: ['Ross',   'Koehler',    34, { control: 65, movement: 63, repertoire: ['fastball','changeup','cutter'] }],
+}, ['cf','b2','ss','b1','rf','dh','b3','lf','c']);
+
 // ─── Master map — 30 unique teams ──────────────────────────────────────────
 const _teamEntries: [string, Team][] = [
   // AL East (5)
@@ -700,7 +718,7 @@ const _teamEntries: [string, Team][] = [
   ['denver',        denverPeaks],
   ['boise',         boiseLumberjacks],
   ['fresno',        fresnoFalcons],
-  ['kansascity',    kansasCityRiverKings],
+  ['spokane',       spokaneWolves],
 ];
 
 export const ALL_TEAMS: Team[] = _teamEntries.map(([, t]) => t);
@@ -714,7 +732,7 @@ export const LEAGUE_STRUCTURE: Record<string, Record<string, string[]>> = {
   'National League': {
     'NL East':    ['savannah',     'baltimore',   'raleigh',      'kansascity',  'stlouis'],
     'NL Central': ['milwaukee',    'tucson',      'sacramento',   'elpaso',      'phoenix'],
-    'NL West':    ['saltlake',     'denver',      'boise',        'fresno',      'kansascity'],
+    'NL West':    ['saltlake',     'denver',      'boise',        'fresno',      'spokane'],
   },
 };
 
