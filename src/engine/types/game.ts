@@ -78,6 +78,8 @@ export type GameEvent =
   | { type: 'at_bat_result'; description: string; batter: string; pitcher: string; result: string; rbiCount: number }
   | { type: 'baserunning'; description: string; runner: string }
   | { type: 'pitching_change'; description: string; outgoing: string; incoming: string }
+  | { type: 'pinch_hit'; description: string; pinchHitter: string; forPlayer: string; battingSpot: number }
+  | { type: 'defensive_sub'; description: string; incoming: string; outgoing: string; position: string }
   | { type: 'inning_change'; description: string; inning: number; half: HalfInning }
   | { type: 'game_end'; description: string; awayScore: number; homeScore: number }
   | { type: 'steal_attempt'; description: string; runner: string; success: boolean; base: Base }

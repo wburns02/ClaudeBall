@@ -1,11 +1,12 @@
 import type { Team, Position, GameEvent, GameState, BoxScore, BoxScorePlayer, BoxScorePitcher } from '../types/index.ts';
 import type { BallparkFactors } from '../types/ballpark.ts';
 import { createEmptyBaseState } from '../types/game.ts';
-import { getPlayer, getLineupPlayer } from '../types/team.ts';
+import { getPlayer, getLineupPlayer, getBenchPlayers } from '../types/team.ts';
 import { getPlayerName } from '../types/player.ts';
 import { formatIP } from '../types/stats.ts';
 import { RandomProvider } from './RandomProvider.ts';
 import { AtBatResolver } from './AtBatResolver.ts';
+import { ManagerAI } from '../ai/ManagerAI.ts';
 import { uuid } from '../util/helpers.ts';
 
 export interface GameConfig {
@@ -23,18 +24,31 @@ export class GameEngine {
   private rng: RandomProvider;
   private ballpark: BallparkFactors;
   private pitcherStats: Map<string, { ip: number; h: number; r: number; er: number; bb: number; so: number; hr: number; pitchCount: number }>;
+  /** Runs allowed by the current pitcher in the current inning (reset on pitching change or inning change) */
+  private runsThisInning: { away: number; home: number };
 
   constructor(config: GameConfig) {
     const seed = config.seed ?? Date.now();
     this.rng = new RandomProvider(seed);
     this.ballpark = config.ballpark;
     this.pitcherStats = new Map();
+    this.runsThisInning = { away: 0, home: 0 };
+
+    // Deep-copy teams to avoid mutation between games
+    const away: Team = JSON.parse(JSON.stringify(config.away));
+    const home: Team = JSON.parse(JSON.stringify(config.home));
+
+    // Initialize tracking structures if missing
+    away.usedPitchers = [away.pitcherId];
+    home.usedPitchers = [home.pitcherId];
+    if (!away.bench) away.bench = this.detectBench(away);
+    if (!home.bench) home.bench = this.detectBench(home);
 
     this.state = {
       id: uuid(),
       phase: 'pregame',
-      away: config.away,
-      home: config.home,
+      away,
+      home,
       inning: {
         inning: 1,
         half: 'top',
@@ -50,12 +64,28 @@ export class GameEngine {
       seed,
     };
 
-    this.initPitcherStats(config.away.pitcherId);
-    this.initPitcherStats(config.home.pitcherId);
+    this.initPitcherStats(away.pitcherId);
+    this.initPitcherStats(home.pitcherId);
+    // Pre-init stats for all bullpen members
+    for (const id of away.bullpen) this.initPitcherStats(id);
+    for (const id of home.bullpen) this.initPitcherStats(id);
+  }
+
+  /**
+   * Detect bench players: roster members who are position players but not in the lineup.
+   */
+  private detectBench(team: Team): string[] {
+    const lineupIds = new Set(team.lineup.map(s => s.playerId));
+    const pitcherIds = new Set([team.pitcherId, ...team.bullpen]);
+    return team.roster.players
+      .filter(p => !lineupIds.has(p.id) && !pitcherIds.has(p.id) && p.position !== 'P')
+      .map(p => p.id);
   }
 
   private initPitcherStats(pitcherId: string): void {
-    this.pitcherStats.set(pitcherId, { ip: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitchCount: 0 });
+    if (!this.pitcherStats.has(pitcherId)) {
+      this.pitcherStats.set(pitcherId, { ip: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitchCount: 0 });
+    }
   }
 
   /** Run the entire game and return the final state. */
@@ -85,7 +115,6 @@ export class GameEngine {
   simulateNextAtBat(): { events: GameEvent[]; gameOver: boolean } {
     if (this.state.phase === 'pregame') {
       this.state.phase = 'in_progress';
-      // Initialize first half-inning
       this.ensureCurrentInningScoreEntry();
       this.state.events.push({
         type: 'inning_change',
@@ -179,6 +208,9 @@ export class GameEngine {
     inning.outs = 0;
     inning.bases = createEmptyBaseState();
 
+    // Reset runs-this-inning counter for the pitching team
+    this.runsThisInning[isTop ? 'away' : 'home'] = 0;
+
     while (inning.outs < 3) {
       this.resolveOneAtBat();
 
@@ -187,6 +219,9 @@ export class GameEngine {
         break;
       }
     }
+
+    // Reset runs-this-inning at end of half-inning
+    this.runsThisInning[isTop ? 'away' : 'home'] = 0;
 
     this.advanceToNextHalf();
   }
@@ -203,6 +238,9 @@ export class GameEngine {
     inning.balls = 0;
     inning.strikes = 0;
     inning.bases = createEmptyBaseState();
+    // Reset both inning run counters on half-inning change
+    this.runsThisInning.away = 0;
+    this.runsThisInning.home = 0;
   }
 
   private ensureCurrentInningScoreEntry(): void {
@@ -218,12 +256,52 @@ export class GameEngine {
     const battingTeam = isTop ? this.state.away : this.state.home;
     const pitchingTeam = isTop ? this.state.home : this.state.away;
 
+    // ── Pinch hit check (before at-bat) ──────────────────────────────────────
     const batterIdx = isTop ? this.state.currentBatterIndex.away : this.state.currentBatterIndex.home;
-    const batter = getLineupPlayer(battingTeam, batterIdx % 9);
-    if (!batter) return [];
+    const phDecision = ManagerAI.shouldPinchHit(battingTeam, this.state, batterIdx);
+    const phEvents: GameEvent[] = [];
+
+    if (phDecision.shouldPinchHit && phDecision.pinchHitter && phDecision.forPlayerId !== undefined && phDecision.battingSpot !== undefined) {
+      const ph = phDecision.pinchHitter;
+      const outgoingId = phDecision.forPlayerId;
+      const spot = phDecision.battingSpot;
+      const outgoing = getPlayer(battingTeam, outgoingId);
+      const outgoingName = outgoing ? getPlayerName(outgoing) : outgoingId;
+      const phName = getPlayerName(ph);
+
+      // Swap the lineup spot
+      battingTeam.lineup[spot] = { playerId: ph.id, position: battingTeam.lineup[spot]?.position ?? 'DH' };
+
+      // Remove from bench
+      if (battingTeam.bench) {
+        battingTeam.bench = battingTeam.bench.filter(id => id !== ph.id);
+      }
+
+      const phEvent: GameEvent = {
+        type: 'pinch_hit',
+        description: `${phName} pinch hits for ${outgoingName}`,
+        pinchHitter: phName,
+        forPlayer: outgoingName,
+        battingSpot: spot,
+      };
+      phEvents.push(phEvent);
+      this.state.events.push(phEvent);
+
+      // If we PHed for the pitcher, we'll need a defensive sub next inning.
+      // For now, track that the outgoing player was replaced.
+      // Defensive sub is handled at inning end if needed.
+    }
+
+    // ── Pitching change check (before at-bat) ────────────────────────────────
+    const pcSide = isTop ? 'home' : 'away';
+    const pitcherChangeEvents = this.checkAndExecutePitchingChange(pitchingTeam, pcSide);
+
+    const currentBatterSpot = (isTop ? this.state.currentBatterIndex.away : this.state.currentBatterIndex.home) % 9;
+    const batter = getLineupPlayer(battingTeam, currentBatterSpot);
+    if (!batter) return [...phEvents, ...pitcherChangeEvents];
 
     const pitcher = getPlayer(pitchingTeam, pitchingTeam.pitcherId);
-    if (!pitcher) return [];
+    if (!pitcher) return [...phEvents, ...pitcherChangeEvents];
 
     const fielders = this.buildFieldersMap(pitchingTeam);
 
@@ -243,6 +321,14 @@ export class GameEngine {
       const idx = inning.inning - 1;
       while (scoreArr.length <= idx) scoreArr.push(0);
       scoreArr[idx] += result.runsScored;
+
+      // Track runs in current inning for pitching change logic
+      // The batting team scored = pitching team allowed
+      if (isTop) {
+        this.runsThisInning.away += result.runsScored;
+      } else {
+        this.runsThisInning.home += result.runsScored;
+      }
     }
 
     // Update pitcher stats
@@ -277,7 +363,51 @@ export class GameEngine {
     }
 
     this.state.events.push(...result.events);
-    return result.events;
+    return [...phEvents, ...pitcherChangeEvents, ...result.events];
+  }
+
+  /**
+   * Check if the pitching team's starter should be pulled, and execute the change.
+   * Returns any events emitted.
+   */
+  private checkAndExecutePitchingChange(pitchingTeam: Team, side: 'away' | 'home'): GameEvent[] {
+    const runsAllowed = this.runsThisInning[side];
+    const decision = ManagerAI.shouldChangePitcher(pitchingTeam, this.state, runsAllowed);
+    if (!decision.shouldChange) return [];
+
+    const selection = ManagerAI.selectReliever(pitchingTeam, this.state);
+    if (!selection) return [];
+
+    const outgoingPitcher = getPlayer(pitchingTeam, pitchingTeam.pitcherId);
+    const outgoingName = outgoingPitcher ? getPlayerName(outgoingPitcher) : pitchingTeam.pitcherId;
+    const incomingName = getPlayerName(selection.pitcher);
+
+    // Mark the outgoing pitcher as used
+    if (!pitchingTeam.usedPitchers) pitchingTeam.usedPitchers = [];
+    if (!pitchingTeam.usedPitchers.includes(pitchingTeam.pitcherId)) {
+      pitchingTeam.usedPitchers.push(pitchingTeam.pitcherId);
+    }
+
+    // Switch to the new pitcher
+    pitchingTeam.pitcherId = selection.pitcher.id;
+    pitchingTeam.usedPitchers.push(selection.pitcher.id);
+
+    // Initialize stats for new pitcher if needed
+    this.initPitcherStats(selection.pitcher.id);
+
+    // Reset inning run counter (new pitcher starts fresh for pull logic)
+    this.runsThisInning[side] = 0;
+
+    const roleLabel = selection.role === 'closer' ? 'closer' : selection.role === 'setup' ? 'setup man' : 'reliever';
+    const reason = decision.reason ? ` (${decision.reason})` : '';
+    const ev: GameEvent = {
+      type: 'pitching_change',
+      description: `Pitching change: ${incomingName} (${roleLabel}) replaces ${outgoingName}${reason}`,
+      outgoing: outgoingName,
+      incoming: incomingName,
+    };
+    this.state.events.push(ev);
+    return [ev];
   }
 
   private buildFieldersMap(team: Team): Map<Position, import('../types/index.ts').Player> {
@@ -294,22 +424,14 @@ export class GameEngine {
     const awayTotal = this.totalRuns('away');
     const homeTotal = this.totalRuns('home');
 
-    // Can't end before 9 full half-innings have been played
-    // We check based on the current state after the half-inning has advanced
-
-    // After top of 9th+, about to play bottom:
-    // If home is already ahead, game is over (skip bottom)
     if (inning.half === 'bottom' && inning.inning >= 9 && homeTotal > awayTotal && inning.outs === 0) {
       return true;
     }
 
-    // After bottom of 9th+ completes:
     if (inning.half === 'top' && inning.inning >= 10) {
-      // Previous bottom completed, check if not tied
       if (awayTotal !== homeTotal) return true;
     }
 
-    // Walkoff: during bottom of 9th+, home takes lead mid-inning
     if (inning.half === 'bottom' && inning.inning >= 9 && homeTotal > awayTotal) {
       return true;
     }
@@ -321,8 +443,8 @@ export class GameEngine {
     const box: BoxScore = {
       awayBatters: this.buildBatterLines(this.state.away),
       homeBatters: this.buildBatterLines(this.state.home),
-      awayPitchers: this.buildPitcherLines(this.state.away),
-      homePitchers: this.buildPitcherLines(this.state.home),
+      awayPitchers: this.buildAllPitcherLines(this.state.away),
+      homePitchers: this.buildAllPitcherLines(this.state.home),
     };
     this.state.boxScore = box;
   }
@@ -366,30 +488,48 @@ export class GameEngine {
     return lines;
   }
 
-  private buildPitcherLines(team: Team): BoxScorePitcher[] {
+  /** Build pitcher lines for all pitchers who appeared (box score shows each pitcher separately). */
+  private buildAllPitcherLines(team: Team): BoxScorePitcher[] {
     const lines: BoxScorePitcher[] = [];
-    const stats = this.pitcherStats.get(team.pitcherId);
-    const pitcher = getPlayer(team, team.pitcherId);
-    if (!pitcher || !stats) return lines;
-
     const awayTotal = this.totalRuns('away');
     const homeTotal = this.totalRuns('home');
     const isHome = team.id === this.state.home.id;
-    const won = isHome ? homeTotal > awayTotal : awayTotal > homeTotal;
+    const teamWon = isHome ? homeTotal > awayTotal : awayTotal > homeTotal;
 
-    lines.push({
-      playerId: team.pitcherId,
-      name: getPlayerName(pitcher),
-      ip: formatIP(stats.ip),
-      h: stats.h,
-      r: stats.r,
-      er: stats.er,
-      bb: stats.bb,
-      so: stats.so,
-      hr: stats.hr,
-      pitchCount: stats.pitchCount,
-      decision: won ? 'W' : 'L',
-    });
+    const usedIds = team.usedPitchers ?? [team.pitcherId];
+    // Ensure current pitcher is included
+    const allIds = [...new Set([...usedIds, team.pitcherId])];
+
+    for (let i = 0; i < allIds.length; i++) {
+      const id = allIds[i];
+      const stats = this.pitcherStats.get(id);
+      const pitcher = getPlayer(team, id);
+      if (!pitcher || !stats) continue;
+
+      let decision: BoxScorePitcher['decision'] = '';
+      if (i === allIds.length - 1) {
+        // Last pitcher gets the decision
+        decision = teamWon ? (allIds.length === 1 ? 'W' : 'S') : 'L';
+        if (allIds.length === 1) decision = teamWon ? 'W' : 'L';
+      } else if (i === 0 && teamWon && allIds.length > 1) {
+        // Starting pitcher gets W if team won and they pitched enough
+        if (stats.ip >= 15) decision = 'W'; // 5 IP (stored as 15 in thirds)
+      }
+
+      lines.push({
+        playerId: id,
+        name: getPlayerName(pitcher),
+        ip: formatIP(stats.ip),
+        h: stats.h,
+        r: stats.r,
+        er: stats.er,
+        bb: stats.bb,
+        so: stats.so,
+        hr: stats.hr,
+        pitchCount: stats.pitchCount,
+        decision,
+      });
+    }
 
     return lines;
   }

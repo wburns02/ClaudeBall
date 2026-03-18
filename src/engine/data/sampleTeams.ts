@@ -56,7 +56,16 @@ const thunderhawksRoster: Player[] = [
     pitching: { stuff: 72, movement: 68, control: 70, stamina: 75, velocity: 95, hold_runners: 55, groundball_pct: 48, repertoire: ['fastball', 'slider', 'changeup', 'curveball'] },
     fielding: [{ position: 'P', range: 45, arm_strength: 65, arm_accuracy: 55, turn_dp: 40, error_rate: 40 }],
   }),
-  // Bullpen
+  // Bench
+  makePlayer({ id: 'th-bn1', firstName: 'Sam', lastName: 'Ortega', number: 18, position: 'LF', bats: 'L', throws: 'R',
+    batting: { contact_L: 52, contact_R: 60, power_L: 55, power_R: 60, eye: 50, avoid_k: 48, gap_power: 52, speed: 60, steal: 40, bunt: 45, clutch: 48 },
+    fielding: [{ position: 'LF', range: 58, arm_strength: 52, arm_accuracy: 55, turn_dp: 25, error_rate: 35 }],
+  }),
+  makePlayer({ id: 'th-bn2', firstName: 'Ty', lastName: 'Fujimoto', number: 6, position: '2B', bats: 'R', throws: 'R',
+    batting: { contact_L: 58, contact_R: 62, power_L: 30, power_R: 32, eye: 60, avoid_k: 62, gap_power: 38, speed: 65, steal: 55, bunt: 55, clutch: 45 },
+    fielding: [{ position: '2B', range: 70, arm_strength: 50, arm_accuracy: 65, turn_dp: 72, error_rate: 22 }],
+  }),
+  // Bullpen (rp1/rp2 = middle relief, rp2 = setup, rp3 = closer)
   makePlayer({ id: 'th-rp1', firstName: 'Tyler', lastName: 'Chen', number: 55, position: 'P', bats: 'R', throws: 'R',
     pitching: { stuff: 68, movement: 65, control: 62, stamina: 45, velocity: 97, hold_runners: 50, groundball_pct: 40, repertoire: ['fastball', 'slider'] },
     fielding: [{ position: 'P', range: 40, arm_strength: 60, arm_accuracy: 50, turn_dp: 35, error_rate: 45 }],
@@ -115,7 +124,16 @@ const ironcladsRoster: Player[] = [
     pitching: { stuff: 70, movement: 72, control: 65, stamina: 72, velocity: 94, hold_runners: 62, groundball_pct: 55, repertoire: ['fastball', 'curveball', 'changeup', 'sinker'] },
     fielding: [{ position: 'P', range: 48, arm_strength: 62, arm_accuracy: 58, turn_dp: 42, error_rate: 38 }],
   }),
-  // Bullpen
+  // Bench
+  makePlayer({ id: 'ic-bn1', firstName: 'Zach', lastName: 'Rivera', number: 14, position: 'SS', bats: 'S', throws: 'R',
+    batting: { contact_L: 55, contact_R: 58, power_L: 30, power_R: 32, eye: 55, avoid_k: 58, gap_power: 35, speed: 72, steal: 62, bunt: 60, clutch: 45 },
+    fielding: [{ position: 'SS', range: 75, arm_strength: 65, arm_accuracy: 70, turn_dp: 68, error_rate: 20 }],
+  }),
+  makePlayer({ id: 'ic-bn2', firstName: 'Darren', lastName: 'Walsh', number: 20, position: 'RF', bats: 'R', throws: 'R',
+    batting: { contact_L: 50, contact_R: 55, power_L: 58, power_R: 62, eye: 48, avoid_k: 42, gap_power: 55, speed: 48, steal: 18, bunt: 18, clutch: 52 },
+    fielding: [{ position: 'RF', range: 52, arm_strength: 72, arm_accuracy: 60, turn_dp: 25, error_rate: 32 }],
+  }),
+  // Bullpen (rp1 = middle, rp2 = setup, rp3 = closer)
   makePlayer({ id: 'ic-rp1', firstName: 'Marcus', lastName: 'Stone', number: 52, position: 'P', bats: 'R', throws: 'R',
     pitching: { stuff: 65, movement: 68, control: 65, stamina: 48, velocity: 96, hold_runners: 52, groundball_pct: 45, repertoire: ['fastball', 'cutter', 'slider'] },
     fielding: [{ position: 'P', range: 42, arm_strength: 58, arm_accuracy: 52, turn_dp: 35, error_rate: 42 }],
@@ -151,6 +169,7 @@ export const THUNDERHAWKS: Team = {
   ],
   pitcherId: 'th-sp1',
   bullpen: ['th-rp1', 'th-rp2', 'th-rp3'],
+  bench: ['th-bn1', 'th-bn2'],
 };
 
 export const IRONCLADS: Team = {
@@ -174,6 +193,7 @@ export const IRONCLADS: Team = {
   ],
   pitcherId: 'ic-sp1',
   bullpen: ['ic-rp1', 'ic-rp2', 'ic-rp3'],
+  bench: ['ic-bn1', 'ic-bn2'],
 };
 
 /** Create fresh copies of sample teams (to avoid mutation between games) */
