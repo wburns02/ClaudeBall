@@ -52,6 +52,22 @@ export class SpriteAnimator {
     this.sprite.visible = visible;
   }
 
+  // ── Frame array preload ───────────────────────────────────────────
+
+  /**
+   * Pre-load the frame array so `setFrame()` works before `playAnimation()`
+   * has been called.  The first frame is shown immediately.
+   */
+  loadFrames(frames: Texture[]): void {
+    if (frames.length === 0) return;
+    this._frames = frames;
+    this._currentFrame = 0;
+    const first = frames[0];
+    if (first !== undefined) {
+      this.sprite.texture = first;
+    }
+  }
+
   // ── Static frame control ──────────────────────────────────────────
 
   /**

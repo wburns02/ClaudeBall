@@ -1,9 +1,6 @@
 // ── SpritePlayerScene.ts ──────────────────────────────────────────────────
 // Sprite-based replacement for PlayerScene. Uses AI-generated sprite sheet
-// images instead of procedural vector figures.
-//
-// Sprite sheets are JPG files with gray backgrounds — this is acceptable on
-// the dark green/brown diamond field.
+// images sliced from JPG files with background removal applied.
 
 import type { Application } from 'pixi.js';
 import { Container, Ticker } from 'pixi.js';
@@ -48,8 +45,13 @@ const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
   RF:   { x: 470, y: 150 },
 };
 
-// ── Scale factors for depth perspective ───────────────────────────────────
-// After trim, effective content heights are approx:
+// ── Perspective scale factors ──────────────────────────────────────────────
+// Batter/Catcher/Umpire = largest (closest to camera, scale 1.0 reference)
+// Pitcher = ~75% of batter
+// Infielders = ~65% of batter
+// Outfielders = ~45% of batter
+//
+// After trim the effective content heights (in source pixels) are approx:
 //   Fielder (trimTop=0.37, trimBottom=0.76): 720 * 0.39 ≈ 281px
 //   Batter  (trimTop=0.30, trimBottom=0.88): 720 * 0.58 ≈ 418px
 //   Pitcher (trimTop=0.02, trimBottom=1.00): 584 * 0.98 ≈ 572px
@@ -57,24 +59,53 @@ const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
 //   Runner  (trimTop=0.68, trimBottom=1.00): 360 * 0.32 ≈ 115px
 //
 // Target rendered heights:
-//   Infielders ~55px, Outfielders ~38px, Batter ~85px, Pitcher ~65px
-//   Catcher ~70px, Umpire ~70px, Runner ~42px
+//   Batter  ~80px → scale = 80/418 ≈ 0.191
+//   Pitcher ~65px → scale = 65/572 ≈ 0.114
+//   Infield ~55px → scale = 55/281 ≈ 0.196
+//   Outfield~38px → scale = 38/281 ≈ 0.135
+//   Catcher ~68px → scale = 68/832 ≈ 0.082  (catcherUmpireAlt full frame)
+//   Umpire  ~68px → scale = 68/832 ≈ 0.082
+//   Runner  ~40px → scale = 40/115 ≈ 0.348
 
 const FIELDER_SCALES: Record<string, number> = {
-  P:    0.114,  // pitcher 572px → ~65px
-  C:    0.094,  // catcher 720px (full frame) → ~68px
-  '1B': 0.196,  // fielder 281px → ~55px
-  '2B': 0.178,
+  P:    0.114,   // pitcher: far-ish → 65px rendered height
+  C:    0.082,   // catcher uses catcherUmpire sheet (832px frame) → 68px
+  '1B': 0.196,   // infielder 281px → 55px
+  '2B': 0.178,   // slightly smaller — further from camera
   SS:   0.178,
   '3B': 0.196,
-  LF:   0.130,  // fielder 281px → ~37px
-  CF:   0.120,
-  RF:   0.130,
+  LF:   0.135,   // outfielder 281px → 38px
+  CF:   0.124,   // CF furthest back
+  RF:   0.135,
 };
 
-const BATTER_SCALE   = 0.203;  // batter 418px → ~85px
-const UMPIRE_SCALE   = 0.085;  // catcher-umpire-alt 832px → ~71px
-const RUNNER_SCALE   = 0.365;  // runner 115px → ~42px
+const BATTER_SCALE  = 0.191; // 418px → ~80px
+const UMPIRE_SCALE  = 0.082; // 832px → ~68px
+const RUNNER_SCALE  = 0.348; // 115px → ~40px
+
+// ── Facing / flip rules ───────────────────────────────────────────────────
+// Sprite sheets are drawn facing LEFT by default (player faces left).
+// To face right we flip horizontally (scale.x *= -1).
+//
+// Field perspective:
+//   LF, 3B, SS → face right (toward infield) → flip = true
+//   RF, 1B, 2B → face left  (toward infield) → flip = false (default)
+//   CF → face down toward home → no flip (use default)
+//   P  → faces home plate (faces down / toward camera) → no flip
+//   C  → faces pitcher (faces up) → flip = false
+//   Batter → faces pitcher → flip = false (right-handed default)
+
+const FIELDER_FLIP: Record<string, boolean> = {
+  P:    false,
+  C:    false,
+  '1B': false,  // right side → face left (default)
+  '2B': false,  // right side → face left
+  SS:   true,   // left side  → face right
+  '3B': true,   // left side  → face right
+  LF:   true,   // left side  → face right
+  CF:   false,
+  RF:   false,  // right side → face left
+};
 
 // ── SpritePlayerScene ─────────────────────────────────────────────────────
 
@@ -99,6 +130,7 @@ export class SpritePlayerScene {
   private _umpire: SpriteAnimator | null = null;
 
   private _loaded = false;
+  private _destroyed = false;
 
   constructor() {
     this.layer = new Container();
@@ -112,6 +144,8 @@ export class SpritePlayerScene {
    */
   async createScene(_app: Application): Promise<Container> {
     await this._loadAllSheets();
+    if (this._destroyed) return this.layer;
+
     this._loaded = true;
 
     // Build default scene: 9 fielders, batter, catcher, umpire
@@ -153,8 +187,13 @@ export class SpritePlayerScene {
 
   // ── Helpers ────────────────────────────────────────────────────────
 
-  private _makeAnimator(firstFrame: Texture | undefined): SpriteAnimator {
+  private _makeAnimator(
+    firstFrame: Texture | undefined,
+    frames: Texture[],
+  ): SpriteAnimator {
     const anim = new SpriteAnimator(firstFrame);
+    // Store the frame array so setFrame() works immediately
+    anim.loadFrames(frames);
     this.layer.addChild(anim.getSprite());
     return anim;
   }
@@ -175,50 +214,46 @@ export class SpritePlayerScene {
       this._removeAnimator(anim);
     }
     this.fielderSprites.clear();
+    this._pitcher = null;
+    this._catcher = null;
 
     for (const pos of positions) {
       const coord = FIELDER_DEFAULTS[pos];
       if (!coord) continue;
 
-      const scale = FIELDER_SCALES[pos] ?? 0.22;
+      const scale = FIELDER_SCALES[pos] ?? 0.18;
+      const shouldFlip = FIELDER_FLIP[pos] ?? false;
 
-      // Pitcher uses pitcher sprite; catcher uses catcher sprite; others use fielder
       let anim: SpriteAnimator;
 
       if (pos === 'P') {
-        const firstFrame = this.pitcherFrames[PITCHER_FRAMES.setPosition];
-        anim = this._makeAnimator(firstFrame);
+        anim = this._makeAnimator(
+          this.pitcherFrames[PITCHER_FRAMES.setPosition],
+          this.pitcherFrames,
+        );
         anim.setFrame(PITCHER_FRAMES.setPosition);
       } else if (pos === 'C') {
-        const firstFrame = this.catcherFrames[CATCHER_UMPIRE_FRAMES.catcherCrouch];
-        anim = this._makeAnimator(firstFrame);
+        anim = this._makeAnimator(
+          this.catcherFrames[CATCHER_UMPIRE_FRAMES.catcherCrouch],
+          this.catcherFrames,
+        );
         anim.setFrame(CATCHER_UMPIRE_FRAMES.catcherCrouch);
       } else {
-        const firstFrame = this.fielderFrames[FIELDER_FRAMES.ready];
-        anim = this._makeAnimator(firstFrame);
+        anim = this._makeAnimator(
+          this.fielderFrames[FIELDER_FRAMES.ready],
+          this.fielderFrames,
+        );
         anim.setFrame(FIELDER_FRAMES.ready);
-        // Outfielders face slightly different direction
-        if (['LF', 'RF'].includes(pos)) {
-          anim.setFlip(pos === 'LF');
-        }
       }
 
       anim.setPosition(coord.x, coord.y);
       anim.setScale(scale);
+      anim.setFlip(shouldFlip);
 
       this.fielderSprites.set(pos, anim);
-    }
 
-    // Re-bind catcher reference
-    const catcherAnim = this.fielderSprites.get('C');
-    if (catcherAnim !== undefined) {
-      this._catcher = catcherAnim;
-    }
-
-    // Re-bind pitcher reference
-    const pitcherAnim = this.fielderSprites.get('P');
-    if (pitcherAnim !== undefined) {
-      this._pitcher = pitcherAnim;
+      if (pos === 'P') this._pitcher = anim;
+      if (pos === 'C') this._catcher = anim;
     }
   }
 
@@ -234,8 +269,10 @@ export class SpritePlayerScene {
     const batterX = isLeftHanded ? HOME_X + 20 : HOME_X - 20;
     const batterY = HOME_Y - 5;
 
-    const firstFrame = this.batterFrames[BATTER_FRAMES.stance];
-    const anim = this._makeAnimator(firstFrame);
+    const anim = this._makeAnimator(
+      this.batterFrames[BATTER_FRAMES.stance],
+      this.batterFrames,
+    );
     anim.setPosition(batterX, batterY);
     anim.setScale(BATTER_SCALE);
     anim.setFrame(BATTER_FRAMES.stance);
@@ -249,8 +286,6 @@ export class SpritePlayerScene {
 
   setCatcher(): void {
     if (!this._loaded) return;
-
-    // The catcher is created as part of positionFielders — just ensure crouch pose
     if (this._catcher !== null) {
       this._catcher.setFrame(CATCHER_UMPIRE_FRAMES.catcherCrouch);
     }
@@ -265,8 +300,10 @@ export class SpritePlayerScene {
       this._removeAnimator(this._umpire);
     }
 
-    const umpireFrame = this.catcherAltFrames[CATCHER_UMPIRE_ALT_FRAMES.umpireStand];
-    const anim = this._makeAnimator(umpireFrame);
+    const anim = this._makeAnimator(
+      this.catcherAltFrames[CATCHER_UMPIRE_ALT_FRAMES.umpireStand],
+      this.catcherAltFrames,
+    );
     anim.setPosition(HOME_X + 5, HOME_Y + 38);
     anim.setScale(UMPIRE_SCALE);
     anim.setFrame(CATCHER_UMPIRE_ALT_FRAMES.umpireStand);
@@ -290,8 +327,10 @@ export class SpritePlayerScene {
 
     const coord = baseCoords[base] ?? { x: HOME_X, y: HOME_Y };
 
-    const firstFrame = this.runnerFrames[RUNNER_RUN_FRAMES.runA];
-    const anim = this._makeAnimator(firstFrame);
+    const anim = this._makeAnimator(
+      this.runnerFrames[RUNNER_RUN_FRAMES.runA],
+      this.runnerFrames,
+    );
     anim.setPosition(coord.x, coord.y);
     anim.setScale(RUNNER_SCALE);
     anim.setFrame(RUNNER_RUN_FRAMES.runA);
@@ -316,33 +355,33 @@ export class SpritePlayerScene {
   // ── Animation: Pitcher ────────────────────────────────────────────
 
   async animatePitcherWindup(): Promise<void> {
-    if (!this._loaded || this._pitcher === null) return;
+    if (!this._loaded || this._pitcher === null || this._destroyed) return;
 
     const pitcher = this._pitcher;
-    await pitcher.playAnimation(this.pitcherFrames, 700, false);
-    // Return to set position
-    pitcher.setFrame(PITCHER_FRAMES.setPosition);
+    await pitcher.playAnimation(this.pitcherFrames, 800, false);
+    if (!this._destroyed) {
+      pitcher.setFrame(PITCHER_FRAMES.setPosition);
+    }
   }
 
   // ── Animation: Batter ─────────────────────────────────────────────
 
-  async animateBatterSwing(_timing: string): Promise<void> {
-    if (!this._loaded || this._batter === null) return;
+  async animateBatterSwing(_timing?: string): Promise<void> {
+    if (!this._loaded || this._batter === null || this._destroyed) return;
 
     const batter = this._batter;
     await batter.playAnimation(this.batterFrames, 500, false);
-    // Hold on follow-through briefly
+    if (this._destroyed) return;
     batter.setFrame(BATTER_FRAMES.followThrough);
 
     await _delay(300);
-    // Return to stance
-    batter.setFrame(BATTER_FRAMES.stance);
+    if (!this._destroyed) {
+      batter.setFrame(BATTER_FRAMES.stance);
+    }
   }
 
   async animateBatterTake(): Promise<void> {
-    if (!this._loaded || this._batter === null) return;
-
-    // Subtle "watch the pitch" — just hold stance with a brief pause
+    if (!this._loaded || this._batter === null || this._destroyed) return;
     this._batter.setFrame(BATTER_FRAMES.stance);
     await _delay(300);
   }
@@ -350,12 +389,11 @@ export class SpritePlayerScene {
   // ── Animation: Fielders ───────────────────────────────────────────
 
   async animateFielderCatch(position: string): Promise<void> {
-    if (!this._loaded) return;
+    if (!this._loaded || this._destroyed) return;
 
     const anim = this.fielderSprites.get(position);
     if (anim === undefined) return;
 
-    // Cycle through catch frames: ready → catching fly → fielding
     const catchFrames = [
       this.fielderFrames[FIELDER_FRAMES.ready],
       this.fielderFrames[FIELDER_FRAMES.fielding],
@@ -364,11 +402,13 @@ export class SpritePlayerScene {
     ].filter((t): t is Texture => t !== undefined);
 
     await anim.playAnimation(catchFrames, 400, false);
-    anim.setFrame(FIELDER_FRAMES.ready);
+    if (!this._destroyed) {
+      anim.setFrame(FIELDER_FRAMES.ready);
+    }
   }
 
   async animateFielderThrow(position: string): Promise<void> {
-    if (!this._loaded) return;
+    if (!this._loaded || this._destroyed) return;
 
     const anim = this.fielderSprites.get(position);
     if (anim === undefined) return;
@@ -380,18 +420,19 @@ export class SpritePlayerScene {
     ].filter((t): t is Texture => t !== undefined);
 
     await anim.playAnimation(throwFrames, 450, false);
-    anim.setFrame(FIELDER_FRAMES.ready);
+    if (!this._destroyed) {
+      anim.setFrame(FIELDER_FRAMES.ready);
+    }
   }
 
   // ── Animation: Runners ────────────────────────────────────────────
 
   async animateRunnerAdvance(fromBase: number, toBase: number): Promise<void> {
-    if (!this._loaded) return;
+    if (!this._loaded || this._destroyed) return;
 
     const anim = this.runnerSprites.get(fromBase);
     if (anim === undefined) return;
 
-    // Determine target coordinates
     const baseCoords: Record<number, { x: number; y: number }> = {
       0: { x: HOME_X, y: HOME_Y },
       1: { x: BASE_1_X, y: BASE_1_Y - 12 },
@@ -399,12 +440,9 @@ export class SpritePlayerScene {
       3: { x: BASE_3_X, y: BASE_3_Y - 12 },
     };
 
-    const from = baseCoords[fromBase] ?? baseCoords[0];
-    const to = baseCoords[toBase] ?? baseCoords[1];
+    const from = baseCoords[fromBase] ?? baseCoords[0]!;
+    const to   = baseCoords[toBase]   ?? baseCoords[1]!;
 
-    if (from === undefined || to === undefined) return;
-
-    // Animate the running cycle while moving position over 600ms
     const runCycleFrames = [
       this.runnerFrames[RUNNER_RUN_FRAMES.runA],
       this.runnerFrames[RUNNER_RUN_FRAMES.runB],
@@ -413,15 +451,19 @@ export class SpritePlayerScene {
     const duration = 600;
     const startTime = performance.now();
 
-    // Play looping run cycle
+    // Play looping run cycle while moving position
     const runPromise = anim.playAnimation(runCycleFrames, 300, true);
 
-    // Move the sprite via ticker
     await new Promise<void>((resolve) => {
       const onTick = (_ticker: Ticker) => {
+        if (this._destroyed) {
+          Ticker.shared.remove(onTick);
+          resolve();
+          return;
+        }
         const elapsed = performance.now() - startTime;
         const t = Math.min(elapsed / duration, 1);
-        const ease = 1 - Math.pow(1 - t, 2); // ease-out quad
+        const ease = 1 - Math.pow(1 - t, 2);
 
         anim.setPosition(
           from.x + (to.x - from.x) * ease,
@@ -436,18 +478,18 @@ export class SpritePlayerScene {
       Ticker.shared.add(onTick);
     });
 
-    // Stop loop, hold still at destination
     anim.stop();
-    void runPromise; // silence unused promise warning
-    anim.setFrame(RUNNER_RUN_FRAMES.runA);
+    void runPromise;
 
-    // Update runner map: move from old base to new base
-    this.runnerSprites.delete(fromBase);
-    this.runnerSprites.set(toBase, anim);
+    if (!this._destroyed) {
+      anim.setFrame(RUNNER_RUN_FRAMES.runA);
+      this.runnerSprites.delete(fromBase);
+      this.runnerSprites.set(toBase, anim);
+    }
   }
 
   async animateRunnerSlide(base: number): Promise<void> {
-    if (!this._loaded) return;
+    if (!this._loaded || this._destroyed) return;
 
     const anim = this.runnerSprites.get(base);
     if (anim === undefined) return;
@@ -460,18 +502,18 @@ export class SpritePlayerScene {
     ].filter((t): t is Texture => t !== undefined);
 
     await anim.playAnimation(slideFrames, 500, false);
-    // Hold on slide frame
-    anim.setFrame(RUNNER_SLIDE_FRAMES.sliding);
+    if (!this._destroyed) {
+      anim.setFrame(RUNNER_SLIDE_FRAMES.sliding);
+    }
   }
 
   // ── Animation: Umpire ─────────────────────────────────────────────
 
   async animateUmpireStrikeCall(): Promise<void> {
-    if (!this._loaded || this._umpire === null) return;
+    if (!this._loaded || this._umpire === null || this._destroyed) return;
 
     const umpire = this._umpire;
 
-    // Punch-out: standing → punch-out → return
     const strikeFrames = [
       this.catcherAltFrames[CATCHER_UMPIRE_ALT_FRAMES.umpireStand],
       this.catcherAltFrames[CATCHER_UMPIRE_ALT_FRAMES.umpirePunchOut],
@@ -480,20 +522,48 @@ export class SpritePlayerScene {
     ].filter((t): t is Texture => t !== undefined);
 
     await umpire.playAnimation(strikeFrames, 600, false);
-    umpire.setFrame(CATCHER_UMPIRE_ALT_FRAMES.umpireStand);
+    if (!this._destroyed) {
+      umpire.setFrame(CATCHER_UMPIRE_ALT_FRAMES.umpireStand);
+    }
   }
 
   async animateUmpireBallCall(): Promise<void> {
-    if (!this._loaded || this._umpire === null) return;
+    if (!this._loaded || this._umpire === null || this._destroyed) return;
 
     const umpire = this._umpire;
-    // Ball call: brief stand, return to standing
     const ballFrames = [
       this.catcherAltFrames[CATCHER_UMPIRE_ALT_FRAMES.umpireStand],
       this.catcherAltFrames[CATCHER_UMPIRE_ALT_FRAMES.umpireStand],
     ].filter((t): t is Texture => t !== undefined);
 
     await umpire.playAnimation(ballFrames, 300, false);
+  }
+
+  // ── Reset ─────────────────────────────────────────────────────────
+
+  resetToReady(): void {
+    if (!this._loaded) return;
+
+    // Return each fielder to their default ready frame
+    for (const [pos, anim] of this.fielderSprites.entries()) {
+      anim.stop();
+      if (pos === 'P') {
+        anim.setFrame(PITCHER_FRAMES.setPosition);
+      } else if (pos === 'C') {
+        anim.setFrame(CATCHER_UMPIRE_FRAMES.catcherCrouch);
+      } else {
+        anim.setFrame(FIELDER_FRAMES.ready);
+      }
+    }
+
+    if (this._batter !== null) {
+      this._batter.stop();
+      this._batter.setFrame(BATTER_FRAMES.stance);
+    }
+    if (this._umpire !== null) {
+      this._umpire.stop();
+      this._umpire.setFrame(CATCHER_UMPIRE_ALT_FRAMES.umpireStand);
+    }
   }
 
   // ── Getters ───────────────────────────────────────────────────────
@@ -509,6 +579,8 @@ export class SpritePlayerScene {
   // ── Cleanup ───────────────────────────────────────────────────────
 
   destroy(): void {
+    this._destroyed = true;
+
     for (const anim of this.fielderSprites.values()) anim.destroy();
     this.fielderSprites.clear();
 

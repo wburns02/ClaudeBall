@@ -1,30 +1,32 @@
 // ── SpriteSheetLoader.ts ──────────────────────────────────────────────────
-// Loads sprite sheet images and slices them into individual frame Texture objects.
-// Sprites are JPG files with gray/checkered backgrounds (no true transparency).
-// The backgrounds are acceptable on the dark diamond field.
+// Loads sprite sheet images, removes gray/white/checkered backgrounds via
+// BackgroundRemover, then slices the cleaned canvas into individual Texture
+// objects for Pixi.
 
-import { Assets, Texture, Rectangle } from 'pixi.js';
+import { ImageSource, Texture, Rectangle } from 'pixi.js';
 import type { SpriteSheetConfig } from './SpriteConfig.ts';
+import { removeBackground } from './BackgroundRemover.ts';
 
 // ── Cache ─────────────────────────────────────────────────────────────────
 
-// Map from URL → sliced frame textures
+// Map from cache-key → sliced frame textures
 const _frameCache = new Map<string, Texture[]>();
+
+// Map from URL → cleaned canvas (so we only run the pixel pass once per image)
+const _canvasCache = new Map<string, HTMLCanvasElement>();
 
 // ── Core loader ───────────────────────────────────────────────────────────
 
 /**
- * Load a sprite sheet from `url` and slice it into a cols×rows grid.
- * Returns an array of Texture objects in row-major order:
- *   frame 0 = top-left, frame 1 = next to right, ..., wrapping to next row.
+ * Load a sprite sheet from `url`, strip the background, and slice it into a
+ * cols×rows grid of Texture objects in row-major order.
  *
  * `trimTop` / `trimBottom` are fractional values (0–1) applied to each grid
- * cell's height to skip blank background padding at the top and bottom of each
- * frame. For example: trimTop=0.40, trimBottom=0.74 keeps only the middle
- * 34% of each cell's height where the actual player content lives.
+ * cell's height to skip blank padding.  E.g. trimTop=0.40, trimBottom=0.74
+ * keeps only the middle 34% of each cell where the player content lives.
  *
  * Results are cached — subsequent calls with the same arguments return
- * the cached array immediately.
+ * the cached array immediately without reprocessing.
  */
 export async function loadSpriteSheet(
   url: string,
@@ -40,13 +42,29 @@ export async function loadSpriteSheet(
     return cached;
   }
 
-  // Load the base texture via Pixi's asset pipeline
-  const baseTexture = await Assets.load<Texture>(url);
+  // ── Step 1: load & clean the image on a canvas ─────────────────────────
+  let canvas = _canvasCache.get(url);
+  if (canvas === undefined) {
+    try {
+      canvas = await removeBackground(url);
+      _canvasCache.set(url, canvas);
+    } catch (err) {
+      console.warn('[SpriteSheetLoader] BackgroundRemover failed, using raw image:', err);
+      // Fallback: create a plain canvas from the raw image
+      canvas = await _loadRawCanvas(url);
+      _canvasCache.set(url, canvas);
+    }
+  }
 
-  const cellW = baseTexture.width / cols;
-  const cellH = baseTexture.height / rows;
+  // ── Step 2: build a Pixi ImageSource from the canvas ───────────────────
+  // ImageSource auto-uploads on first render; no explicit .load() call needed.
+  const imgSource = new ImageSource({ resource: canvas });
 
-  // Apply vertical trim: slice only [trimTop…trimBottom] of each cell's height
+  const imgW = canvas.width;
+  const imgH = canvas.height;
+  const cellW = imgW / cols;
+  const cellH = imgH / rows;
+
   const sliceOffsetY = cellH * trimTop;
   const sliceH       = cellH * (trimBottom - trimTop);
 
@@ -61,9 +79,8 @@ export async function loadSpriteSheet(
         Math.round(sliceH),
       );
 
-      // Pixi 8: Texture.from with a frame requires using the source + frame API
       const frame = new Texture({
-        source: baseTexture.source,
+        source: imgSource,
         frame: rect,
       });
 
@@ -77,7 +94,6 @@ export async function loadSpriteSheet(
 
 /**
  * Convenience wrapper: load a SpriteSheetConfig object.
- * Passes trimTop/trimBottom through to the slicer if provided.
  */
 export async function loadSheet(config: SpriteSheetConfig): Promise<Texture[]> {
   return loadSpriteSheet(
@@ -106,7 +122,8 @@ export async function preloadSheets(
 }
 
 /**
- * Clear the internal texture cache (call on scene teardown to free GPU memory).
+ * Clear the internal texture and canvas caches (call on scene teardown to
+ * free GPU memory and allow GC to collect canvas objects).
  */
 export function clearSpriteCache(): void {
   for (const frames of _frameCache.values()) {
@@ -115,4 +132,23 @@ export function clearSpriteCache(): void {
     }
   }
   _frameCache.clear();
+  _canvasCache.clear();
+}
+
+// ── Fallback raw canvas loader ────────────────────────────────────────────
+
+function _loadRawCanvas(url: string): Promise<HTMLCanvasElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext('2d')?.drawImage(img, 0, 0);
+      resolve(c);
+    };
+    img.onerror = () => reject(new Error(`SpriteSheetLoader: failed to load ${url}`));
+    img.src = url;
+  });
 }

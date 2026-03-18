@@ -262,6 +262,11 @@ export class DiamondRenderer {
     return this._spriteMode;
   }
 
+  /** Returns the active SpritePlayerScene when in sprite mode, or null. */
+  getSpriteScene(): import('./sprites/SpritePlayerScene.ts').SpritePlayerScene | null {
+    return this._spriteMode ? this.spriteScene : null;
+  }
+
   destroy(): void {
     this._destroyed = true;
     // Stop the ticker before destroying scenes to avoid in-flight render errors
