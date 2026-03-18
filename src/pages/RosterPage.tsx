@@ -122,6 +122,13 @@ export function RosterPage() {
             <Button
               size="sm"
               variant="secondary"
+              onClick={() => navigate(`/franchise/player/${p.id}`)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
               onClick={() => navigate(`/franchise/trade?targetPlayer=${p.id}`)}
             >
               Trade
@@ -184,7 +191,13 @@ export function RosterPage() {
             {userTeam.roster.players.length} players on roster
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap justify-end">
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/create-player')}>
+            + Create Player
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster-manager')}>
+            Roster Manager
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/free-agency')}>
             Free Agency
           </Button>

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { Team } from '@/engine/types/index.ts';
-import type { SeasonState } from '@/engine/season/index.ts';
+import type { SeasonState, DayEvents } from '@/engine/season/index.ts';
+import { useStatsStore } from '@/stores/statsStore.ts';
+import { generateBatterLines, generatePitcherLine } from '@/engine/stats/QuickSimStatGenerator.ts';
 import { SeasonEngine } from '@/engine/season/index.ts';
 import type { SeriesMatchup } from '@/engine/season/index.ts';
 import { generateDraftClass } from '@/engine/gm/DraftEngine.ts';
@@ -8,6 +10,11 @@ import { makePick } from '@/engine/gm/DraftEngine.ts';
 import type { DraftClass } from '@/engine/gm/DraftEngine.ts';
 import { generateFreeAgents } from '@/engine/gm/FreeAgency.ts';
 import type { FreeAgentPool } from '@/engine/gm/FreeAgency.ts';
+import type { InjuryRecord } from '@/engine/season/InjuryEngine.ts';
+import type { AITradeRecord } from '@/engine/season/AITradeManager.ts';
+import type { MinorLeagueRoster, CallupEvent } from '@/engine/season/MinorLeagues.ts';
+import type { WaiverPlayer, WaiverEvent } from '@/engine/gm/WaiverWire.ts';
+import type { PlayerContract } from '@/engine/gm/ContractEngine.ts';
 
 interface FranchiseState {
   // State
@@ -27,6 +34,16 @@ interface FranchiseState {
   // Free agency state
   freeAgentPool: FreeAgentPool | null;
 
+  // Last day events
+  lastDayEvents: DayEvents | null;
+
+  // Season event logs
+  injuryLog: InjuryRecord[];
+  tradeLog: AITradeRecord[];
+  userTradeLog: string[];
+  waiverLog: WaiverEvent[];
+  callupLog: CallupEvent[];
+
   // Actions
   startFranchise: (teams: Team[], leagueStructure: Record<string, Record<string, string[]>>, userTeamId: string) => void;
   advanceDay: () => ReturnType<SeasonEngine['advanceDay']>;
@@ -43,6 +60,37 @@ interface FranchiseState {
   draftPlayer: (prospectId: string) => boolean;
   advanceSeason: () => void;
   initFreeAgency: () => void;
+
+  // Injury actions
+  getActiveInjuries: () => InjuryRecord[];
+  getTeamInjuries: (teamId: string) => InjuryRecord[];
+
+  // Minor league actions
+  getAAATeam: (teamId: string) => MinorLeagueRoster | undefined;
+  callUpPlayer: (teamId: string) => CallupEvent | null;
+  sendDownPlayer: (teamId: string, playerId: string) => CallupEvent | null;
+
+  // Waiver wire actions
+  getAvailableWaivers: () => WaiverPlayer[];
+  claimWaiverPlayer: (playerId: string, claimingTeamId: string) => WaiverEvent | null;
+  releasePlayerToWaivers: (teamId: string, playerId: string) => WaiverEvent | null;
+
+  // Contract actions
+  getPlayerContract: (playerId: string) => PlayerContract | undefined;
+  getTeamPayroll: (teamId: string) => number;
+
+  // Trade deadline / logs
+  isTradeDeadlinePassed: () => boolean;
+  getAITradeLog: () => AITradeRecord[];
+  addUserTradeLog: (description: string) => void;
+
+  // Player & team customization
+  updatePlayer: (playerId: string, updates: Partial<import('@/engine/types/player.ts').Player>) => void;
+  createPlayer: (player: import('@/engine/types/player.ts').Player, teamId: string) => void;
+  releasePlayer: (playerId: string, teamId: string) => void;
+  movePlayer: (playerId: string, fromTeamId: string, toTeamId: string) => void;
+  updateTeam: (teamId: string, updates: Partial<Omit<Team, 'id' | 'roster' | 'lineup'>>) => void;
+  reorderLineup: (teamId: string, newLineup: Team['lineup']) => void;
 }
 
 export const useFranchiseStore = create<FranchiseState>((set, get) => ({
@@ -57,6 +105,12 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
   currentDraftPick: 0,
   draftComplete: false,
   freeAgentPool: null,
+  lastDayEvents: null,
+  injuryLog: [],
+  tradeLog: [],
+  userTradeLog: [],
+  waiverLog: [],
+  callupLog: [],
 
   startFranchise: (teams, leagueStructure, userTeamId) => {
     const engine = new SeasonEngine(teams, leagueStructure, userTeamId);
@@ -72,6 +126,12 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
       currentDraftPick: 0,
       draftComplete: false,
       freeAgentPool: null,
+      lastDayEvents: null,
+      injuryLog: [],
+      tradeLog: [],
+      userTradeLog: [],
+      waiverLog: [],
+      callupLog: [],
     });
   },
 
@@ -79,7 +139,15 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
     const { engine } = get();
     if (!engine) return null;
     const userGame = engine.advanceDay();
-    set({ season: { ...engine.getState() } });
+    const events = engine.getLastDayEvents();
+    set(s => ({
+      season: { ...engine.getState() },
+      lastDayEvents: events,
+      injuryLog: [...s.injuryLog, ...events.injuries.map(e => e.record)],
+      tradeLog: [...s.tradeLog, ...events.aiTrades],
+      waiverLog: [...s.waiverLog, ...events.waivers],
+      callupLog: [...s.callupLog, ...events.callups],
+    }));
     return userGame;
   },
 
@@ -87,7 +155,11 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
     const { engine } = get();
     if (!engine) return;
     engine.simDays(count);
-    set({ season: { ...engine.getState() } });
+    set({
+      season: { ...engine.getState() },
+      injuryLog: engine.injuryEngine.getAllInjuries(),
+      tradeLog: engine.aiTradeManager.getTradeLog(),
+    });
   },
 
   simGame: (gameId) => {
@@ -96,6 +168,39 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
     const game = engine.getState().schedule.find(g => g.id === gameId);
     if (game && !game.played) {
       engine.simGame(game);
+      // Record approximate stats for quick-simmed games
+      if (game.awayScore !== undefined && game.homeScore !== undefined) {
+        try {
+          const rng = engine.getRng();
+          const awayTeam = engine.getTeam(game.awayId);
+          const homeTeam = engine.getTeam(game.homeId);
+          const season = engine.getState();
+          if (awayTeam && homeTeam) {
+            const awayBatters = generateBatterLines(awayTeam, game.awayScore, rng);
+            const homeBatters = generateBatterLines(homeTeam, game.homeScore, rng);
+            const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng);
+            const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng);
+            useStatsStore.getState().recordGameStats(
+              game.id, game.date, season.year,
+              game.awayId, game.homeId,
+              awayBatters, homeBatters,
+              awayPitchers, homePitchers,
+              (playerId) => {
+                const aPlayer = awayTeam.roster.players.find(p => p.id === playerId);
+                if (aPlayer) return game.awayId;
+                return game.homeId;
+              },
+              (playerId) => {
+                const p = awayTeam.roster.players.find(pl => pl.id === playerId)
+                  ?? homeTeam.roster.players.find(pl => pl.id === playerId);
+                return p?.position ?? 'DH';
+              },
+            );
+          }
+        } catch {
+          // Non-critical — don't break the game if stat recording fails
+        }
+      }
       set({ season: { ...engine.getState() } });
     }
   },
@@ -272,6 +377,11 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
       currentDraftPick: 0,
       draftComplete: false,
       freeAgentPool: null,
+      lastDayEvents: null,
+      injuryLog: [],
+      tradeLog: [],
+      waiverLog: [],
+      callupLog: [],
     });
   },
 
@@ -281,5 +391,230 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
     const rng = engine.getRng();
     const pool = generateFreeAgents(40, rng);
     set({ freeAgentPool: pool });
+  },
+
+  // Injury actions
+  getActiveInjuries: () => {
+    const { engine } = get();
+    if (!engine) return [];
+    return engine.injuryEngine.getActiveInjuries();
+  },
+
+  getTeamInjuries: (teamId: string) => {
+    const { engine } = get();
+    if (!engine) return [];
+    return engine.injuryEngine.getTeamInjuries(teamId);
+  },
+
+  // Minor league actions
+  getAAATeam: (teamId: string) => {
+    const { engine } = get();
+    if (!engine) return undefined;
+    return engine.minorLeagues.getAffiliate(teamId);
+  },
+
+  callUpPlayer: (teamId: string) => {
+    const { engine } = get();
+    if (!engine) return null;
+    const team = engine.getTeam(teamId);
+    if (!team) return null;
+    const event = engine.minorLeagues.callUp(teamId, team.roster.players, engine.getState().currentDay);
+    if (event) set(s => ({ callupLog: [...s.callupLog, event] }));
+    return event;
+  },
+
+  sendDownPlayer: (teamId: string, playerId: string) => {
+    const { engine } = get();
+    if (!engine) return null;
+    const team = engine.getTeam(teamId);
+    if (!team) return null;
+    const event = engine.minorLeagues.sendDown(teamId, team.roster.players, playerId);
+    if (event) set(s => ({ callupLog: [...s.callupLog, event] }));
+    return event;
+  },
+
+  // Waiver wire actions
+  getAvailableWaivers: () => {
+    const { engine, season } = get();
+    if (!engine || !season) return [];
+    return engine.waiverWire.getAvailable(season.currentDay);
+  },
+
+  claimWaiverPlayer: (playerId: string, claimingTeamId: string) => {
+    const { engine, season } = get();
+    if (!engine || !season) return null;
+    const claimingTeam = engine.getTeam(claimingTeamId);
+    if (!claimingTeam) return null;
+    const event = engine.waiverWire.claimPlayer(playerId, claimingTeamId, claimingTeam.roster.players, season.currentDay);
+    if (event) set(s => ({ waiverLog: [...s.waiverLog, event] }));
+    return event;
+  },
+
+  releasePlayerToWaivers: (teamId: string, playerId: string) => {
+    const { engine, season } = get();
+    if (!engine || !season) return null;
+    const team = engine.getTeam(teamId);
+    if (!team) return null;
+    const idx = team.roster.players.findIndex((p: import('@/engine/types/player.ts').Player) => p.id === playerId);
+    if (idx === -1) return null;
+    const [player] = team.roster.players.splice(idx, 1);
+    const event = engine.waiverWire.releasePlayer(player, teamId, season.currentDay);
+    set(s => ({ waiverLog: [...s.waiverLog, event] }));
+    return event;
+  },
+
+  // Contract actions
+  getPlayerContract: (playerId: string) => {
+    const { engine } = get();
+    if (!engine) return undefined;
+    return engine.contractEngine.getContract(playerId);
+  },
+
+  getTeamPayroll: (teamId: string) => {
+    const { engine } = get();
+    if (!engine) return 0;
+    return engine.contractEngine.getTeamPayroll(teamId);
+  },
+
+  // Trade deadline / logs
+  isTradeDeadlinePassed: () => {
+    const { season } = get();
+    return season?.tradeDeadlinePassed ?? false;
+  },
+
+  getAITradeLog: () => {
+    const { engine } = get();
+    if (!engine) return [];
+    return engine.aiTradeManager.getTradeLog();
+  },
+
+  addUserTradeLog: (description: string) => {
+    set(s => ({ userTradeLog: [description, ...s.userTradeLog] }));
+  },
+
+  updatePlayer: (playerId, updates) => {
+    const { teams } = get();
+    const newTeams = teams.map(team => {
+      const idx = team.roster.players.findIndex(p => p.id === playerId);
+      if (idx === -1) return team;
+      const updated = { ...team.roster.players[idx], ...updates };
+      const newPlayers = [...team.roster.players];
+      newPlayers[idx] = updated;
+      return { ...team, roster: { ...team.roster, players: newPlayers } };
+    });
+    set({ teams: newTeams });
+    // Sync engine teams if live
+    const { engine } = get();
+    if (engine) {
+      for (const team of newTeams) {
+        const engineTeam = engine.getTeam(team.id);
+        if (engineTeam) {
+          engineTeam.roster.players = team.roster.players;
+        }
+      }
+    }
+  },
+
+  createPlayer: (player, teamId) => {
+    const { teams } = get();
+    const newTeams = teams.map(team => {
+      if (team.id !== teamId) return team;
+      return { ...team, roster: { ...team.roster, players: [...team.roster.players, player] } };
+    });
+    set({ teams: newTeams });
+    const { engine } = get();
+    if (engine) {
+      const engineTeam = engine.getTeam(teamId);
+      if (engineTeam) engineTeam.roster.players = newTeams.find(t => t.id === teamId)!.roster.players;
+    }
+  },
+
+  releasePlayer: (playerId, teamId) => {
+    const { teams } = get();
+    const newTeams = teams.map(team => {
+      if (team.id !== teamId) return team;
+      const newPlayers = team.roster.players.filter(p => p.id !== playerId);
+      const newLineup = team.lineup.filter(s => s.playerId !== playerId);
+      const newBullpen = team.bullpen.filter(id => id !== playerId);
+      const newPitcherId = team.pitcherId === playerId
+        ? (newPlayers.find(p => p.position === 'P')?.id ?? '')
+        : team.pitcherId;
+      return { ...team, roster: { ...team.roster, players: newPlayers }, lineup: newLineup, bullpen: newBullpen, pitcherId: newPitcherId };
+    });
+    set({ teams: newTeams });
+    const { engine } = get();
+    if (engine) {
+      const engineTeam = engine.getTeam(teamId);
+      if (engineTeam) {
+        const updated = newTeams.find(t => t.id === teamId)!;
+        engineTeam.roster.players = updated.roster.players;
+        engineTeam.lineup = updated.lineup;
+        engineTeam.bullpen = updated.bullpen;
+        engineTeam.pitcherId = updated.pitcherId;
+      }
+    }
+  },
+
+  movePlayer: (playerId, fromTeamId, toTeamId) => {
+    const { teams } = get();
+    let playerToMove: import('@/engine/types/player.ts').Player | null = null;
+    const newTeams = teams.map(team => {
+      if (team.id === fromTeamId) {
+        const player = team.roster.players.find(p => p.id === playerId);
+        if (player) playerToMove = player;
+        const newPlayers = team.roster.players.filter(p => p.id !== playerId);
+        const newLineup = team.lineup.filter(s => s.playerId !== playerId);
+        const newBullpen = team.bullpen.filter(id => id !== playerId);
+        const newPitcherId = team.pitcherId === playerId
+          ? (newPlayers.find(p => p.position === 'P')?.id ?? '')
+          : team.pitcherId;
+        return { ...team, roster: { ...team.roster, players: newPlayers }, lineup: newLineup, bullpen: newBullpen, pitcherId: newPitcherId };
+      }
+      if (team.id === toTeamId && playerToMove) {
+        return { ...team, roster: { ...team.roster, players: [...team.roster.players, playerToMove!] } };
+      }
+      return team;
+    });
+    // If playerToMove wasn't found yet (order issue), do a second pass
+    if (!playerToMove) return;
+    set({ teams: newTeams });
+    const { engine } = get();
+    if (engine) {
+      for (const t of newTeams.filter(t => t.id === fromTeamId || t.id === toTeamId)) {
+        const et = engine.getTeam(t.id);
+        if (et) {
+          et.roster.players = t.roster.players;
+          et.lineup = t.lineup;
+          et.bullpen = t.bullpen;
+          et.pitcherId = t.pitcherId;
+        }
+      }
+    }
+  },
+
+  updateTeam: (teamId, updates) => {
+    const { teams } = get();
+    const newTeams = teams.map(team =>
+      team.id === teamId ? { ...team, ...updates } : team
+    );
+    set({ teams: newTeams });
+    const { engine } = get();
+    if (engine) {
+      const et = engine.getTeam(teamId);
+      if (et) Object.assign(et, updates);
+    }
+  },
+
+  reorderLineup: (teamId, newLineup) => {
+    const { teams } = get();
+    const newTeams = teams.map(team =>
+      team.id === teamId ? { ...team, lineup: newLineup } : team
+    );
+    set({ teams: newTeams });
+    const { engine } = get();
+    if (engine) {
+      const et = engine.getTeam(teamId);
+      if (et) et.lineup = newLineup;
+    }
   },
 }));

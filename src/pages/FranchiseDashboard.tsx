@@ -78,11 +78,26 @@ export function FranchiseDashboard() {
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster')}>
             Roster
           </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/leaders')}>
+            Leaders
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/team-stats/${userTeamId}`)}>
+            Team Stats
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/records')}>
+            Records
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/trade')}>
             Trades
           </Button>
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/free-agency')}>
             FA
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster-manager')}>
+            Roster Mgr
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/team/${userTeamId}`)}>
+            Edit Team
           </Button>
           {(isPostseason || regularSeasonComplete) && (
             <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/playoffs')}>
