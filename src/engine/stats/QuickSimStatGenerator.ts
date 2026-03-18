@@ -69,9 +69,16 @@ export function generateBatterLines(
     const h = Math.min(ab, Math.min(totalHitsLeft, Math.round(ab * hitRate * (0.7 + rng.next() * 0.6))));
     totalHitsLeft = Math.max(0, totalHitsLeft - h);
 
-    // HR from power
-    const hrRate = clamp(0.02 + (power / 100) * 0.10, 0, 0.12);
-    const hr = Math.min(h, Math.min(totalHRLeft, Math.floor(ab * hrRate * (rng.next() * 1.5))));
+    // HR from power — use probabilistic approach: each AB has hrRate chance of HR
+    const hrRate = clamp(0.02 + (power / 100) * 0.10, 0.01, 0.12);
+    // Poisson approximation: expected HRs = ab * hrRate, generate via CDF sampling
+    const hrExpectedPerBatter = ab * hrRate;
+    const hrRoll = rng.next();
+    // P(HR >= 1) = 1 - e^(-lambda), P(HR >= 2) = e^(-lambda)*(1+lambda) continuation...
+    // Simple approach: floor(expected) + 1 if random < fractional part (add noise)
+    const hrBase = Math.floor(hrExpectedPerBatter);
+    const hrBonus = hrRoll < (hrExpectedPerBatter - hrBase) ? 1 : 0;
+    const hr = Math.min(h, Math.min(totalHRLeft, hrBase + hrBonus));
     totalHRLeft = Math.max(0, totalHRLeft - hr);
 
     // Doubles/triples — use consistent rates, not 0..1 random multiplier

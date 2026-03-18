@@ -316,6 +316,7 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
               pst.so += p.so;
               pst.hr += p.hr;
               pst.pitchCount += p.pitchCount;
+              ps.gamesPlayed++;
               if (p.decision === 'W') pst.wins++;
               if (p.decision === 'L') pst.losses++;
               if (p.decision === 'S') pst.saves++;
