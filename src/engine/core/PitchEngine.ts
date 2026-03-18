@@ -13,12 +13,15 @@ export interface PitchOutcome {
 /**
  * Determines pitch selection and outcome (ball/strike/contact/foul).
  *
- * Key factors: pitcher control/stuff, batter eye/contact, count leverage.
+ * Calibrated to MLB baselines:
+ * - Zone rate: ~46%
+ * - In-zone swing rate: ~67%
+ * - Chase rate: ~30%
+ * - In-zone contact rate: ~83%
+ * - Chase contact rate: ~58%
+ * - K%: ~22%, BB%: ~8%
  */
 export class PitchEngine {
-  /**
-   * Simulate a single pitch.
-   */
   static throw(
     pitcher: Player,
     batter: Player,
@@ -36,22 +39,25 @@ export class PitchEngine {
     if (!swung) {
       result = inZone ? 'called_strike' : 'ball';
     } else if (!inZone) {
-      // Swung at ball outside zone — stuff and eye determine contact chance
-      const chaseContactChance = 0.25 * ratingToProb(this.getBatterContact(batter, pitcher));
-      if (rng.chance(chaseContactChance)) {
-        result = rng.chance(0.55) ? 'foul' : 'contact';
+      // Chase contact: MLB ~58%, mostly fouls
+      const contactRating = this.getBatterContact(batter, pitcher);
+      const chaseContact = clamp(0.48 + ratingToProb(contactRating) * 0.18 - ratingToProb(pitcher.pitching.stuff) * 0.08, 0.38, 0.72);
+      if (rng.chance(chaseContact)) {
+        result = rng.chance(0.65) ? 'foul' : 'contact'; // chase contact is usually foul
       } else {
         result = 'swinging_strike';
       }
     } else {
-      // Swung at strike — contact vs whiff
+      // In-zone contact: MLB ~83%
       const contactRating = this.getBatterContact(batter, pitcher);
-      const stuffPenalty = ratingToProb(pitcher.pitching.stuff) * 0.2;
-      const contactChance = clamp(ratingToProb(contactRating) * 0.85 + 0.10 - stuffPenalty, 0.30, 0.95);
+      const stuffPenalty = ratingToProb(pitcher.pitching.stuff) * 0.06;
+      const contactChance = clamp(
+        ratingToProb(contactRating) * 0.15 + 0.78 - stuffPenalty,
+        0.72, 0.95
+      );
 
       if (rng.chance(contactChance)) {
-        // Contact — foul or in play
-        const foulChance = strikes === 2 ? 0.40 : 0.32;
+        const foulChance = strikes === 2 ? 0.45 : 0.38;
         result = rng.chance(foulChance) ? 'foul' : 'contact';
       } else {
         result = 'swinging_strike';
@@ -66,7 +72,6 @@ export class PitchEngine {
     if (rep.length === 0) return 'fastball';
     if (rep.length === 1) return rep[0];
 
-    // Behind in count → more fastballs; ahead → more offspeed
     const isBehind = balls > strikes;
     const isAhead = strikes > balls;
 
@@ -95,16 +100,17 @@ export class PitchEngine {
 
   private static determineLocation(pitcher: Player, balls: number, strikes: number, rng: RandomProvider): boolean {
     const control = ratingToProb(pitcher.pitching.control);
-    const fatiguePenalty = (pitcher.state.fatigue / 100) * 0.15;
+    const fatiguePenalty = (pitcher.state.fatigue / 100) * 0.10;
 
-    // Pitchers aim for zone ~55% of time on average, control modifies
-    let zoneRate = 0.42 + control * 0.22 - fatiguePenalty;
+    // Tuned for ~8% BB rate (slightly above MLB zone rate)
+    let zoneRate = 0.46 + control * 0.12 - fatiguePenalty;
 
-    // Count adjustments: behind → throw strikes, ahead → nibble
-    if (balls >= 3 && strikes < 2) zoneRate += 0.12;
-    else if (strikes === 2 && balls <= 1) zoneRate -= 0.08;
+    // Count adjustments
+    if (balls >= 3 && strikes < 2) zoneRate += 0.14;
+    else if (balls >= 2 && strikes === 0) zoneRate += 0.06;
+    else if (strikes === 2 && balls <= 1) zoneRate -= 0.05;
 
-    return rng.chance(clamp(zoneRate, 0.30, 0.72));
+    return rng.chance(clamp(zoneRate, 0.32, 0.62));
   }
 
   private static determineSwing(
@@ -117,25 +123,24 @@ export class PitchEngine {
     rng: RandomProvider
   ): boolean {
     const eye = ratingToProb(batter.batting.eye);
-    const deception = ratingToProb(pitcher.pitching.movement) * 0.15;
+    const deception = ratingToProb(pitcher.pitching.movement) * 0.08;
 
     if (inZone) {
-      // Swing at strikes
-      let swingRate = 0.60 + eye * 0.12 - deception;
-      if (strikes === 2) swingRate += 0.15; // Protect
-      if (balls === 3) swingRate += 0.08;
-      return rng.chance(clamp(swingRate, 0.45, 0.90));
+      // MLB in-zone swing rate ~67%
+      let swingRate = 0.60 + eye * 0.08 - deception;
+      if (strikes === 2) swingRate += 0.12;
+      if (balls === 3) swingRate += 0.10;
+      return rng.chance(clamp(swingRate, 0.52, 0.85));
     } else {
-      // Chase rate
-      let chaseRate = 0.32 - eye * 0.18 + deception;
+      // MLB chase rate ~30%
+      let chaseRate = 0.30 - eye * 0.12 + deception;
       if (strikes === 2) chaseRate += 0.08;
       if (balls === 3 && strikes < 2) chaseRate -= 0.10;
-      return rng.chance(clamp(chaseRate, 0.10, 0.45));
+      return rng.chance(clamp(chaseRate, 0.14, 0.40));
     }
   }
 
   private static getBatterContact(batter: Player, pitcher: Player): number {
-    const contactVsHand = pitcher.throws === 'L' ? batter.batting.contact_L : batter.batting.contact_R;
-    return contactVsHand;
+    return pitcher.throws === 'L' ? batter.batting.contact_L : batter.batting.contact_R;
   }
 }

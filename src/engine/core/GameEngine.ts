@@ -69,8 +69,8 @@ export class GameEngine {
     this.state.phase = 'final';
     this.buildBoxScore();
 
-    const awayTotal = this.state.score.away.reduce((a, b) => a + b, 0);
-    const homeTotal = this.state.score.home.reduce((a, b) => a + b, 0);
+    const awayTotal = this.totalRuns('away');
+    const homeTotal = this.totalRuns('home');
     this.state.events.push({
       type: 'game_end',
       description: `Final: ${this.state.away.abbreviation} ${awayTotal}, ${this.state.home.abbreviation} ${homeTotal}`,
@@ -83,17 +83,52 @@ export class GameEngine {
 
   /** Simulate one at-bat and return events (for pitch-by-pitch UI mode). */
   simulateNextAtBat(): { events: GameEvent[]; gameOver: boolean } {
-    if (this.state.phase === 'pregame') this.state.phase = 'in_progress';
-    if (this.isGameOver()) return { events: [], gameOver: true };
+    if (this.state.phase === 'pregame') {
+      this.state.phase = 'in_progress';
+      // Initialize first half-inning
+      this.ensureCurrentInningScoreEntry();
+      this.state.events.push({
+        type: 'inning_change',
+        description: 'Top of inning 1',
+        inning: 1,
+        half: 'top',
+      });
+    }
+
+    if (this.isGameOver()) {
+      this.finalizeGame();
+      return { events: [], gameOver: true };
+    }
 
     const events = this.resolveOneAtBat();
-    const gameOver = this.isGameOver();
 
-    if (gameOver) {
-      this.state.phase = 'final';
-      this.buildBoxScore();
-      const awayTotal = this.state.score.away.reduce((a, b) => a + b, 0);
-      const homeTotal = this.state.score.home.reduce((a, b) => a + b, 0);
+    // Check if half-inning is over
+    if (this.state.inning.outs >= 3) {
+      this.advanceToNextHalf();
+
+      if (this.isGameOver()) {
+        this.finalizeGame();
+        return { events, gameOver: true };
+      }
+
+      // Emit inning change
+      const { inning } = this.state;
+      const changeEvent: GameEvent = {
+        type: 'inning_change',
+        description: `${inning.half === 'top' ? 'Top' : 'Bottom'} of inning ${inning.inning}`,
+        inning: inning.inning,
+        half: inning.half,
+      };
+      this.state.events.push(changeEvent);
+      events.push(changeEvent);
+      this.ensureCurrentInningScoreEntry();
+    }
+
+    // Check walkoff
+    if (this.isGameOver()) {
+      this.finalizeGame();
+      const awayTotal = this.totalRuns('away');
+      const homeTotal = this.totalRuns('home');
       const endEvent: GameEvent = {
         type: 'game_end',
         description: `Final: ${this.state.away.abbreviation} ${awayTotal}, ${this.state.home.abbreviation} ${homeTotal}`,
@@ -102,31 +137,33 @@ export class GameEngine {
       };
       this.state.events.push(endEvent);
       events.push(endEvent);
+      return { events, gameOver: true };
     }
 
-    return { events, gameOver };
+    return { events, gameOver: false };
+  }
+
+  private finalizeGame(): void {
+    this.state.phase = 'final';
+    this.buildBoxScore();
   }
 
   getState(): GameState {
     return this.state;
   }
 
+  private totalRuns(side: 'away' | 'home'): number {
+    return this.state.score[side].reduce((a, b) => a + b, 0);
+  }
+
   private simulateHalfInning(): void {
     const { inning } = this.state;
     const isTop = inning.half === 'top';
 
-    // Check walkoff
-    if (!isTop && inning.inning >= 9) {
-      const homeTotal = this.state.score.home.reduce((a, b) => a + b, 0);
-      const awayTotal = this.state.score.away.reduce((a, b) => a + b, 0);
-      if (homeTotal > awayTotal) return;
-    }
-
-    // Skip bottom of 9th+ if home is ahead
-    if (!isTop && inning.inning >= 9) {
-      const awayTotal = this.state.score.away.reduce((a, b) => a + b, 0);
-      const homeTotal = this.state.score.home.reduce((a, b) => a + b, 0);
-      if (homeTotal > awayTotal) return;
+    // Skip bottom of 9th+ if home is already ahead
+    if (!isTop && inning.inning >= 9 && this.totalRuns('home') > this.totalRuns('away')) {
+      this.advanceToNextHalf();
+      return;
     }
 
     this.state.events.push({
@@ -136,45 +173,43 @@ export class GameEngine {
       half: inning.half,
     });
 
-    let runsThisInning = 0;
+    // Initialize score entry for this half-inning
+    this.ensureCurrentInningScoreEntry();
+
     inning.outs = 0;
     inning.bases = createEmptyBaseState();
 
     while (inning.outs < 3) {
-      const abEvents = this.resolveOneAtBat();
+      this.resolveOneAtBat();
 
       // Check for walkoff
-      if (!isTop && inning.inning >= 9) {
-        const homeTotal = this.state.score.home.reduce((a, b) => a + b, 0) + runsThisInning;
-        const awayTotal = this.state.score.away.reduce((a, b) => a + b, 0);
-        if (homeTotal > awayTotal) {
-          if (isTop) {
-            this.state.score.away.push(runsThisInning);
-          } else {
-            this.state.score.home.push(runsThisInning);
-          }
-          this.advanceInning();
-          return;
-        }
+      if (!isTop && inning.inning >= 9 && this.totalRuns('home') > this.totalRuns('away')) {
+        break;
       }
-
-      // Count runs from the last at-bat result event
-      for (const ev of abEvents) {
-        if (ev.type === 'at_bat_result') {
-          runsThisInning += ev.rbiCount;
-        }
-      }
-
-      if (inning.outs >= 3) break;
     }
 
-    if (isTop) {
-      this.state.score.away.push(runsThisInning);
+    this.advanceToNextHalf();
+  }
+
+  private advanceToNextHalf(): void {
+    const { inning } = this.state;
+    if (inning.half === 'top') {
+      inning.half = 'bottom';
     } else {
-      this.state.score.home.push(runsThisInning);
+      inning.half = 'top';
+      inning.inning++;
     }
+    inning.outs = 0;
+    inning.balls = 0;
+    inning.strikes = 0;
+    inning.bases = createEmptyBaseState();
+  }
 
-    this.advanceInning();
+  private ensureCurrentInningScoreEntry(): void {
+    const idx = this.state.inning.inning - 1;
+    const isTop = this.state.inning.half === 'top';
+    const arr = isTop ? this.state.score.away : this.state.score.home;
+    while (arr.length <= idx) arr.push(0);
   }
 
   private resolveOneAtBat(): GameEvent[] {
@@ -183,19 +218,15 @@ export class GameEngine {
     const battingTeam = isTop ? this.state.away : this.state.home;
     const pitchingTeam = isTop ? this.state.home : this.state.away;
 
-    // Get current batter
     const batterIdx = isTop ? this.state.currentBatterIndex.away : this.state.currentBatterIndex.home;
     const batter = getLineupPlayer(battingTeam, batterIdx % 9);
     if (!batter) return [];
 
-    // Get pitcher
     const pitcher = getPlayer(pitchingTeam, pitchingTeam.pitcherId);
     if (!pitcher) return [];
 
-    // Build fielders map
     const fielders = this.buildFieldersMap(pitchingTeam);
 
-    // Resolve at-bat
     const result = AtBatResolver.resolve(
       batter, pitcher, fielders,
       inning.bases, inning.outs,
@@ -206,24 +237,31 @@ export class GameEngine {
     inning.bases = result.newBases;
     inning.outs += result.outsRecorded;
 
+    // Add runs to score
+    if (result.runsScored > 0) {
+      const scoreArr = isTop ? this.state.score.away : this.state.score.home;
+      const idx = inning.inning - 1;
+      while (scoreArr.length <= idx) scoreArr.push(0);
+      scoreArr[idx] += result.runsScored;
+    }
+
     // Update pitcher stats
     const pStats = this.pitcherStats.get(pitchingTeam.pitcherId);
     if (pStats) {
       pStats.pitchCount += result.totalPitches;
-      if (result.isStrikeout) { pStats.so++; pStats.ip += 3; }
+      if (result.isStrikeout) { pStats.so++; pStats.ip += 1; }
       else if (result.isWalk) pStats.bb++;
       else if (result.isHit) {
         pStats.h++;
         if (result.isHomeRun) pStats.hr++;
-        // Outs recorded on fielding
-        pStats.ip += result.outsRecorded * 3;
+        pStats.ip += result.outsRecorded;
       } else {
-        pStats.ip += result.outsRecorded * 3;
+        pStats.ip += result.outsRecorded;
       }
       pStats.r += result.runsScored;
-      pStats.er += result.runsScored; // Simplified: all runs are earned unless error
+      pStats.er += result.runsScored;
       if (result.isError) {
-        pStats.er = Math.max(0, pStats.er - result.runsScored); // Unearned on error
+        pStats.er = Math.max(0, pStats.er - result.runsScored);
       }
     }
 
@@ -236,14 +274,6 @@ export class GameEngine {
       this.state.currentBatterIndex.away++;
     } else {
       this.state.currentBatterIndex.home++;
-    }
-
-    // Add runs to score for current inning tracking
-    if (result.runsScored > 0) {
-      const scoreArr = isTop ? this.state.score.away : this.state.score.home;
-      const currentInningIdx = this.state.inning.inning - 1;
-      while (scoreArr.length <= currentInningIdx) scoreArr.push(0);
-      scoreArr[currentInningIdx] += result.runsScored;
     }
 
     this.state.events.push(...result.events);
@@ -259,41 +289,29 @@ export class GameEngine {
     return map;
   }
 
-  private advanceInning(): void {
-    const { inning } = this.state;
-    if (inning.half === 'top') {
-      inning.half = 'bottom';
-    } else {
-      inning.half = 'top';
-      inning.inning++;
-    }
-    inning.outs = 0;
-    inning.balls = 0;
-    inning.strikes = 0;
-    inning.bases = createEmptyBaseState();
-  }
-
   private isGameOver(): boolean {
     const { inning } = this.state;
-    const awayTotal = this.state.score.away.reduce((a, b) => a + b, 0);
-    const homeTotal = this.state.score.home.reduce((a, b) => a + b, 0);
+    const awayTotal = this.totalRuns('away');
+    const homeTotal = this.totalRuns('home');
 
-    // Game can't end before 9 innings
-    if (inning.inning < 9) return false;
+    // Can't end before 9 full half-innings have been played
+    // We check based on the current state after the half-inning has advanced
 
-    // Bottom of 9th+: home team ahead after top half
-    if (inning.half === 'bottom' && inning.outs >= 3 && homeTotal > awayTotal) return true;
+    // After top of 9th+, about to play bottom:
+    // If home is already ahead, game is over (skip bottom)
+    if (inning.half === 'bottom' && inning.inning >= 9 && homeTotal > awayTotal && inning.outs === 0) {
+      return true;
+    }
 
-    // Top just finished in 9th+, check if home is ahead (walkoff handled inline)
-    if (inning.half === 'top' && inning.inning > 9 && inning.outs >= 3 && homeTotal > awayTotal) return true;
+    // After bottom of 9th+ completes:
+    if (inning.half === 'top' && inning.inning >= 10) {
+      // Previous bottom completed, check if not tied
+      if (awayTotal !== homeTotal) return true;
+    }
 
-    // End of full inning 9+
-    if (inning.inning > 9 && inning.half === 'top' && awayTotal !== homeTotal) return true;
-
-    // After bottom of 9th+, if scores not tied
-    if (inning.inning >= 9 && inning.half === 'top' && inning.outs >= 3) {
-      // Top of next inning: game over if not tied after full 9
-      if (awayTotal !== homeTotal && this.state.score.home.length >= 9) return true;
+    // Walkoff: during bottom of 9th+, home takes lead mid-inning
+    if (inning.half === 'bottom' && inning.inning >= 9 && homeTotal > awayTotal) {
+      return true;
     }
 
     return false;
@@ -318,44 +336,30 @@ export class GameEngine {
       if (!player) continue;
       const name = getPlayerName(player);
 
-      let ab = 0, r = 0, h = 0, rbi = 0, bb = 0, so = 0, hr = 0, doubles = 0, triples = 0, sb = 0;
+      let ab = 0, r = 0, h = 0, rbi = 0, bb = 0, so = 0, hr = 0, doubles = 0, triples = 0;
 
       for (const ev of events) {
         if (ev.type !== 'at_bat_result' || ev.batter !== name) continue;
 
         const res = ev.result;
-        if (res === 'walk') { bb++; rbi += ev.rbiCount; continue; }
-        if (res === 'sacrifice_fly') { rbi += ev.rbiCount; continue; }
-
-        ab++;
         rbi += ev.rbiCount;
 
+        if (res === 'walk') { bb++; continue; }
+        if (res === 'sacrifice_fly') { continue; }
+
+        ab++;
         if (res === 'strikeout_swinging' || res === 'strikeout_looking') so++;
         if (res === 'single') h++;
         if (res === 'double') { h++; doubles++; }
         if (res === 'triple') { h++; triples++; }
-        if (res === 'home_run') { h++; hr++; }
-      }
-
-      // Count runs
-      for (const ev of events) {
-        if (ev.type === 'at_bat_result') {
-          // Check if this player scored (simplified — count RBIs as proxy for now)
-        }
-      }
-
-      // Count runs scored from scoring runners in at_bat events
-      for (const ev of events) {
-        if (ev.type === 'at_bat_result' && ev.result === 'home_run' && ev.batter === name) {
-          r++;
-        }
+        if (res === 'home_run') { h++; hr++; r++; }
       }
 
       const avg = ab === 0 ? '.000' : (h / ab).toFixed(3).replace(/^0/, '');
 
       lines.push({
         playerId: spot.playerId, name, position: spot.position,
-        ab, r, h, rbi, bb, so, hr, doubles, triples, sb, avg,
+        ab, r, h, rbi, bb, so, hr, doubles, triples, sb: 0, avg,
       });
     }
 
@@ -368,8 +372,8 @@ export class GameEngine {
     const pitcher = getPlayer(team, team.pitcherId);
     if (!pitcher || !stats) return lines;
 
-    const awayTotal = this.state.score.away.reduce((a, b) => a + b, 0);
-    const homeTotal = this.state.score.home.reduce((a, b) => a + b, 0);
+    const awayTotal = this.totalRuns('away');
+    const homeTotal = this.totalRuns('home');
     const isHome = team.id === this.state.home.id;
     const won = isHome ? homeTotal > awayTotal : awayTotal > homeTotal;
 

@@ -71,8 +71,8 @@ export class FieldingEngine {
     const range = fielder ? this.getFielderRange(fielder, fieldPos) : 50;
     const difficulty = clamp((contact.distance - 200) / 200, 0, 1);
 
-    let catchChance = 0.90 - difficulty * 0.4 + ratingToProb(range) * 0.25;
-    catchChance = clamp(catchChance, 0.25, 0.98);
+    let catchChance = 0.93 - difficulty * 0.35 + ratingToProb(range) * 0.18;
+    catchChance = clamp(catchChance, 0.45, 0.98);
 
     if (rng.chance(catchChance)) {
       // Sac fly possibility
@@ -105,13 +105,14 @@ export class FieldingEngine {
 
     let catchChance: number;
     if (isInfield) {
-      catchChance = 0.20 + ratingToProb(range) * 0.15;
-      if (contact.isHard) catchChance -= 0.08;
+      catchChance = 0.22 + ratingToProb(range) * 0.14;
+      if (contact.isHard) catchChance -= 0.06;
     } else {
-      catchChance = 0.65 + ratingToProb(range) * 0.18;
+      // Outfield line drives: ~33% caught
+      catchChance = 0.25 + ratingToProb(range) * 0.16;
     }
 
-    catchChance = clamp(catchChance, 0.10, 0.85);
+    catchChance = clamp(catchChance, 0.12, 0.85);
 
     if (rng.chance(catchChance)) {
       // Check for line drive DP
@@ -140,8 +141,9 @@ export class FieldingEngine {
 
     // Difficulty based on exit velo and position
     const difficulty = clamp((contact.exitVelo - 70) / 40, 0, 1);
-    let fieldChance = 0.65 + ratingToProb(range) * 0.25 - difficulty * 0.15;
-    fieldChance = clamp(fieldChance, 0.40, 0.92);
+    // MLB GB out rate ~76%
+    let fieldChance = 0.76 + ratingToProb(range) * 0.14 - difficulty * 0.10;
+    fieldChance = clamp(fieldChance, 0.62, 0.94);
 
     if (!rng.chance(fieldChance)) {
       // Through the infield — hit

@@ -26,15 +26,15 @@ export class ContactEngine {
   ): ContactOutcome {
     const powerVsHand = pitcher.throws === 'L' ? batter.batting.power_L : batter.batting.power_R;
 
-    // Exit velocity: based on power + pitch velocity contribution
-    const basePower = ratingToRange(powerVsHand, 78, 108);
-    const variance = rng.nextGaussian(0, 6);
-    const exitVelo = clamp(basePower + variance, 55, 118);
+    // Exit velocity: MLB average ~87 mph, leaders ~93-95
+    const basePower = ratingToRange(powerVsHand, 74, 100);
+    const variance = rng.nextGaussian(0, 7);
+    const exitVelo = clamp(basePower + variance, 55, 115);
     const isHard = exitVelo >= 95;
 
     // Launch angle: power hitters elevate more
-    const laTarget = ratingToRange(powerVsHand, 5, 22);
-    const laVariance = rng.nextGaussian(0, 14);
+    const laTarget = ratingToRange(powerVsHand, 4, 20);
+    const laVariance = rng.nextGaussian(0, 13);
     const launchAngle = clamp(laTarget + laVariance + this.pitchTypeAngleAdjust(pitchType), -30, 75);
 
     // Spray angle: platoon splits, randomness
@@ -75,16 +75,15 @@ export class ContactEngine {
     if (launchAngle < -10) return 20 + exitVelo * 0.3; // Choppers
     if (launchAngle > 65) return 60 + exitVelo * 0.5;  // Popups
 
-    // Roughly: d = v^2 * sin(2*angle) / g, but with drag approximation
+    // Roughly: d = v^2 * sin(2*angle) / g, with drag approximation
     const rawD = (v * v * Math.sin(2 * laRad)) / 32.17;
-    const dragFactor = 0.68; // drag reduces distance significantly
-    return clamp(rawD * dragFactor * 0.28, 30, 500); // Convert back to reasonable ft
+    const dragFactor = 0.64; // drag reduces distance significantly
+    return clamp(rawD * dragFactor, 30, 470);
   }
 
   private static classifyContact(launchAngle: number): ContactType {
-    if (launchAngle < -5) return 'ground_ball';
     if (launchAngle < 10) return 'ground_ball';
-    if (launchAngle < 25) return 'line_drive';
+    if (launchAngle < 22) return 'line_drive';
     if (launchAngle < 50) return 'fly_ball';
     return 'popup';
   }
