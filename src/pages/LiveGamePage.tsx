@@ -13,8 +13,6 @@ import type { GameState, GameEvent } from '@/engine/types/index.ts';
 import type { Team } from '@/engine/types/team.ts';
 import type { SwingType, GamePhaseInteractive } from '@/engine/types/interactive.ts';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.ts';
-import { useGameLoop } from '@/hooks/useGameLoop.ts';
-import { useGameStore } from '@/stores/gameStore.ts';
 import type { UserRole } from '@/stores/gameStore.ts';
 
 interface LiveGameLocationState {
@@ -49,8 +47,6 @@ export function LiveGamePage() {
   const location = useLocation();
   const locationState = location.state as LiveGameLocationState | null;
 
-  // ── Local state — manage engine locally (not in store for this page) ──────
-  const [engine, setEngine] = useState<InteractiveGameEngine | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [events, setEvents] = useState<GameEvent[]>([]);
   const [gameOver, setGameOver] = useState(false);
@@ -67,14 +63,6 @@ export function LiveGamePage() {
   const autoPlayRef = useRef(false);
   const engineRef = useRef<InteractiveGameEngine | null>(null);
 
-  // Use gameStore for game loop management
-  const storeInitGame = useGameStore(s => s.initGame);
-  const storePhase = useGameStore(s => s.phase);
-  const storeUserRole = useGameStore(s => s.userRole);
-
-  // Keep store in sync when using store-based loop
-  // (The local engine approach is simpler for this page)
-
   // Initialize engine when user picks their team
   const initEngine = useCallback((chosenTeam: 'home' | 'away') => {
     let away: Team, home: Team;
@@ -89,15 +77,14 @@ export function LiveGamePage() {
     const ballpark = getNeutralBallpark();
     const eng = new InteractiveGameEngine({ away, home, ballpark, seed: Date.now() });
     engineRef.current = eng;
-    setEngine(eng);
     setGameState(eng.getState());
     setUserTeam(chosenTeam);
     setGameChosen(true);
     setPhase('idle');
-
-    // Also init the store (for useGameLoop)
-    storeInitGame(away, home, chosenTeam);
-  }, [locationState, storeInitGame]);
+    setEvents([]);
+    setCurrentCount({ balls: 0, strikes: 0 });
+    setGameOver(false);
+  }, [locationState]);
 
   // Auto-handle location state
   useEffect(() => {
@@ -125,7 +112,8 @@ export function LiveGamePage() {
       return;
     }
 
-    const turn = userTeam ? eng.isUserTurn(userTeam) : 'none';
+    const currentUserTeam = userTeam;
+    const turn = currentUserTeam ? eng.isUserTurn(currentUserTeam) : 'none';
     const role: UserRole = turn === 'batting' ? 'batting' : turn === 'pitching' ? 'pitching' : 'spectating';
 
     setUserRole(role);
@@ -141,9 +129,11 @@ export function LiveGamePage() {
     }
   }, [userTeam]);
 
-  const resolveOnePitch = useCallback((input?: Parameters<typeof engine.submitInput>[0]) => {
+  const resolveOnePitch = useCallback((input?: Parameters<InteractiveGameEngine['submitInput']>[0]) => {
     const eng = engineRef.current;
-    if (!eng || !eng.getActiveAtBat()) {
+    if (!eng) return;
+
+    if (!eng.getActiveAtBat()) {
       startNextAtBat();
       return;
     }
@@ -170,20 +160,14 @@ export function LiveGamePage() {
         } else {
           setPhase('post_ab');
         }
-      } else {
-        // Same role — go back to awaiting input or cpu_pitch
-        setPhase(prev =>
-          prev === 'awaiting_swing' ? 'awaiting_swing' :
-          prev === 'awaiting_pitch' ? 'awaiting_pitch' :
-          'cpu_pitch'
-        );
       }
+      // If not over, phase stays (awaiting_swing / awaiting_pitch / cpu_pitch)
     } catch {
-      // Ignore errors (e.g., no active at-bat)
+      // Ignore errors
     }
   }, [startNextAtBat]);
 
-  // Advance one pitch (CPU or when spectating / auto-play)
+  // Next pitch: context-aware
   const nextPitch = useCallback(() => {
     if (phase === 'post_ab' || phase === 'idle') {
       startNextAtBat();
@@ -204,7 +188,7 @@ export function LiveGamePage() {
     resolveOnePitch({ action: 'take' });
   }, [phase, resolveOnePitch]);
 
-  // Pitching: throw with default center-zone pitch
+  // Pitching: throw with default center-zone fastball
   const handlePitch = useCallback(() => {
     if (phase !== 'awaiting_pitch') {
       nextPitch();
@@ -215,10 +199,11 @@ export function LiveGamePage() {
     const state = eng.getState();
     const isTop = state.inning.half === 'top';
     const pitchingTeam = isTop ? state.home : state.away;
-    const rep = pitchingTeam.roster.players.find(p => p.id === pitchingTeam.pitcherId)?.pitching.repertoire ?? ['fastball'];
+    const rep = pitchingTeam.roster.players
+      .find(p => p.id === pitchingTeam.pitcherId)?.pitching.repertoire ?? ['fastball'];
     resolveOnePitch({
       pitchType: rep[0],
-      targetZone: { row: 2, col: 2 }, // center of 5x5 grid
+      targetZone: { row: 2, col: 2 },
       meterAccuracy: 0.75,
     });
   }, [phase, nextPitch, resolveOnePitch]);
@@ -230,17 +215,13 @@ export function LiveGamePage() {
 
     const delay = Math.max(80, 1200 / speed);
     const interval = setInterval(() => {
-      if (!autoPlayRef.current) {
-        clearInterval(interval);
-        return;
-      }
+      if (!autoPlayRef.current) { clearInterval(interval); return; }
       const eng = engineRef.current;
       if (!eng) { clearInterval(interval); return; }
 
       if (phase === 'post_ab' || phase === 'idle') {
         startNextAtBat();
       } else if (phase === 'awaiting_swing') {
-        // Auto-swing with normal type
         resolveOnePitch({ action: 'swing', swingType: 'normal' });
       } else if (phase === 'awaiting_pitch') {
         handlePitch();
@@ -266,9 +247,8 @@ export function LiveGamePage() {
 
   const handleSimToEnd = useCallback(() => {
     const eng = engineRef.current;
-    if (!eng) return;
 
-    if (gameOver) {
+    if (gameOver || !eng) {
       // New game
       const sample = getSampleTeams();
       const ballpark = getNeutralBallpark();
@@ -279,7 +259,6 @@ export function LiveGamePage() {
         seed: Date.now(),
       });
       engineRef.current = newEng;
-      setEngine(newEng);
       setGameState(newEng.getState());
       setEvents([]);
       setGameOver(false);
@@ -352,7 +331,7 @@ export function LiveGamePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Diamond area + controls */}
+        {/* Controls */}
         <div className="lg:col-span-1 space-y-4">
           <ManagerControls
             game={gameState}
@@ -376,12 +355,10 @@ export function LiveGamePage() {
 
         {/* Main game area */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Diamond placeholder */}
           <Panel>
             <div className="bg-[#1a2235] rounded-lg overflow-hidden" style={{ height: '400px' }}>
               <div className="w-full h-full flex items-center justify-center" id="diamond-container">
                 <div className="text-center space-y-4">
-                  {/* Simple ASCII diamond */}
                   <pre className="text-cream font-mono text-xs leading-tight select-none">
 {`          ◆ 2B
          / \\
@@ -403,8 +380,6 @@ export function LiveGamePage() {
                       {!gameState.inning.bases.first && !gameState.inning.bases.second && !gameState.inning.bases.third ? 'Bases empty' : ''}
                     </span>
                   </div>
-
-                  {/* Current phase indicator */}
                   <div className="text-xs font-mono">
                     {phase === 'awaiting_swing' && (
                       <span className="text-gold animate-pulse">SWING or TAKE — Space / T</span>
@@ -454,17 +429,3 @@ export function LiveGamePage() {
     </div>
   );
 }
-
-// Ensure store-based loop hook is initialized
-function _UseGameLoopSideEffect() {
-  useGameLoop();
-  return null;
-}
-void _UseGameLoopSideEffect;
-
-// Export storePhase and storeUserRole for external access
-export { storePhase as _storePhase, storeUserRole as _storeUserRole };
-
-// Declare locals to avoid TS unused warnings
-declare const storePhase: string;
-declare const storeUserRole: string;
