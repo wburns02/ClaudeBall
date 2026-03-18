@@ -95,6 +95,8 @@ export class DiamondRenderer {
   private runnerLayer: Container | null = null;
   private ballLayer: Container | null = null;
   private labelLayer: Container | null = null;
+  /** Particle effects layer — sits above ball/field, below UI overlays. */
+  private effectsLayer: Container | null = null;
 
   // Player scenes — procedural (always created) and sprite-based (async loaded)
   private playerScene: PlayerScene;
@@ -316,6 +318,7 @@ export class DiamondRenderer {
     this.runnerLayer = new Container();
     this.ballLayer = new Container();
     this.labelLayer = new Container();
+    this.effectsLayer = new Container();
 
     this.root.addChild(this.grassLayer);
     this.root.addChild(this.dirtLayer);
@@ -325,6 +328,8 @@ export class DiamondRenderer {
     this.root.addChild(this.labelLayer);
     this.root.addChild(this.runnerLayer);
     this.root.addChild(this.ballLayer);
+    // Effects layer above ball/field, below any UI overlays
+    this.root.addChild(this.effectsLayer);
   }
 
   // ── Field drawing ─────────────────────────────────────────────────
@@ -550,6 +555,21 @@ export class DiamondRenderer {
     }
   }
 
+  // ── Effects layer ─────────────────────────────────────────────────
+
+  /**
+   * Returns the particle-effects Container. PlaySequencer passes this as the
+   * `parent` argument to all spawn functions so effects render above the field.
+   */
+  getEffectsLayer(): Container {
+    return this.effectsLayer!;
+  }
+
+  /** Returns the Pixi Application instance, needed by particle spawners. */
+  getApp(): Application | null {
+    return this.app;
+  }
+
   // ── Public API ────────────────────────────────────────────────────
 
   updateBases(bases: { first: boolean; second: boolean; third: boolean }): void {
@@ -620,6 +640,11 @@ export class DiamondRenderer {
     // Clear highlights
     for (const glow of this.baseHighlights.values()) glow.destroy();
     this.baseHighlights.clear();
+
+    // Clear lingering particle effects
+    if (this.effectsLayer) {
+      this.effectsLayer.removeChildren().forEach((c) => c.destroy());
+    }
 
     // Hide ball
     if (this.ballGraphic) {

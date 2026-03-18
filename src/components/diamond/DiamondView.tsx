@@ -15,6 +15,8 @@ interface DiamondViewProps {
   preferSprites?: boolean;
   /** Speed multiplier for animations (1 = normal, higher = faster). */
   animationSpeed?: number;
+  /** If true, the canvas fills its parent container and resizes on window resize. */
+  fullScreen?: boolean;
 }
 
 /** Convert engine BaseState (player ID | null) to simple booleans. */
@@ -34,18 +36,33 @@ export function DiamondView({
   className,
   preferSprites = true,
   animationSpeed = 1,
+  fullScreen = false,
 }: DiamondViewProps) {
   // Use a div container — Pixi creates its own canvas inside it.
+  const outerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<DiamondRenderer | null>(null);
   const sequencerRef = useRef<PlaySequencer | null>(null);
   const processedCountRef = useRef(0);
   const [spriteStatus, setSpriteStatus] = useState<'loading' | 'sprites' | 'procedural'>('loading');
 
+  // Resolve pixel dimensions — use outer container when fullScreen
+  const getSize = (): { w: number; h: number } => {
+    if (fullScreen && outerRef.current) {
+      return {
+        w: outerRef.current.clientWidth || window.innerWidth,
+        h: outerRef.current.clientHeight || window.innerHeight,
+      };
+    }
+    return { w: width, h: height };
+  };
+
   // ── Initialize / Destroy ──────────────────────────────────────────
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    const { w, h } = getSize();
 
     const renderer = new DiamondRenderer();
     rendererRef.current = renderer;
@@ -54,7 +71,7 @@ export function DiamondView({
     sequencer.speedFactor = animationSpeed;
     sequencerRef.current = sequencer;
 
-    renderer.initInContainer(container, width, height)
+    renderer.initInContainer(container, w, h)
       .then(async () => {
         if (preferSprites) {
           const loaded = await renderer.loadSprites();
@@ -75,7 +92,35 @@ export function DiamondView({
       rendererRef.current = null;
       processedCountRef.current = 0;
     };
-  }, [width, height, preferSprites]); // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [width, height, preferSprites, fullScreen]);
+
+  // ── Resize observer for fullScreen mode ──────────────────────────
+  useEffect(() => {
+    if (!fullScreen) return;
+    const outer = outerRef.current;
+    if (!outer) return;
+
+    const onResize = () => {
+      const renderer = rendererRef.current;
+      if (!renderer) return;
+      const { w, h } = getSize();
+      // Access internal Pixi app resize if available
+      const app = (renderer as unknown as { _app?: { renderer?: { resize: (w: number, h: number) => void } } })._app;
+      if (app?.renderer?.resize) {
+        app.renderer.resize(w, h);
+      }
+    };
+
+    const ro = new ResizeObserver(onResize);
+    ro.observe(outer);
+    window.addEventListener('resize', onResize);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', onResize);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullScreen]);
 
   // ── Sync animation speed ──────────────────────────────────────────
   useEffect(() => {
@@ -120,8 +165,13 @@ export function DiamondView({
 
   return (
     <div
+      ref={outerRef}
       className={className}
-      style={{ position: 'relative', width, height, background: '#1a2235', borderRadius: 8, overflow: 'hidden' }}
+      style={
+        fullScreen
+          ? { position: 'relative', width: '100%', height: '100%', background: '#1a2235', overflow: 'hidden' }
+          : { position: 'relative', width, height, background: '#1a2235', borderRadius: 8, overflow: 'hidden' }
+      }
     >
       {/* Pixi creates its own canvas inside this container div */}
       <div

@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/Button.tsx';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { LineScore } from '@/components/game/LineScore.tsx';
-import { PlayByPlay } from '@/components/game/PlayByPlay.tsx';
-import { ManagerControls } from '@/components/game/ManagerControls.tsx';
 import { BoxScoreTable } from '@/components/game/BoxScoreTable.tsx';
+import { BroadcastScoreboard } from '@/components/game/BroadcastScoreboard.tsx';
+import { BroadcastControls } from '@/components/game/BroadcastControls.tsx';
+import { FloatingPlayByPlay } from '@/components/game/FloatingPlayByPlay.tsx';
 import { getSampleTeams } from '@/engine/data/sampleTeams.ts';
 import { getNeutralBallpark } from '@/engine/data/ballparks.ts';
 import { InteractiveGameEngine } from '@/engine/core/InteractiveGameEngine.ts';
@@ -22,21 +23,96 @@ interface LiveGameLocationState {
   userTeam?: 'home' | 'away';
 }
 
-// ── Team selector shown before the game starts ────────────────────────────────
+// ── Team selector — full-page TV style ────────────────────────────────────────
 function TeamSelector({ onStart }: { onStart: (userTeam: 'home' | 'away') => void }) {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Panel className="w-80 text-center space-y-6">
-        <h2 className="font-display text-xl text-gold uppercase tracking-wide">Choose Your Team</h2>
-        <p className="text-cream-dim text-sm">Select which team you want to control pitch-by-pitch.</p>
-        <div className="flex gap-3 justify-center">
-          <Button variant="primary" onClick={() => onStart('away')}>Away Team</Button>
-          <Button variant="secondary" onClick={() => onStart('home')}>Home Team</Button>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center gap-8"
+      style={{ background: '#0a0f1a' }}
+    >
+      {/* Title block */}
+      <div className="text-center space-y-2">
+        <div
+          className="font-mono text-xs uppercase tracking-[0.3em]"
+          style={{ color: 'rgba(212,168,67,0.55)' }}
+        >
+          ClaudeBall Live
         </div>
-        <Button variant="ghost" size="sm" onClick={() => onStart('home')}>
-          Spectate (CPU plays both sides)
-        </Button>
-      </Panel>
+        <h1
+          className="font-display text-5xl uppercase tracking-wide"
+          style={{ color: '#d4a843' }}
+        >
+          Choose Your Team
+        </h1>
+        <p className="text-cream-dim text-sm max-w-xs mx-auto mt-2">
+          Select which side you want to control pitch-by-pitch.
+          The other team will be CPU-managed.
+        </p>
+      </div>
+
+      {/* Team cards */}
+      <div className="flex gap-6">
+        {/* Away card */}
+        <button
+          onClick={() => onStart('away')}
+          style={{
+            background: 'rgba(26,34,53,0.9)',
+            border: '2px solid rgba(212,168,67,0.25)',
+            borderRadius: 12,
+            padding: '32px 48px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'border-color 0.2s, transform 0.2s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = '#d4a843';
+            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(212,168,67,0.25)';
+            (e.currentTarget as HTMLButtonElement).style.transform = 'none';
+          }}
+        >
+          <div className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-2">Visiting</div>
+          <div className="font-display text-3xl text-gold uppercase tracking-wide">Away Team</div>
+          <div className="font-mono text-xs text-cream-dim mt-3">Bats first (top innings)</div>
+        </button>
+
+        {/* Home card */}
+        <button
+          onClick={() => onStart('home')}
+          style={{
+            background: 'rgba(26,34,53,0.9)',
+            border: '2px solid rgba(212,168,67,0.25)',
+            borderRadius: 12,
+            padding: '32px 48px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'border-color 0.2s, transform 0.2s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = '#d4a843';
+            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(212,168,67,0.25)';
+            (e.currentTarget as HTMLButtonElement).style.transform = 'none';
+          }}
+        >
+          <div className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-2">Home Field</div>
+          <div className="font-display text-3xl text-gold uppercase tracking-wide">Home Team</div>
+          <div className="font-mono text-xs text-cream-dim mt-3">Bats last (bottom innings)</div>
+        </button>
+      </div>
+
+      {/* Spectate option */}
+      <button
+        onClick={() => onStart('home')}
+        className="font-mono text-xs text-cream-dim/50 hover:text-cream-dim cursor-pointer"
+        style={{ textDecoration: 'underline', textUnderlineOffset: 4 }}
+      >
+        Spectate — CPU controls both teams
+      </button>
     </div>
   );
 }
@@ -59,8 +135,9 @@ export function LiveGamePage() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [speed, setSpeed] = useState(3);
   const [gameChosen, setGameChosen] = useState(false);
+  const [showPlayByPlay, setShowPlayByPlay] = useState(true);
+  const [showBoxScore, setShowBoxScore] = useState(false);
 
-  const logRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef(false);
   const engineRef = useRef<InteractiveGameEngine | null>(null);
 
@@ -162,7 +239,6 @@ export function LiveGamePage() {
           setPhase('post_ab');
         }
       }
-      // If not over, phase stays (awaiting_swing / awaiting_pitch / cpu_pitch)
     } catch {
       // Ignore errors
     }
@@ -265,6 +341,7 @@ export function LiveGamePage() {
       setGameOver(false);
       setPhase('idle');
       setCurrentCount({ balls: 0, strikes: 0 });
+      setShowBoxScore(false);
       return;
     }
 
@@ -276,13 +353,6 @@ export function LiveGamePage() {
     setGameOver(true);
     setPhase('game_over');
   }, [gameOver]);
-
-  // Auto-scroll play-by-play
-  useEffect(() => {
-    if (logRef.current) {
-      logRef.current.scrollTop = logRef.current.scrollHeight;
-    }
-  }, [events]);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -315,99 +385,225 @@ export function LiveGamePage() {
   if (!gameState) return null;
 
   const isUserHome = userTeam === 'home';
+  const awayScore = gameState.score.away.reduce((a, b) => a + b, 0);
+  const homeScore = gameState.score.home.reduce((a, b) => a + b, 0);
 
   return (
-    <div className="min-h-screen p-4 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="font-display text-2xl text-gold tracking-wide uppercase">
-          {gameState.away.city} {gameState.away.name} @ {gameState.home.city} {gameState.home.name}
-        </h1>
-        <div className="flex items-center gap-2">
-          <span className="text-cream-dim text-xs font-mono uppercase">
-            You: {userTeam === 'home' ? gameState.home.abbreviation : gameState.away.abbreviation}
-          </span>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Menu</Button>
-        </div>
-      </div>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#0a0f1a',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      {/* ── Diamond fill area (flex-1, relative for overlays) ── */}
+      <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Controls */}
-        <div className="lg:col-span-1 space-y-4">
-          <ManagerControls
+        {/* Diamond canvas — fills the area */}
+        <DiamondView
+          fullScreen
+          bases={baseStateToBools(gameState.inning.bases)}
+          events={events}
+          width={800}
+          height={600}
+        />
+
+        {/* ── TOP-LEFT: Scoreboard overlay ── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            left: 12,
+            zIndex: 10,
+          }}
+        >
+          <BroadcastScoreboard
             game={gameState}
-            isUserHome={isUserHome}
-            userRole={userRole}
             currentCount={currentCount}
-            onNextPitch={handlePitch}
-            onSwing={handleSwing}
-            onTake={handleTake}
-            onAutoPlay={handleAutoPlay}
-            onSimToEnd={handleSimToEnd}
-            isAutoPlaying={isAutoPlaying}
+            userTeam={userTeam}
             gameOver={gameOver}
-            speed={speed}
-            onSpeedChange={setSpeed}
-            selectedSwingType={selectedSwingType}
-            onSwingTypeChange={setSelectedSwingType}
-            phase={phase}
           />
         </div>
 
-        {/* Main game area */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Diamond with player figures */}
-          <div className="relative">
-            <DiamondView
-              bases={baseStateToBools(gameState.inning.bases)}
-              events={events}
-              width={600}
-              height={460}
-            />
-            {/* Phase overlay */}
-            <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-mono">
-              {phase === 'awaiting_swing' && (
-                <span className="text-gold animate-pulse bg-navy/80 px-3 py-1 rounded">SWING or TAKE — Space / T</span>
-              )}
-              {phase === 'awaiting_pitch' && (
-                <span className="text-blue-400 animate-pulse bg-navy/80 px-3 py-1 rounded">THROW PITCH — Space</span>
-              )}
-              {phase === 'cpu_pitch' && (
-                <span className="text-cream-dim bg-navy/80 px-3 py-1 rounded">CPU pitching...</span>
-              )}
-              {phase === 'post_ab' && (
-                <span className="text-cream-dim bg-navy/80 px-3 py-1 rounded">Space for next batter</span>
-              )}
-              {phase === 'game_over' && (
-                <span className="text-gold font-bold bg-navy/80 px-3 py-1 rounded">GAME OVER</span>
-              )}
-              {phase === 'idle' && (
-                <span className="text-cream-dim bg-navy/80 px-3 py-1 rounded">Press Space to begin</span>
+        {/* ── TOP-RIGHT: Menu + Play-by-play ── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 8,
+          }}
+        >
+          {/* Menu row */}
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest">
+              You: {isUserHome ? gameState.home.abbreviation : gameState.away.abbreviation}
+            </span>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                background: 'rgba(10,15,26,0.85)',
+                border: '1px solid rgba(212,168,67,0.22)',
+                borderRadius: 5,
+                padding: '3px 12px',
+                fontSize: 11,
+                fontFamily: 'IBM Plex Mono, monospace',
+                color: '#e8e0d4',
+                cursor: 'pointer',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              Menu [Esc]
+            </button>
+          </div>
+
+          {/* Box score toggle (shown when game over) */}
+          {gameOver && (
+            <button
+              onClick={() => setShowBoxScore(v => !v)}
+              style={{
+                background: 'rgba(10,15,26,0.85)',
+                border: '1px solid rgba(212,168,67,0.22)',
+                borderRadius: 5,
+                padding: '3px 12px',
+                fontSize: 11,
+                fontFamily: 'IBM Plex Mono, monospace',
+                color: '#d4a843',
+                cursor: 'pointer',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              {showBoxScore ? 'Hide Box Score' : 'Box Score'}
+            </button>
+          )}
+
+          {/* Play-by-play floating panel */}
+          <FloatingPlayByPlay
+            events={events}
+            visible={showPlayByPlay}
+            onToggle={() => setShowPlayByPlay(v => !v)}
+          />
+        </div>
+
+        {/* ── CENTER phase hint (idle / post_ab / game_over) ── */}
+        {(phase === 'idle' || phase === 'post_ab' || phase === 'game_over') && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 80,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              pointerEvents: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span
+              style={{
+                background: 'rgba(10,15,26,0.85)',
+                border: '1px solid rgba(212,168,67,0.3)',
+                borderRadius: 6,
+                padding: '6px 20px',
+                fontFamily: 'IBM Plex Mono, monospace',
+                fontSize: 13,
+                color: phase === 'game_over' ? '#d4a843' : '#b8b0a4',
+                letterSpacing: '0.05em',
+              }}
+            >
+              {phase === 'game_over'
+                ? `FINAL — ${gameState.away.abbreviation} ${awayScore}, ${gameState.home.abbreviation} ${homeScore}`
+                : phase === 'idle'
+                ? 'Press Space to begin'
+                : 'Space → next batter'}
+            </span>
+          </div>
+        )}
+
+        {/* ── CPU pitch hint ── */}
+        {phase === 'cpu_pitch' && !isAutoPlaying && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 80,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              pointerEvents: 'none',
+            }}
+          >
+            <span
+              style={{
+                background: 'rgba(10,15,26,0.75)',
+                borderRadius: 5,
+                padding: '4px 14px',
+                fontFamily: 'IBM Plex Mono, monospace',
+                fontSize: 12,
+                color: 'rgba(184,176,164,0.7)',
+              }}
+            >
+              CPU pitching… [Space]
+            </span>
+          </div>
+        )}
+
+        {/* ── Game-over box score overlay ── */}
+        {gameOver && showBoxScore && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 20,
+              background: 'rgba(10,15,26,0.93)',
+              backdropFilter: 'blur(6px)',
+              overflowY: 'auto',
+              padding: '24px',
+            }}
+          >
+            <div className="max-w-4xl mx-auto space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-2xl text-gold uppercase tracking-wide">
+                  Final: {gameState.away.abbreviation} {awayScore} — {gameState.home.abbreviation} {homeScore}
+                </h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowBoxScore(false)}>
+                  Close ✕
+                </Button>
+              </div>
+              <Panel title="Line Score">
+                <LineScore game={gameState} />
+              </Panel>
+              {gameState.boxScore.awayBatters.length > 0 && (
+                <BoxScoreTable game={gameState} />
               )}
             </div>
           </div>
-
-          <Panel title="Line Score">
-            <LineScore game={gameState} />
-          </Panel>
-        </div>
-
-        {/* Play-by-play */}
-        <div className="lg:col-span-1">
-          <Panel title="Play-by-Play" className="h-full">
-            <div ref={logRef} className="overflow-y-auto" style={{ maxHeight: '600px' }}>
-              <PlayByPlay events={events} maxHeight="600px" />
-            </div>
-          </Panel>
-        </div>
+        )}
       </div>
 
-      {/* Box Score (shown when game ends) */}
-      {gameOver && gameState.boxScore.awayBatters.length > 0 && (
-        <div className="mt-4">
-          <BoxScoreTable game={gameState} />
-        </div>
-      )}
+      {/* ── BOTTOM BAR: BroadcastControls ── */}
+      <BroadcastControls
+        game={gameState}
+        userRole={userRole}
+        currentCount={currentCount}
+        phase={phase}
+        selectedSwingType={selectedSwingType}
+        onSwingTypeChange={setSelectedSwingType}
+        onSwing={handleSwing}
+        onTake={handleTake}
+        onNextPitch={handlePitch}
+        onAutoPlay={handleAutoPlay}
+        onSimToEnd={handleSimToEnd}
+        isAutoPlaying={isAutoPlaying}
+        gameOver={gameOver}
+        speed={speed}
+        onSpeedChange={setSpeed}
+      />
     </div>
   );
 }
