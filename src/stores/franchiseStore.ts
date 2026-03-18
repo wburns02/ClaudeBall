@@ -138,8 +138,44 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
   advanceDay: () => {
     const { engine } = get();
     if (!engine) return null;
+
+    // Snapshot which games were already played before advancing
+    const beforePlayed = new Set(engine.getState().schedule.filter(g => g.played).map(g => g.id));
+
     const userGame = engine.advanceDay();
     const events = engine.getLastDayEvents();
+
+    // Record stats for newly simmed games
+    try {
+      const season = engine.getState();
+      const rng = engine.getRng();
+      const newlyPlayed = season.schedule.filter(g => g.played && !beforePlayed.has(g.id));
+      for (const game of newlyPlayed) {
+        if (game.awayScore === undefined || game.homeScore === undefined) continue;
+        const awayTeam = engine.getTeam(game.awayId);
+        const homeTeam = engine.getTeam(game.homeId);
+        if (!awayTeam || !homeTeam) continue;
+        const awayBatters = generateBatterLines(awayTeam, game.awayScore, rng);
+        const homeBatters = generateBatterLines(homeTeam, game.homeScore, rng);
+        const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng);
+        const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng);
+        useStatsStore.getState().recordGameStats(
+          game.id, game.date, season.year,
+          game.awayId, game.homeId,
+          awayBatters, homeBatters,
+          awayPitchers, homePitchers,
+          (playerId) => awayTeam.roster.players.some(p => p.id === playerId) ? game.awayId : game.homeId,
+          (playerId) => {
+            const p = awayTeam.roster.players.find(pl => pl.id === playerId)
+              ?? homeTeam.roster.players.find(pl => pl.id === playerId);
+            return p?.position ?? 'DH';
+          },
+          game.awayScore,
+          game.homeScore,
+        );
+      }
+    } catch { /* non-critical */ }
+
     set(s => ({
       season: { ...engine.getState() },
       lastDayEvents: events,
@@ -154,7 +190,43 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
   simDays: (count) => {
     const { engine } = get();
     if (!engine) return;
+
+    // Snapshot which games were already played before simming
+    const beforePlayed = new Set(engine.getState().schedule.filter(g => g.played).map(g => g.id));
+
     engine.simDays(count);
+
+    // Record stats for newly simmed games
+    try {
+      const season = engine.getState();
+      const rng = engine.getRng();
+      const newlyPlayed = season.schedule.filter(g => g.played && !beforePlayed.has(g.id));
+      for (const game of newlyPlayed) {
+        if (game.awayScore === undefined || game.homeScore === undefined) continue;
+        const awayTeam = engine.getTeam(game.awayId);
+        const homeTeam = engine.getTeam(game.homeId);
+        if (!awayTeam || !homeTeam) continue;
+        const awayBatters = generateBatterLines(awayTeam, game.awayScore, rng);
+        const homeBatters = generateBatterLines(homeTeam, game.homeScore, rng);
+        const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng);
+        const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng);
+        useStatsStore.getState().recordGameStats(
+          game.id, game.date, season.year,
+          game.awayId, game.homeId,
+          awayBatters, homeBatters,
+          awayPitchers, homePitchers,
+          (playerId) => awayTeam.roster.players.some(p => p.id === playerId) ? game.awayId : game.homeId,
+          (playerId) => {
+            const p = awayTeam.roster.players.find(pl => pl.id === playerId)
+              ?? homeTeam.roster.players.find(pl => pl.id === playerId);
+            return p?.position ?? 'DH';
+          },
+          game.awayScore,
+          game.homeScore,
+        );
+      }
+    } catch { /* non-critical */ }
+
     set({
       season: { ...engine.getState() },
       injuryLog: engine.injuryEngine.getAllInjuries(),

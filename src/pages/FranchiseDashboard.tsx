@@ -99,6 +99,18 @@ export function FranchiseDashboard() {
           <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/team/${userTeamId}`)}>
             Edit Team
           </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/injuries')}>
+            Injuries
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/minors')}>
+            Minors
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/trade-history')}>
+            Trade Log
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/waivers')}>
+            Waivers
+          </Button>
           {(isPostseason || regularSeasonComplete) && (
             <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/playoffs')}>
               Playoffs

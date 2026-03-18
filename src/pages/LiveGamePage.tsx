@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button.tsx';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { LineScore } from '@/components/game/LineScore.tsx';
@@ -16,6 +16,8 @@ import type { SwingType, GamePhaseInteractive } from '@/engine/types/interactive
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.ts';
 import { DiamondView, baseStateToBools } from '@/components/diamond/DiamondView.tsx';
 import type { UserRole } from '@/stores/gameStore.ts';
+import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useStatsStore } from '@/stores/statsStore.ts';
 
 interface LiveGameLocationState {
   awayTeam?: Team;
@@ -140,6 +142,13 @@ export function LiveGamePage() {
 
   const autoPlayRef = useRef(false);
   const engineRef = useRef<InteractiveGameEngine | null>(null);
+  const statsRecordedRef = useRef(false);
+
+  // Franchise + stats store for recording results
+  const { season, recordGameResult } = useFranchiseStore();
+  const { recordGameStats } = useStatsStore();
+  const [searchParams] = useSearchParams();
+  const franchiseGameId = searchParams.get('gameId');
 
   // Initialize engine when user picks their team
   const initEngine = useCallback((chosenTeam: 'home' | 'away') => {
@@ -170,6 +179,48 @@ export function LiveGamePage() {
       initEngine(locationState.userTeam);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Record stats when a franchise game ends
+  useEffect(() => {
+    if (!gameOver || !gameState || statsRecordedRef.current) return;
+    if (gameState.phase !== 'final') return;
+    statsRecordedRef.current = true;
+
+    const box = gameState.boxScore;
+    if (!box.awayBatters.length && !box.homeBatters.length) return;
+
+    const awayId = gameState.away.id;
+    const homeId = gameState.home.id;
+    const year = season?.year ?? 2026;
+    const gameDay = season?.currentDay ?? 0;
+    const gId = franchiseGameId ?? gameState.id;
+
+    // Record the full box score stats
+    const awayTotal = gameState.score.away.reduce((a, b) => a + b, 0);
+    const homeTotal = gameState.score.home.reduce((a, b) => a + b, 0);
+    recordGameStats(
+      gId, gameDay, year,
+      awayId, homeId,
+      box.awayBatters, box.homeBatters,
+      box.awayPitchers, box.homePitchers,
+      (playerId) => {
+        const inAway = gameState.away.roster.players.some(p => p.id === playerId);
+        return inAway ? awayId : homeId;
+      },
+      (playerId) => {
+        const p = gameState.away.roster.players.find(pl => pl.id === playerId)
+          ?? gameState.home.roster.players.find(pl => pl.id === playerId);
+        return p?.position ?? 'DH';
+      },
+      awayTotal,
+      homeTotal,
+    );
+
+    // If franchise game, record the result
+    if (franchiseGameId) {
+      recordGameResult(franchiseGameId, awayTotal, homeTotal);
+    }
+  }, [gameOver, gameState, franchiseGameId, season, recordGameStats, recordGameResult]);
 
   // ── Core game flow ────────────────────────────────────────────────────────
 
