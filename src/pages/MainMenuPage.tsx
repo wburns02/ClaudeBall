@@ -44,6 +44,15 @@ export function MainMenuPage() {
                 variant="secondary"
                 size="md"
                 className="w-64 border-gold/30 hover:border-gold/60"
+                onClick={() => navigate('/historical')}
+                data-testid="historical-mode-btn"
+              >
+                Historical Mode
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                className="w-64 border-gold/30 hover:border-gold/60"
                 onClick={() => navigate('/career/new')}
                 data-testid="be-a-player-btn"
               >
@@ -61,7 +70,7 @@ export function MainMenuPage() {
             </div>
 
             <p className="text-cream-dim/50 text-xs font-mono mt-4">
-              Sprints 1-8
+              Sprints 1-8 + Historical
             </p>
           </div>
         </Panel>

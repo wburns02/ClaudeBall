@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/Button.tsx';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { LineScore } from '@/components/game/LineScore.tsx';
@@ -10,10 +10,19 @@ import { GameEngine } from '@/engine/core/GameEngine.ts';
 import { getSampleTeams } from '@/engine/data/sampleTeams.ts';
 import { getNeutralBallpark } from '@/engine/data/ballparks.ts';
 import type { GameState, GameEvent } from '@/engine/types/index.ts';
+import type { Team } from '@/engine/types/team.ts';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.ts';
+
+interface LiveGameLocationState {
+  awayTeam?: Team;
+  homeTeam?: Team;
+}
 
 export function LiveGamePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as LiveGameLocationState | null;
+
   const [engine, setEngine] = useState<GameEngine | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [events, setEvents] = useState<GameEvent[]>([]);
@@ -25,12 +34,20 @@ export function LiveGamePage() {
 
   // Initialize game
   useEffect(() => {
-    const { away, home } = getSampleTeams();
+    let away: Team, home: Team;
+    if (locationState?.awayTeam && locationState?.homeTeam) {
+      away = JSON.parse(JSON.stringify(locationState.awayTeam)) as Team;
+      home = JSON.parse(JSON.stringify(locationState.homeTeam)) as Team;
+    } else {
+      const sample = getSampleTeams();
+      away = sample.away;
+      home = sample.home;
+    }
     const ballpark = getNeutralBallpark();
     const eng = new GameEngine({ away, home, ballpark, seed: Date.now() });
     setEngine(eng);
     setGameState(eng.getState());
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const nextAtBat = useCallback(() => {
     if (!engine) return;
