@@ -31,20 +31,22 @@ export function DiamondView({
   className,
   preferSprites = true,
 }: DiamondViewProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Use a div container — Pixi creates its own canvas inside it.
+  // This avoids React StrictMode double-init WebGL context collision.
+  const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<DiamondRenderer | null>(null);
   const processedCountRef = useRef(0);
   const [spriteStatus, setSpriteStatus] = useState<'loading' | 'sprites' | 'procedural'>('loading');
 
   // ── Initialize / Destroy ──────────────────────────────────────────
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     const renderer = new DiamondRenderer();
     rendererRef.current = renderer;
 
-    renderer.init(canvas, width, height)
+    renderer.initInContainer(container, width, height)
       .then(async () => {
         // Procedural scene is now live; optionally load sprites on top
         if (preferSprites) {
@@ -156,9 +158,10 @@ export function DiamondView({
       className={className}
       style={{ position: 'relative', width, height, background: '#1a2235', borderRadius: 8, overflow: 'hidden' }}
     >
-      <canvas
-        ref={canvasRef}
-        style={{ display: 'block', width: '100%', height: '100%' }}
+      {/* Pixi creates its own canvas inside this container div */}
+      <div
+        ref={containerRef}
+        style={{ width: '100%', height: '100%' }}
       />
       {spriteStatus === 'loading' && (
         <div

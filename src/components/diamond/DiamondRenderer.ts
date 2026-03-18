@@ -111,10 +111,13 @@ export class DiamondRenderer {
 
   // ── Lifecycle ─────────────────────────────────────────────────────
 
-  async init(canvas: HTMLCanvasElement, width: number, height: number): Promise<void> {
+  /**
+   * Initialize Pixi inside a container div — Pixi creates its own canvas element.
+   * This avoids React StrictMode WebGL context collision from canvas reuse.
+   */
+  async initInContainer(container: HTMLDivElement, width: number, height: number): Promise<void> {
     const app = new Application();
     await app.init({
-      canvas,
       width,
       height,
       background: COLORS.background,
@@ -128,6 +131,12 @@ export class DiamondRenderer {
       app.destroy(true, { children: true });
       return;
     }
+
+    // Append Pixi's own canvas into the container div
+    container.appendChild(app.canvas);
+    (app.canvas as HTMLCanvasElement).style.display = 'block';
+    (app.canvas as HTMLCanvasElement).style.width = '100%';
+    (app.canvas as HTMLCanvasElement).style.height = '100%';
 
     this.app = app;
     this.root = new Container();
@@ -144,7 +153,44 @@ export class DiamondRenderer {
     this.createLayers();
     this.drawField();
     this.drawBases();
-    // Initialize procedural scene immediately (sync), sprites loaded separately via loadSprites()
+    this._initProceduralScene(app);
+
+    if (this._destroyed) return;
+    this.createBall();
+  }
+
+  /** @deprecated Use initInContainer instead */
+  async init(canvas: HTMLCanvasElement, width: number, height: number): Promise<void> {
+    const app = new Application();
+    await app.init({
+      canvas,
+      width,
+      height,
+      background: COLORS.background,
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+      autoDensity: true,
+    });
+
+    if (this._destroyed) {
+      app.destroy(true, { children: true });
+      return;
+    }
+
+    this.app = app;
+    this.root = new Container();
+    app.stage.addChild(this.root);
+
+    const sx = width / WIDTH;
+    const sy = height / HEIGHT;
+    const scale = Math.min(sx, sy);
+    this.root.scale.set(scale);
+    this.root.x = (width - WIDTH * scale) / 2;
+    this.root.y = (height - HEIGHT * scale) / 2;
+
+    this.createLayers();
+    this.drawField();
+    this.drawBases();
     this._initProceduralScene(app);
 
     if (this._destroyed) return;
@@ -226,10 +272,11 @@ export class DiamondRenderer {
     this.spriteScene?.destroy();
     this.spriteScene = null;
     if (this.app) {
-      // Pass false so Pixi does NOT remove the canvas element from the DOM —
-      // React controls the canvas lifecycle and reuses the same element on
-      // StrictMode double-mount. Removing it here would leave a dangling ref.
-      this.app.destroy(false, { children: true });
+      // Remove Pixi's canvas from its parent container before destroying,
+      // so the next Pixi instance gets a clean container div.
+      const canvas = this.app.canvas as HTMLCanvasElement;
+      canvas.parentElement?.removeChild(canvas);
+      this.app.destroy(true, { children: true });
       this.app = null;
     }
     this.root = null;
