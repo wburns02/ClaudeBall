@@ -3,6 +3,9 @@ import type { GameEvent } from '@/engine/types/index.ts';
 import type { BaseState } from '@/engine/types/game.ts';
 import { DiamondRenderer } from './DiamondRenderer.ts';
 import { PlaySequencer } from './PlaySequencer.ts';
+import { AtBatCamera } from './AtBatCamera.ts';
+import { AtBatOverlay } from '../game/AtBatOverlay.tsx';
+import type { AtBatOverlayState } from '../game/AtBatOverlay.tsx';
 
 interface DiamondViewProps {
   bases: { first: boolean; second: boolean; third: boolean };
@@ -28,6 +31,18 @@ export function baseStateToBools(bs: BaseState): { first: boolean; second: boole
   };
 }
 
+const OVERLAY_INITIAL: AtBatOverlayState = {
+  visible: false,
+  pitchType: '',
+  pitchSpeedMph: 0,
+  resultText: '',
+  balls: 0,
+  strikes: 0,
+  batterName: '',
+  pitcherName: '',
+  pitchCount: 0,
+};
+
 export function DiamondView({
   bases,
   events,
@@ -43,8 +58,10 @@ export function DiamondView({
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<DiamondRenderer | null>(null);
   const sequencerRef = useRef<PlaySequencer | null>(null);
+  const cameraRef = useRef<AtBatCamera | null>(null);
   const processedCountRef = useRef(0);
   const [spriteStatus, setSpriteStatus] = useState<'loading' | 'sprites' | 'procedural'>('loading');
+  const [overlayState, setOverlayState] = useState<AtBatOverlayState>(OVERLAY_INITIAL);
 
   // Resolve pixel dimensions — use outer container when fullScreen
   const getSize = (): { w: number; h: number } => {
@@ -73,6 +90,23 @@ export function DiamondView({
 
     renderer.initInContainer(container, w, h)
       .then(async () => {
+        // Set up AtBatCamera now that the renderer is initialized and base transform is known
+        const root = renderer.getRoot();
+        if (root) {
+          const bt = renderer.getRootBaseTransform();
+          const cam = new AtBatCamera(root, bt.scaleX, bt.scaleY, bt.x, bt.y);
+          cameraRef.current = cam;
+
+          // Wire camera + overlay callback into the sequencer
+          const seq = sequencerRef.current;
+          if (seq) {
+            seq.camera = cam;
+            seq.onOverlayUpdate = (state) => {
+              setOverlayState(prev => ({ ...prev, ...state }));
+            };
+          }
+        }
+
         // Load scene/environment assets (stadium, weather, scoreboard) — non-blocking
         // Fire-and-forget: scene renders fine without them, they just layer on top.
         void renderer.loadSceneSprites();
@@ -92,9 +126,12 @@ export function DiamondView({
     return () => {
       sequencer.destroy();
       sequencerRef.current = null;
+      cameraRef.current?.destroy();
+      cameraRef.current = null;
       renderer.destroy();
       rendererRef.current = null;
       processedCountRef.current = 0;
+      setOverlayState(OVERLAY_INITIAL);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height, preferSprites, fullScreen]);
@@ -132,6 +169,20 @@ export function DiamondView({
       sequencerRef.current.speedFactor = animationSpeed;
     }
   }, [animationSpeed]);
+
+  // ── Extract batter/pitcher names from events for overlay ──────────
+  useEffect(() => {
+    const seq = sequencerRef.current;
+    if (!seq) return;
+    // Look for the most recent at_bat_result event to get names
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i];
+      if (ev && ev.type === 'at_bat_result') {
+        seq.setAtBatNames(ev.batter ?? '', ev.pitcher ?? '');
+        break;
+      }
+    }
+  }, [events]);
 
   // ── Sync base runners ─────────────────────────────────────────────
   useEffect(() => {
@@ -182,6 +233,10 @@ export function DiamondView({
         ref={containerRef}
         style={{ width: '100%', height: '100%' }}
       />
+
+      {/* At-bat close-up overlay — fades in/out with camera zoom */}
+      <AtBatOverlay state={overlayState} />
+
       {spriteStatus === 'loading' && (
         <div
           style={{

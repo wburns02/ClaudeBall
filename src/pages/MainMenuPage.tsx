@@ -22,24 +22,31 @@ export function MainMenuPage() {
         {/* Menu */}
         <Panel className="text-center">
           <div className="space-y-3 py-4">
-            <Button
-              size="lg"
-              className="w-64"
-              onClick={() => navigate('/test')}
-              data-testid="quick-test-btn"
-            >
-              Quick Test Game
-            </Button>
 
-            <Button
-              size="lg"
-              className="w-64"
-              onClick={() => navigate('/game/live')}
-            >
-              Quick Game
-            </Button>
+            {/* Exhibition / Play Now section */}
+            <div className="space-y-2">
+              <p className="text-cream-dim/40 text-[10px] font-mono tracking-widest uppercase">Play Now</p>
+              <Button
+                size="lg"
+                className="w-64"
+                onClick={() => navigate('/game/setup')}
+                data-testid="exhibition-setup-btn"
+              >
+                Exhibition Game
+              </Button>
+              <Button
+                size="lg"
+                className="w-64"
+                onClick={() => navigate('/game/quick')}
+                data-testid="quick-play-btn"
+              >
+                Quick Play
+              </Button>
+            </div>
 
+            {/* Other modes */}
             <div className="space-y-2 pt-4">
+              <p className="text-cream-dim/40 text-[10px] font-mono tracking-widest uppercase">Modes</p>
               <Button
                 variant="secondary"
                 size="md"
@@ -56,16 +63,29 @@ export function MainMenuPage() {
                 onClick={() => navigate('/career/new')}
                 data-testid="be-a-player-btn"
               >
-                ⚾ Be A Player
+                Be A Player
               </Button>
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/franchise/new')}>
                 New Franchise
               </Button>
+            </div>
+
+            {/* System */}
+            <div className="space-y-2 pt-2">
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/saves')}>
                 Save / Load
               </Button>
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/settings')}>
                 Settings
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-64"
+                onClick={() => navigate('/test')}
+                data-testid="quick-test-btn"
+              >
+                Test Harness
               </Button>
             </div>
 

@@ -97,6 +97,9 @@ export class DiamondRenderer {
   // Note: _destroyed is not private so it satisfies the tween guard interface { _destroyed: boolean }
   _destroyed = false;
 
+  /** Captured once after initInContainer — the "full field" scale/position. */
+  private _baseTransform = { scaleX: 1, scaleY: 1, x: 0, y: 0 };
+
   // ── Constructor ────────────────────────────────────────────────────────
 
   constructor() {
@@ -142,6 +145,9 @@ export class DiamondRenderer {
     this.root.x = (width - WIDTH * scale) / 2;
     this.root.y = (height - HEIGHT * scale) / 2;
 
+    // Capture base transform for AtBatCamera
+    this._baseTransform = { scaleX: scale, scaleY: scale, x: this.root.x, y: this.root.y };
+
     this._createLayers();
 
     // Load background field image
@@ -181,6 +187,9 @@ export class DiamondRenderer {
     this.root.scale.set(scale);
     this.root.x = (width - WIDTH * scale) / 2;
     this.root.y = (height - HEIGHT * scale) / 2;
+
+    // Capture base transform for AtBatCamera
+    this._baseTransform = { scaleX: scale, scaleY: scale, x: this.root.x, y: this.root.y };
 
     this._createLayers();
     await this._loadFieldBackground();
@@ -357,6 +366,16 @@ export class DiamondRenderer {
 
   getApp(): Application | null {
     return this.app;
+  }
+
+  getRoot(): Container | null {
+    return this.root;
+  }
+
+  /** Return the base scale and position captured at init — the "full field" state
+   *  that AtBatCamera uses as its zoom-out target. */
+  getRootBaseTransform(): { scaleX: number; scaleY: number; x: number; y: number } {
+    return { ...this._baseTransform };
   }
 
   // ── Public API ────────────────────────────────────────────────────────
