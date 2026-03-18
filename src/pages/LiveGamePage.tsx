@@ -13,6 +13,7 @@ import type { GameState, GameEvent } from '@/engine/types/index.ts';
 import type { Team } from '@/engine/types/team.ts';
 import type { SwingType, GamePhaseInteractive } from '@/engine/types/interactive.ts';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.ts';
+import { DiamondView, baseStateToBools } from '@/components/diamond/DiamondView.tsx';
 import type { UserRole } from '@/stores/gameStore.ts';
 
 interface LiveGameLocationState {
@@ -355,55 +356,36 @@ export function LiveGamePage() {
 
         {/* Main game area */}
         <div className="lg:col-span-2 space-y-4">
-          <Panel>
-            <div className="bg-[#1a2235] rounded-lg overflow-hidden" style={{ height: '400px' }}>
-              <div className="w-full h-full flex items-center justify-center" id="diamond-container">
-                <div className="text-center space-y-4">
-                  <pre className="text-cream font-mono text-xs leading-tight select-none">
-{`          ◆ 2B
-         / \\
-        /   \\
-   3B ◆     ◆ 1B
-        \\   /
-         \\ /
-          ◆ HP`}
-                  </pre>
-                  <div className="flex gap-4 justify-center text-sm font-mono">
-                    <span className="text-cream-dim">
-                      {gameState.inning.half === 'top' ? '▲' : '▼'} {gameState.inning.inning}
-                    </span>
-                    <span className="text-cream-dim">{gameState.inning.outs} out</span>
-                    <span className="text-gold">
-                      {gameState.inning.bases.first ? '1B' : ''}
-                      {gameState.inning.bases.second ? ' 2B' : ''}
-                      {gameState.inning.bases.third ? ' 3B' : ''}
-                      {!gameState.inning.bases.first && !gameState.inning.bases.second && !gameState.inning.bases.third ? 'Bases empty' : ''}
-                    </span>
-                  </div>
-                  <div className="text-xs font-mono">
-                    {phase === 'awaiting_swing' && (
-                      <span className="text-gold animate-pulse">SWING or TAKE — Space / T</span>
-                    )}
-                    {phase === 'awaiting_pitch' && (
-                      <span className="text-blue-400 animate-pulse">THROW PITCH — Space</span>
-                    )}
-                    {phase === 'cpu_pitch' && (
-                      <span className="text-cream-dim">CPU pitching… Space to advance</span>
-                    )}
-                    {phase === 'post_ab' && (
-                      <span className="text-cream-dim">Space for next batter</span>
-                    )}
-                    {phase === 'game_over' && (
-                      <span className="text-gold font-bold">GAME OVER</span>
-                    )}
-                    {phase === 'idle' && (
-                      <span className="text-cream-dim">Press Space to begin</span>
-                    )}
-                  </div>
-                </div>
-              </div>
+          {/* Diamond with player figures */}
+          <div className="relative">
+            <DiamondView
+              bases={baseStateToBools(gameState.inning.bases)}
+              events={events}
+              width={600}
+              height={460}
+            />
+            {/* Phase overlay */}
+            <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-mono">
+              {phase === 'awaiting_swing' && (
+                <span className="text-gold animate-pulse bg-navy/80 px-3 py-1 rounded">SWING or TAKE — Space / T</span>
+              )}
+              {phase === 'awaiting_pitch' && (
+                <span className="text-blue-400 animate-pulse bg-navy/80 px-3 py-1 rounded">THROW PITCH — Space</span>
+              )}
+              {phase === 'cpu_pitch' && (
+                <span className="text-cream-dim bg-navy/80 px-3 py-1 rounded">CPU pitching...</span>
+              )}
+              {phase === 'post_ab' && (
+                <span className="text-cream-dim bg-navy/80 px-3 py-1 rounded">Space for next batter</span>
+              )}
+              {phase === 'game_over' && (
+                <span className="text-gold font-bold bg-navy/80 px-3 py-1 rounded">GAME OVER</span>
+              )}
+              {phase === 'idle' && (
+                <span className="text-cream-dim bg-navy/80 px-3 py-1 rounded">Press Space to begin</span>
+              )}
             </div>
-          </Panel>
+          </div>
 
           <Panel title="Line Score">
             <LineScore game={gameState} />
