@@ -7,6 +7,11 @@ import { ImageSource, Texture, Rectangle } from 'pixi.js';
 import type { SpriteSheetConfig } from './SpriteConfig.ts';
 import { removeBackground } from './BackgroundRemover.ts';
 
+/** Detect green-screen PNG sprites by URL convention (v2 sprites end in .png). */
+function _isGreenScreen(url: string): boolean {
+  return url.toLowerCase().endsWith('.png');
+}
+
 // ── Cache ─────────────────────────────────────────────────────────────────
 
 // Map from cache-key → sliced frame textures
@@ -46,7 +51,7 @@ export async function loadSpriteSheet(
   let canvas = _canvasCache.get(url);
   if (canvas === undefined) {
     try {
-      canvas = await removeBackground(url);
+      canvas = await removeBackground(url, _isGreenScreen(url));
       _canvasCache.set(url, canvas);
     } catch (err) {
       console.warn('[SpriteSheetLoader] BackgroundRemover failed, using raw image:', err);

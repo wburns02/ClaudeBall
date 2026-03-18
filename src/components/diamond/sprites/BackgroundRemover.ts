@@ -2,7 +2,7 @@
 // Loads an image into a Canvas2D context and removes gray/white/checkered
 // backgrounds by zeroing the alpha of "background-like" pixels.
 //
-// Rules (evaluated per pixel BEFORE alpha removal):
+// Rules for GRAY backgrounds (old JPG sprites — evaluated per pixel):
 //  1. Any pixel where (R+G+B)/3 > 185 → transparent (light gray / white)
 //  2. Extra catch for the classic checkered mid-gray (170–220, nearly neutral)
 //  3. Protected from removal:
@@ -10,14 +10,27 @@
 //     - Glove/brown leather: R > 100 and G > 60 and B < 80
 //     - Uniform colors: strong hue saturation — skip if max(R,G,B) - min(R,G,B) > 40
 //       AND the brightest channel is not R≈G≈B (i.e., it isn't gray)
+//
+// Rules for GREEN (#00FF00) chroma-key backgrounds (v2 PNG sprites):
+//  - Pure green: G > 200 AND R < 100 AND B < 100 → alpha = 0
+//  - Near-green: G > 180 AND G > R*1.5 AND G > B*1.5 → alpha reduced proportionally
+//  - Anti-aliasing: partially-green edge pixels get alpha reduced proportionally
+//    rather than a hard 0/255 cutoff
 
 /**
- * Remove light gray / white / checkered backgrounds from a JPG image.
+ * Remove backgrounds from a sprite sheet image.
  *
- * @param imageUrl  URL of the sprite sheet (relative or absolute)
- * @returns         A canvas with the background pixels zeroed out (alpha = 0)
+ * For v2 PNG sprites (green #00FF00 chroma-key), supply isGreenScreen=true.
+ * For legacy JPG sprites (gray/white/checkered), supply isGreenScreen=false (default).
+ *
+ * @param imageUrl      URL of the sprite sheet (relative or absolute)
+ * @param isGreenScreen Whether the background is green (#00FF00) chroma-key
+ * @returns             A canvas with the background pixels zeroed out (alpha = 0)
  */
-export async function removeBackground(imageUrl: string): Promise<HTMLCanvasElement> {
+export async function removeBackground(
+  imageUrl: string,
+  isGreenScreen = false,
+): Promise<HTMLCanvasElement> {
   // Load the image
   const img = await _loadImage(imageUrl);
 
@@ -41,13 +54,30 @@ export async function removeBackground(imageUrl: string): Promise<HTMLCanvasElem
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data; // RGBA flat array
 
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i]!;
-    const g = data[i + 1]!;
-    const b = data[i + 2]!;
+  if (isGreenScreen) {
+    // ── Green chroma-key pass ───────────────────────────────────────────────
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]!;
+      const g = data[i + 1]!;
+      const b = data[i + 2]!;
 
-    if (_shouldRemove(r, g, b)) {
-      data[i + 3] = 0; // zero alpha → transparent
+      const alphaReduction = _greenScreenAlpha(r, g, b);
+      if (alphaReduction > 0) {
+        // Reduce alpha proportionally (anti-aliasing at edges)
+        const currentAlpha = data[i + 3]!;
+        data[i + 3] = Math.round(currentAlpha * (1 - alphaReduction));
+      }
+    }
+  } else {
+    // ── Legacy gray/white/checkered pass ───────────────────────────────────
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]!;
+      const g = data[i + 1]!;
+      const b = data[i + 2]!;
+
+      if (_shouldRemoveGray(r, g, b)) {
+        data[i + 3] = 0; // zero alpha → transparent
+      }
     }
   }
 
@@ -55,9 +85,38 @@ export async function removeBackground(imageUrl: string): Promise<HTMLCanvasElem
   return canvas;
 }
 
-// ── Per-pixel decision ────────────────────────────────────────────────────
+// ── Green chroma-key: returns a 0–1 removal fraction ──────────────────────
+// 0   = keep pixel fully (not green at all)
+// 1   = remove pixel fully (pure green background)
+// 0–1 = partial removal for anti-aliased edges
 
-function _shouldRemove(r: number, g: number, b: number): boolean {
+function _greenScreenAlpha(r: number, g: number, b: number): number {
+  // Pure green: hard remove
+  // G > 200, R < 100, B < 100
+  if (g > 200 && r < 100 && b < 100) {
+    return 1;
+  }
+
+  // Near-green: G > 180 AND G > R*1.5 AND G > B*1.5
+  // Proportional fade based on how "green" the pixel is
+  if (g > 180 && g > r * 1.5 && g > b * 1.5) {
+    // Compute a greenness ratio: how far past the threshold we are
+    // At exactly the threshold it's 0, at pure green it approaches 1
+    const greenExcess = (g - 180) / 75; // 0→1 over 180→255 range
+    const dominance = Math.min(
+      (g - r * 1.5) / 100,
+      (g - b * 1.5) / 100,
+    );
+    const fraction = Math.min(1, Math.max(0, (greenExcess + dominance) / 2));
+    return fraction;
+  }
+
+  return 0; // not green — keep fully
+}
+
+// ── Legacy gray/white/checkered per-pixel decision ─────────────────────────
+
+function _shouldRemoveGray(r: number, g: number, b: number): boolean {
   const avg = (r + g + b) / 3;
   const maxC = Math.max(r, g, b);
   const minC = Math.min(r, g, b);

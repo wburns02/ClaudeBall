@@ -14,6 +14,14 @@ import type { SpritePlayerScene } from './sprites/SpritePlayerScene.ts';
 import { delay } from './Tween.ts';
 import type { Point } from './Tween.ts';
 import { soundEngine } from '@/audio/index.ts';
+import {
+  spawnBatCrack,
+  spawnDustCloud,
+  spawnCatchPop,
+  spawnSlideSpray,
+  spawnStrikeoutK,
+  spawnHomeRunFireworks,
+} from './effects/index.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────────────
 
@@ -23,6 +31,10 @@ const MOUND_X = 300;
 const MOUND_Y = 310;
 const BASE_1_X = 420;
 const BASE_1_Y = 300;
+const BASE_2_X = 300;
+const BASE_2_Y = 190;
+const BASE_3_X = 180;
+const BASE_3_Y = 300;
 
 const FIELDER_POSITIONS: Record<string, Point> = {
   P:    { x: MOUND_X,  y: MOUND_Y },
@@ -112,6 +124,13 @@ export class PlaySequencer {
   private dur(ms: number): number {
     if (this.skipAnimations) return 0;
     return ms / Math.max(0.1, this.speedFactor);
+  }
+
+  // ── Effects layer helper ───────────────────────────────────────────────────
+  // Returns the effects Container so particle spawners can use it as parent.
+
+  private _fx() {
+    return this.renderer.getEffectsLayer();
   }
 
   // ── Main dispatch ──────────────────────────────────────────────────────────
@@ -220,6 +239,7 @@ export class PlaySequencer {
 
     // Step 3 + 4: catcher receives (leather pop), umpire calls ball
     soundEngine.playBallInGlove();
+    spawnCatchPop(this.renderer.getApp()!, HOME_X, HOME_Y, this._fx());
     await Promise.all([
       this._catcherReceive(ss),
       delay(this.dur(50)),
@@ -248,6 +268,7 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     soundEngine.playBallInGlove();
+    spawnCatchPop(this.renderer.getApp()!, HOME_X, HOME_Y, this._fx());
     await this._catcherReceive(ss);
     if (this._destroyed) return;
 
@@ -283,6 +304,7 @@ export class PlaySequencer {
     if (this._destroyed) return;
 
     soundEngine.playUmpireStrike();
+    spawnCatchPop(this.renderer.getApp()!, HOME_X, HOME_Y, this._fx());
     await this._catcherReceive(ss);
     await delay(this.dur(150));
 
@@ -292,7 +314,7 @@ export class PlaySequencer {
   // ── Foul ball (~1800ms) ────────────────────────────────────────────────────
   // 1. Pitcher winds up (600ms)
   // 2. Ball to plate (350ms), batter swings (fire at 300ms)
-  // 3. Contact flash at plate
+  // 3. Contact flash at plate + bat crack effect
   // 4. Ball pops off to foul territory and fades (400ms)
   // 5. Reset (200ms)
 
@@ -311,9 +333,10 @@ export class PlaySequencer {
     await Promise.all([ballPromise, swingPromise]);
     if (this._destroyed) return;
 
-    // Contact flash at plate
+    // Contact flash + bat crack particle effect
     this.renderer.showContactFlash(HOME_X, HOME_Y - 10);
     soundEngine.playBatCrack();
+    spawnBatCrack(this.renderer.getApp()!, HOME_X, HOME_Y - 10, this._fx());
 
     // Ball pops foul — to the right side (1B side)
     const foulTarget: Point = { x: HOME_X + 80 + Math.random() * 40, y: HOME_Y + 30 };
@@ -352,16 +375,19 @@ export class PlaySequencer {
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // Step 3: contact flash + bat crack sound
+    // Step 3: contact flash + bat crack sound + bat crack particle
     this.renderer.showContactFlash(HOME_X - 10, HOME_Y - 15);
     soundEngine.playBatCrack();
+    spawnBatCrack(this.renderer.getApp()!, HOME_X - 10, HOME_Y - 15, this._fx());
 
     // Step 4+: route based on hit type
     if (hitType === 'groundout' || hitType === 'fielders_choice' || hitType === 'double_play') {
       await this._playGroundout(fielderPos, angle, distNorm, ss);
     } else if (hitType === 'single') {
+      if (ss) void ss.animateBatterRunning?.();
       await this._playSingle(fielderPos, angle, distNorm, ss);
     } else if (hitType === 'double' || hitType === 'triple') {
+      if (ss) void ss.animateBatterRunning?.();
       await this._playExtraBase(fielderPos, angle, distNorm, ss, hitType);
     } else if (hitType === 'flyout' || hitType === 'lineout') {
       await this._playFlyout(fielderPos, angle, distNorm, ss);
@@ -403,17 +429,24 @@ export class PlaySequencer {
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // Big contact flash + loud bat crack
+    // Big contact flash + bat crack particle effect
     this.renderer.showContactFlash(HOME_X - 12, HOME_Y - 18);
     this.renderer.showHomeRunFlash();
     soundEngine.playBatCrack(1.4);
+    spawnBatCrack(this.renderer.getApp()!, HOME_X - 12, HOME_Y - 18, this._fx());
+    if (ss) void ss.animateBatterRunning?.();
 
     // Ball arcs out of the park
     await this.renderer.animateBallHomeRun(angle, distance);
     if (this._destroyed) return;
 
-    // Horn blast after ball clears the wall
+    // Fireworks celebration + horn blast
+    const hrApp = this.renderer.getApp();
+    if (hrApp) {
+      spawnHomeRunFireworks(hrApp, 600, 500, this._fx());
+    }
     soundEngine.playHomeRunHorn();
+
     await delay(this.dur(200));
     this.renderer.hideBall();
   }
@@ -431,6 +464,9 @@ export class PlaySequencer {
       await ss.animateBatterSwing('late');
       if (this._destroyed) return;
     }
+
+    // Dramatic K flash near home plate area
+    spawnStrikeoutK(this.renderer.getApp()!, HOME_X, HOME_Y - 60, looking, this._fx());
 
     if (ss) {
       soundEngine.playCrowdCheer('roar');
@@ -551,11 +587,17 @@ export class PlaySequencer {
     );
     if (this._destroyed) return;
 
+    // Dust cloud where ball hits the dirt
+    spawnDustCloud(this.renderer.getApp()!, clampedLanding.x, clampedLanding.y, 'medium', this._fx());
+
     // Fielder animates (field + crow hop + throw) concurrently with ball throw
     const fielderAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
 
     await fielderAnim;
     if (this._destroyed) return;
+
+    // CatchPop when fielder fields it
+    spawnCatchPop(this.renderer.getApp()!, fielderCoord.x, fielderCoord.y, this._fx());
 
     // Fielder throws to 1B
     if (ss) {
@@ -575,6 +617,10 @@ export class PlaySequencer {
         this.dur(320),
       );
     }
+
+    // Catch at 1B + light dust from runner's foot sliding in
+    spawnCatchPop(this.renderer.getApp()!, BASE_1_X, BASE_1_Y, this._fx());
+    spawnDustCloud(this.renderer.getApp()!, BASE_1_X, BASE_1_Y, 'light', this._fx());
 
     await delay(this.dur(200));
   }
@@ -608,6 +654,10 @@ export class PlaySequencer {
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
     soundEngine.playBallInGlove();
+    // CatchPop at outfielder
+    spawnCatchPop(this.renderer.getApp()!, clamped.x, clamped.y, this._fx());
+    // Light dust as runner arrives at first
+    spawnDustCloud(this.renderer.getApp()!, BASE_1_X, BASE_1_Y, 'light', this._fx());
 
     if (this._destroyed) return;
     await delay(this.dur(200));
@@ -648,6 +698,15 @@ export class PlaySequencer {
     await catchAnim;
     if (this._destroyed) return;
 
+    // Slide spray at the destination base — double slides into 2B, triple into 3B
+    const slideBase = hitType === 'triple'
+      ? { x: BASE_3_X, y: BASE_3_Y }
+      : { x: BASE_2_X, y: BASE_2_Y };
+    // Determine slide direction based on which side runner comes from
+    const slideDir = hitType === 'triple' ? 'right' : 'left';
+    spawnSlideSpray(this.renderer.getApp()!, slideBase.x, slideBase.y, slideDir, this._fx());
+    spawnDustCloud(this.renderer.getApp()!, slideBase.x, slideBase.y, 'heavy', this._fx());
+
     await delay(this.dur(250));
   }
 
@@ -678,6 +737,11 @@ export class PlaySequencer {
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
     soundEngine.playBallInGlove();
+    // CatchPop at the fielder's position when they catch it
+    const fCoord = FIELDER_POSITIONS[fielderPos];
+    if (fCoord) {
+      spawnCatchPop(this.renderer.getApp()!, fCoord.x, fCoord.y, this._fx());
+    }
     if (this._destroyed) return;
 
     await delay(this.dur(200));
@@ -706,6 +770,8 @@ export class PlaySequencer {
 
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
+    soundEngine.playBallInGlove();
+    spawnCatchPop(this.renderer.getApp()!, popTarget.x, popTarget.y, this._fx());
     if (this._destroyed) return;
 
     await delay(this.dur(150));

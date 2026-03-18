@@ -1,6 +1,7 @@
 // ── SpriteConfig.ts ───────────────────────────────────────────────────────
 // Configuration mapping sprite sheet image files to their frame grid layouts.
-// All sprites are JPG files with gray/checkered backgrounds (not transparent).
+// Legacy sprites are JPG files with gray/checkered backgrounds.
+// V2 sprites are PNG files with solid #00FF00 green chroma-key backgrounds.
 
 export interface SpriteSheetConfig {
   url: string;
@@ -33,6 +34,14 @@ export const SPRITE_SHEETS: Record<string, SpriteSheetConfig> = {
   // Catcher/Umpire: full frame (content fills entire frame)
   catcherUmpire:     { url: '/sprites/catcher-umpire.jpg',       cols: 4, rows: 1, trimTop: 0.00, trimBottom: 1.00 },
   catcherUmpireAlt:  { url: '/sprites/catcher-umpire-alt.jpg',   cols: 4, rows: 1, trimTop: 0.00, trimBottom: 1.00 },
+
+  // ── V2 sprites: solid #00FF00 green chroma-key backgrounds ──────────────
+  // These are PNG files; BackgroundRemover will use green-screen removal.
+  pitcherV2:         { url: '/sprites/pitcher-v2.png',           cols: 4, rows: 3 },
+  batterV2:          { url: '/sprites/batter-v2.png',            cols: 4, rows: 3 },
+  fielderV2:         { url: '/sprites/fielder-v2.png',           cols: 4, rows: 3 },
+  runnerV2:          { url: '/sprites/runner-v2.png',            cols: 2, rows: 4 },
+  catcherUmpireV2:   { url: '/sprites/catcher-umpire-v2.png',    cols: 4, rows: 2 },
 } as const;
 
 export type SpriteSheetKey = keyof typeof SPRITE_SHEETS;
@@ -126,4 +135,93 @@ export const CATCHER_UMPIRE_ALT_FRAMES = {
   catcherReach:   1,
   umpireStand:    2,
   umpirePunchOut: 3,
+} as const;
+
+// ── V2 frame indices ───────────────────────────────────────────────────────
+
+/**
+ * Frame indices into pitcherV2 (4x3 grid = 12 frames, row-major).
+ * Full windup sequence: standing → set → windupStart → … → fieldingReady
+ */
+export const PITCHER_V2_FRAMES = {
+  standing:       0,
+  set:            1,
+  windupStart:    2,
+  windupPeak:     3,
+  legKick:        4,
+  stride:         5,
+  armCocked:      6,
+  armForward:     7,
+  release:        8,
+  followThrough:  9,
+  recovery:       10,
+  fieldingReady:  11,
+} as const;
+
+/**
+ * Frame indices into batterV2 (4x3 grid = 12 frames, row-major).
+ * Full swing + run sequence.
+ */
+export const BATTER_V2_FRAMES = {
+  stance:         0,
+  loaded:         1,
+  strideBegin:    2,
+  hipsRotate:     3,
+  batEntering:    4,
+  contact:        5,
+  followStart:    6,
+  followFull:     7,
+  watching:       8,
+  dropBat:        9,
+  running1:       10,
+  running2:       11,
+} as const;
+
+/**
+ * Frame indices into fielderV2 (4x3 grid = 12 frames, row-major).
+ * Fielding actions (frames have small overlaid number labels — visible at game scale but acceptable).
+ */
+export const FIELDER_V2_FRAMES = {
+  ready:          0,
+  shuffleLeft:    1,
+  shuffleRight:   2,
+  runForward:     3,
+  runCycle2:      4,
+  bendGrounder:   5,
+  scooping:       6,
+  standingUp:     7,
+  crowHop:        8,
+  throwing:       9,
+  throwFollow:    10,
+  catchFly:       11,
+} as const;
+
+/**
+ * Frame indices into runnerV2 (2x4 grid = 8 frames, row-major).
+ * Running and sliding sequence.
+ */
+export const RUNNER_V2_FRAMES = {
+  run1:           0,
+  run2:           1,
+  run3:           2,
+  run4:           3,
+  slideStart:     4,
+  feetSlide:      5,
+  headfirstDive:  6,
+  standingOnBase: 7,
+} as const;
+
+/**
+ * Frame indices into catcherUmpireV2 (4x2 grid = 8 frames, row-major).
+ * Catcher crouch/receive/throw + umpire stand/strike/ball/out.
+ */
+export const CATCHER_UMP_V2_FRAMES = {
+  catcherSquat:       0,
+  catcherReachLeft:   1,
+  catcherReachRight:  2,
+  catcherThrow:       3,
+  umpireStanding:     4,
+  umpireStrike:       5,
+  umpireBall:         6,
+  umpireOut:          7,
 } as const;
