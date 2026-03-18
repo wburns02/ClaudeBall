@@ -52,6 +52,15 @@ export function FranchiseDashboard() {
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/standings')}>
             Standings
           </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster')}>
+            Roster
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/trade')}>
+            Trades
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/free-agency')}>
+            FA
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => navigate('/')}>
             Menu
           </Button>
