@@ -37,7 +37,7 @@ export const SPRITE_SHEETS: Record<string, SpriteSheetConfig> = {
 
   // ── V2 sprites: solid #00FF00 green chroma-key backgrounds ──────────────
   // These are PNG files; BackgroundRemover will use green-screen removal.
-  pitcherV2:         { url: '/sprites/pitcher-v2.png',           cols: 4, rows: 3 },
+  pitcherV2:         { url: '/sprites/pitcher32bit.png',         cols: 4, rows: 4 },
   batterV2:          { url: '/sprites/batter-v2.png',            cols: 4, rows: 3 },
   fielderV2:         { url: '/sprites/fielder32bit.png',         cols: 4, rows: 4 },
   runnerV2:          { url: '/sprites/runner-v2.png',            cols: 2, rows: 4 },

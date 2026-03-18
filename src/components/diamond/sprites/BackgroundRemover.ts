@@ -91,18 +91,26 @@ export async function removeBackground(
 // 0–1 = partial removal for anti-aliased edges
 
 function _greenScreenAlpha(r: number, g: number, b: number): number {
-  // Pure green: hard remove
-  // G > 200, R < 100, B < 100
+  // Pure bright green (#00FF00): hard remove
   if (g > 200 && r < 100 && b < 100) {
     return 1;
   }
 
-  // Near-green: G > 180 AND G > R*1.5 AND G > B*1.5
-  // Proportional fade based on how "green" the pixel is
-  if (g > 180 && g > r * 1.5 && g > b * 1.5) {
-    // Compute a greenness ratio: how far past the threshold we are
-    // At exactly the threshold it's 0, at pure green it approaches 1
-    const greenExcess = (g - 180) / 75; // 0→1 over 180→255 range
+  // Darker green backgrounds (Grok often generates ~R=32,G=174,B=92):
+  // Green must be dominant channel and significantly higher than red
+  if (g > 140 && g > r * 1.3 && g > b * 1.2 && r < 120) {
+    // How green-dominant is this pixel?
+    const greenDominance = (g - Math.max(r, b)) / g;
+    if (greenDominance > 0.25) {
+      // Strong green dominance — likely background
+      const strength = Math.min(1, (greenDominance - 0.25) / 0.35);
+      return 0.3 + strength * 0.7; // 0.3 to 1.0
+    }
+  }
+
+  // Near-green fringe (anti-aliasing edges)
+  if (g > 160 && g > r * 1.5 && g > b * 1.5) {
+    const greenExcess = (g - 160) / 95;
     const dominance = Math.min(
       (g - r * 1.5) / 100,
       (g - b * 1.5) / 100,
