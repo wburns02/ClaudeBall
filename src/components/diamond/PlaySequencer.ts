@@ -26,30 +26,34 @@ import { Sprite, Ticker } from 'pixi.js';
 import { HOMERUN_EFFECT_FRAMES, DUST_CROP_RECTS } from './sprites/SpriteConfig.ts';
 
 // ── Coordinate constants ──────────────────────────────────────────────────────
+// Mirrors DiamondRenderer.ts — tuned for gameplayfield2.png positions.
+//   HOME_X=300  HOME_Y=425   MOUND_X=300  MOUND_Y=310
+//   BASE_1_X=390 BASE_1_Y=335  BASE_2_X=300 BASE_2_Y=235  BASE_3_X=210 BASE_3_Y=335
+//   Outfield: LF(150,158) CF(300,100) RF(450,158)
 
 const WIDTH = 600;
 const HEIGHT = 500;
 const HOME_X = 300;
-const HOME_Y = 420;
+const HOME_Y = 425;
 const MOUND_X = 300;
 const MOUND_Y = 310;
-const BASE_1_X = 420;
-const BASE_1_Y = 300;
+const BASE_1_X = 390;
+const BASE_1_Y = 335;
 const BASE_2_X = 300;
-const BASE_2_Y = 190;
-const BASE_3_X = 180;
-const BASE_3_Y = 300;
+const BASE_2_Y = 235;
+const BASE_3_X = 210;
+const BASE_3_Y = 335;
 
 const FIELDER_POSITIONS: Record<string, Point> = {
   P:    { x: MOUND_X,  y: MOUND_Y },
-  C:    { x: HOME_X,   y: HOME_Y + 25 },
-  '1B': { x: 410,      y: 295 },
-  '2B': { x: 355,      y: 240 },
-  SS:   { x: 245,      y: 240 },
-  '3B': { x: 190,      y: 295 },
-  LF:   { x: 130,      y: 150 },
-  CF:   { x: 300,      y: 90 },
-  RF:   { x: 470,      y: 150 },
+  C:    { x: HOME_X,   y: HOME_Y + 22 },
+  '1B': { x: 382,      y: 330 },
+  '2B': { x: 345,      y: 268 },
+  SS:   { x: 255,      y: 268 },
+  '3B': { x: 218,      y: 330 },
+  LF:   { x: 150,      y: 158 },
+  CF:   { x: 300,      y: 100 },
+  RF:   { x: 450,      y: 158 },
 };
 
 // ── PitchType config for bezier curves (matches PitchAnimator.ts) ─────────────

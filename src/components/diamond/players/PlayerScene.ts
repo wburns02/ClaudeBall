@@ -9,15 +9,16 @@ import { createUmpireFigure } from './UmpireAnimation.ts';
 import type { Position } from '@/engine/types/enums.ts';
 
 // ── Coordinate constants (mirror DiamondRenderer) ─────────────────────────
+// Tuned for gameplayfield2.png (behind-home-plate perspective).
 
 const HOME_X = 300;
-const HOME_Y = 420;
-const BASE_1_X = 420;
-const BASE_1_Y = 300;
+const HOME_Y = 425;
+const BASE_1_X = 390;
+const BASE_1_Y = 335;
 const BASE_2_X = 300;
-const BASE_2_Y = 190;
-const BASE_3_X = 180;
-const BASE_3_Y = 300;
+const BASE_2_Y = 235;
+const BASE_3_X = 210;
+const BASE_3_Y = 335;
 const MOUND_X = 300;
 const MOUND_Y = 310;
 
@@ -25,14 +26,14 @@ const MOUND_Y = 310;
 
 const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
   P:   { x: MOUND_X, y: MOUND_Y },
-  C:   { x: HOME_X, y: HOME_Y + 25 },
-  '1B': { x: 410, y: 295 },
-  '2B': { x: 355, y: 240 },
-  SS:  { x: 245, y: 240 },
-  '3B': { x: 190, y: 295 },
-  LF:  { x: 130, y: 150 },
-  CF:  { x: 300, y: 90 },
-  RF:  { x: 470, y: 150 },
+  C:   { x: HOME_X, y: HOME_Y + 22 },
+  '1B': { x: 382, y: 330 },
+  '2B': { x: 345, y: 268 },
+  SS:  { x: 255, y: 268 },
+  '3B': { x: 218, y: 330 },
+  LF:  { x: 150, y: 158 },
+  CF:  { x: 300, y: 100 },
+  RF:  { x: 450, y: 158 },
 };
 
 // Scale factors for depth perspective

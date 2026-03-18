@@ -1,4 +1,4 @@
-import { Application, Graphics, Text, Container, Sprite, Ticker } from 'pixi.js';
+import { Application, Assets, Graphics, Text, Container, Sprite, Ticker } from 'pixi.js';
 import { PlayerScene } from './players/PlayerScene.ts';
 import { SpritePlayerScene } from './sprites/SpritePlayerScene.ts';
 import {
@@ -11,59 +11,50 @@ import {
 } from './Tween.ts';
 import type { Point } from './Tween.ts';
 import { loadSceneAssets, clearSceneAssets } from './sprites/SceneAssets.ts';
-import type { WeatherType } from './sprites/SpriteConfig.ts';
 
-// ── Coordinate constants ──────────────────────────────────────────────
-// The diamond is rendered in a 600x500 viewport with home plate near the bottom-center.
+// ── Canvas dimensions ─────────────────────────────────────────────────────
+// The field background image (gameplayfield2.png) fills this viewport.
+// All coordinate constants below are tuned to match the visual positions
+// of field elements inside gameplayfield2.png (1280×720 pixel art).
+// The viewport is still 600×500 to match prior component sizing.
 
 const WIDTH = 600;
 const HEIGHT = 500;
 
-// Home plate anchor — everything radiates from here
-const HOME_X = 300;
-const HOME_Y = 420;
+// ── Coordinate constants ──────────────────────────────────────────────────
+// Derived from gameplayfield2.png: behind-home-plate perspective.
+// Percentages: home plate ≈ 50% x, 85% y; mound ≈ 50% x, 62% y
+// 1B ≈ 65% x, 67% y; 2B ≈ 50% x, 47% y; 3B ≈ 35% x, 67% y
 
-// Base coordinates (diamond rotated 45°)
-const BASE_1_X = 420;
-const BASE_1_Y = 300;
-const BASE_2_X = 300;
-const BASE_2_Y = 190;
-const BASE_3_X = 180;
-const BASE_3_Y = 300;
+const HOME_X = 300;     // 50% of 600
+const HOME_Y = 425;     // 85% of 500
 
-// Mound
-const MOUND_X = 300;
-const MOUND_Y = 310;
+const MOUND_X = 300;    // 50% of 600
+const MOUND_Y = 310;    // 62% of 500
 
-// ── Color palette ─────────────────────────────────────────────────────
-const COLORS = {
-  background: 0x1a2235,
-  outfieldGrass: 0x2d5a3d,
-  infieldDirt: 0x8b6914,
-  white: 0xffffff,
-  ball: 0xffffff,
-  runner: 0xd4a843,
-  fielder: 0xe8e0d4,
-  foulLine: 0xffffff,
-  mound: 0x8b6914,
-  basePath: 0xc4a44a,
-  labelText: 0xaaaaaa,
-} as const;
+const BASE_1_X = 390;   // 65% of 600
+const BASE_1_Y = 335;   // 67% of 500
 
-// ── Fielder default positions (x, y) ─────────────────────────────────
+const BASE_2_X = 300;   // 50% of 600
+const BASE_2_Y = 235;   // 47% of 500
+
+const BASE_3_X = 210;   // 35% of 600
+const BASE_3_Y = 335;   // 67% of 500
+
+// ── Fielder positions ──────────────────────────────────────────────────────
 const FIELDER_POSITIONS: Record<string, { x: number; y: number }> = {
-  P: { x: MOUND_X, y: MOUND_Y },
-  C: { x: HOME_X, y: HOME_Y + 25 },
-  '1B': { x: 410, y: 295 },
-  '2B': { x: 355, y: 240 },
-  SS: { x: 245, y: 240 },
-  '3B': { x: 190, y: 295 },
-  LF: { x: 130, y: 150 },
-  CF: { x: 300, y: 90 },
-  RF: { x: 470, y: 150 },
+  P:    { x: MOUND_X,  y: MOUND_Y },
+  C:    { x: HOME_X,   y: HOME_Y + 22 },
+  '1B': { x: 382,      y: 330 },
+  '2B': { x: 345,      y: 268 },
+  SS:   { x: 255,      y: 268 },
+  '3B': { x: 218,      y: 330 },
+  LF:   { x: 150,      y: 158 },
+  CF:   { x: 300,      y: 100 },
+  RF:   { x: 450,      y: 158 },
 };
 
-// ── Hit trajectory helpers ────────────────────────────────────────────
+// ── Hit trajectory helpers ────────────────────────────────────────────────
 type HitType = 'ground_ball' | 'line_drive' | 'fly_ball' | 'popup' | 'home_run';
 
 function hitLandingPoint(
@@ -71,9 +62,7 @@ function hitLandingPoint(
   angleDeg: number,
   distance: number,
 ): { x: number; y: number } {
-  // Angle: 0 = straight up center, -45 = left field line, +45 = right field line
-  // Distance: 0-1 normalized (1 = fence ~400ft)
-  const rad = ((angleDeg - 90) * Math.PI) / 180; // -90 so 0° = up
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
   const maxDist = type === 'home_run' ? 320 : type === 'popup' ? 80 : 260;
   const d = distance * maxDist;
   return {
@@ -82,81 +71,60 @@ function hitLandingPoint(
   };
 }
 
-// ── DiamondRenderer class ─────────────────────────────────────────────
+// ── DiamondRenderer class ─────────────────────────────────────────────────
 
 export class DiamondRenderer {
   private app: Application | null = null;
   private root: Container | null = null;
 
-  // Layers
-  /** Sky backdrop — bottommost layer; shows a weather panel or gradient. */
-  private skyLayer: Container | null = null;
-  /** Stadium panorama — behind grass, above sky. */
-  private stadiumLayer: Container | null = null;
-  private grassLayer: Graphics | null = null;
-  private dirtLayer: Graphics | null = null;
-  private lineLayer: Graphics | null = null;
-  private baseLayer: Container | null = null;
-  private fielderLayer: Container | null = null;
-  private runnerLayer: Container | null = null;
+  // Layers (bottom → top)
+  private backgroundLayer: Container | null = null;
+  private playerLayer: Container | null = null;
   private ballLayer: Container | null = null;
-  private labelLayer: Container | null = null;
-  /** Particle effects layer — sits above ball/field, below UI overlays. */
   private effectsLayer: Container | null = null;
+  private labelLayer: Container | null = null;
 
-  // Scene asset sprites (loaded async after init)
-  private _skySprite: Sprite | null = null;
-  private _stadiumSprite: Sprite | null = null;
-  private _scoreboardSprite: Sprite | null = null;
-  private _sceneAssetsLoaded = false;
-
-  // Player scenes — procedural (always created) and sprite-based (async loaded)
+  // Player scenes
   private playerScene: PlayerScene;
   private spriteScene: SpritePlayerScene | null = null;
   private _spriteMode = false;
 
   // State
-  private fielderDots: Map<string, Graphics> = new Map();
   private fielderLabels: Map<string, Text> = new Map();
-  private baseDiamonds: Map<number, Graphics> = new Map();
-  private runnerDots: Map<string, Graphics> = new Map();
-  private baseHighlights: Map<number, Graphics> = new Map();
   private ballGraphic: Graphics | null = null;
 
   private _animating = false;
   // Note: _destroyed is not private so it satisfies the tween guard interface { _destroyed: boolean }
   _destroyed = false;
 
-  // ── Constructor ────────────────────────────────────────────────────
+  // ── Constructor ────────────────────────────────────────────────────────
 
   constructor() {
     this.playerScene = new PlayerScene();
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────
+  // ── Lifecycle ─────────────────────────────────────────────────────────
 
   /**
-   * Initialize Pixi inside a container div — Pixi creates its own canvas element.
-   * This avoids React StrictMode WebGL context collision from canvas reuse.
+   * Initialize Pixi inside a container div. Loads the gameplayfield2.png
+   * background image as the sole field graphic.
    */
   async initInContainer(container: HTMLDivElement, width: number, height: number): Promise<void> {
     const app = new Application();
     await app.init({
       width,
       height,
-      background: COLORS.background,
+      background: 0x0a0f1a,
       antialias: true,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
     });
 
-    // Guard against destroy() being called during async init (e.g. React StrictMode)
     if (this._destroyed) {
       app.destroy(true, { children: true });
       return;
     }
 
-    // Append Pixi's own canvas into the container div
     container.appendChild(app.canvas);
     (app.canvas as HTMLCanvasElement).style.display = 'block';
     (app.canvas as HTMLCanvasElement).style.width = '100%';
@@ -166,7 +134,7 @@ export class DiamondRenderer {
     this.root = new Container();
     app.stage.addChild(this.root);
 
-    // Scale to fit requested size
+    // Scale root to fill canvas — keep aspect ratio of our 600×500 viewport
     const sx = width / WIDTH;
     const sy = height / HEIGHT;
     const scale = Math.min(sx, sy);
@@ -174,13 +142,15 @@ export class DiamondRenderer {
     this.root.x = (width - WIDTH * scale) / 2;
     this.root.y = (height - HEIGHT * scale) / 2;
 
-    this.createLayers();
-    this.drawField();
-    this.drawBases();
-    this._initProceduralScene(app);
+    this._createLayers();
+
+    // Load background field image
+    await this._loadFieldBackground();
 
     if (this._destroyed) return;
-    this.createBall();
+
+    this._initProceduralScene(app);
+    this._createBall();
   }
 
   /** @deprecated Use initInContainer instead */
@@ -190,7 +160,7 @@ export class DiamondRenderer {
       canvas,
       width,
       height,
-      background: COLORS.background,
+      background: 0x0a0f1a,
       antialias: true,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
@@ -212,30 +182,83 @@ export class DiamondRenderer {
     this.root.x = (width - WIDTH * scale) / 2;
     this.root.y = (height - HEIGHT * scale) / 2;
 
-    this.createLayers();
-    this.drawField();
-    this.drawBases();
-    this._initProceduralScene(app);
+    this._createLayers();
+    await this._loadFieldBackground();
 
     if (this._destroyed) return;
-    this.createBall();
+
+    this._initProceduralScene(app);
+    this._createBall();
   }
 
-  /** Initialize the sync procedural player scene as the default / fallback. */
+  // ── Layer setup ───────────────────────────────────────────────────────
+
+  private _createLayers(): void {
+    if (!this.root) return;
+
+    // Z-order (bottom → top):
+    //   backgroundLayer → playerLayer → ballLayer → effectsLayer → labelLayer
+    this.backgroundLayer = new Container();
+    this.playerLayer     = new Container();
+    this.ballLayer       = new Container();
+    this.effectsLayer    = new Container();
+    this.labelLayer      = new Container();
+
+    this.root.addChild(this.backgroundLayer);  // 0 — field background image
+    this.root.addChild(this.playerLayer);      // 1 — player sprites / procedural figures
+    this.root.addChild(this.ballLayer);        // 2 — ball
+    this.root.addChild(this.effectsLayer);     // 3 — particle effects
+    this.root.addChild(this.labelLayer);       // 4 — text labels
+  }
+
+  // ── Field background ──────────────────────────────────────────────────
+
+  /**
+   * Load gameplayfield2.png as a background sprite that fills the 600×500 viewport.
+   * Uses "cover" mode: scales uniformly so the image fills the viewport (cropping edges).
+   */
+  private async _loadFieldBackground(): Promise<void> {
+    if (!this.backgroundLayer) return;
+
+    try {
+      const texture = await Assets.load('/sprites/gameplayfield2.png');
+      if (this._destroyed) return;
+
+      const sprite = new Sprite(texture);
+
+      // Cover mode: scale to fill WIDTH×HEIGHT maintaining aspect ratio
+      const imgW = texture.width;
+      const imgH = texture.height;
+      const scaleX = WIDTH / imgW;
+      const scaleY = HEIGHT / imgH;
+      const coverScale = Math.max(scaleX, scaleY);
+      sprite.scale.set(coverScale);
+
+      // Center the image within the viewport
+      sprite.x = (WIDTH - imgW * coverScale) / 2;
+      sprite.y = (HEIGHT - imgH * coverScale) / 2;
+
+      this.backgroundLayer.addChild(sprite);
+    } catch (err) {
+      console.warn('[DiamondRenderer] Failed to load gameplayfield2.png:', err);
+      // Fallback: dark navy background (already set as app background color)
+    }
+  }
+
+  // ── Player scene init ─────────────────────────────────────────────────
+
   private _initProceduralScene(app: Application): void {
-    if (!this.fielderLayer) return;
+    if (!this.playerLayer) return;
     const layer = this.playerScene.createScene(app);
-    this.fielderLayer.addChild(layer);
+    this.playerLayer.addChild(layer);
     this._spriteMode = false;
   }
 
   /**
    * Asynchronously load sprite sheets and switch to sprite-based players.
-   * Call this after `init()` resolves. Falls back to procedural if loading fails.
-   * Returns true if sprites loaded successfully, false on failure/abort.
    */
   async loadSprites(): Promise<boolean> {
-    if (this._destroyed || !this.fielderLayer) return false;
+    if (this._destroyed || !this.playerLayer) return false;
 
     try {
       const spriteScene = new SpritePlayerScene();
@@ -246,11 +269,11 @@ export class DiamondRenderer {
         return false;
       }
 
-      // Add sprite layer above the procedural layer (which stays hidden as fallback)
-      if (this.fielderLayer.children.length > 0) {
-        this.fielderLayer.children[0].visible = false;
+      // Hide the procedural layer, add sprite layer on top
+      if (this.playerLayer.children.length > 0) {
+        this.playerLayer.children[0].visible = false;
       }
-      this.fielderLayer.addChild(spriteLayer);
+      this.playerLayer.addChild(spriteLayer);
       this.spriteScene = spriteScene;
       this._spriteMode = true;
       return true;
@@ -261,92 +284,15 @@ export class DiamondRenderer {
   }
 
   /**
-   * Load stadium background, weather sky, scoreboard, and other scene assets.
-   * Called once after initInContainer() resolves. Safe to call multiple times.
-   * Returns true on success, false if assets failed (field still renders fine).
+   * loadSceneSprites is kept as a no-op for backwards compatibility.
+   * The field is now a single background image; no separate scene assets needed.
    */
   async loadSceneSprites(): Promise<boolean> {
-    if (this._destroyed || this._sceneAssetsLoaded) return this._sceneAssetsLoaded;
-
-    try {
-      const assets = await loadSceneAssets();
-      if (this._destroyed) return false;
-
-      // ── Sky layer (weather backdrop, bottommost) ─────────────────────────
-      if (this.skyLayer && assets.weatherTextures.day !== undefined) {
-        const sky = new Sprite(assets.weatherTextures.day);
-        sky.x = 0;
-        sky.y = 0;
-        // Scale to fill full canvas width, top portion of viewport
-        sky.width = WIDTH;
-        // Show top ~45% of canvas for sky (the rest is covered by field)
-        sky.height = HEIGHT * 0.55;
-        this.skyLayer.addChild(sky);
-        this._skySprite = sky;
-      }
-
-      // ── Stadium panorama (behind grass) ──────────────────────────────────
-      if (this.stadiumLayer && assets.stadiumTexture !== undefined) {
-        const stadium = new Sprite(assets.stadiumTexture);
-        stadium.x = 0;
-        // Position so the wall aligns with outfield grass boundary (~y=80)
-        // The stadium image's outfield wall is roughly the bottom 25% of the image.
-        // We'll position it so its bottom ~30% overlaps the grass start zone.
-        const targetBottom = 115; // px where outfield grass begins
-        const displayH = HEIGHT * 0.40; // display height of stadium image
-        stadium.y = targetBottom - displayH;
-        stadium.width = WIDTH;
-        stadium.height = displayH;
-        stadium.alpha = 0.88; // slight transparency so it blends with field
-        this.stadiumLayer.addChild(stadium);
-        this._stadiumSprite = stadium;
-      }
-
-      // ── Scoreboard (decorative, upper outfield wall area) ────────────────
-      if (this.stadiumLayer && assets.scoreboardTexture !== undefined) {
-        const sb = new Sprite(assets.scoreboardTexture);
-        // Place scoreboard centered in upper-center of diamond, outfield-wall area
-        const sbW = 90; // ~90px wide
-        const sbH = (assets.scoreboardTexture.height / assets.scoreboardTexture.width) * sbW;
-        sb.width = sbW;
-        sb.height = sbH;
-        sb.x = WIDTH / 2 - sbW / 2;
-        sb.y = 22; // near the top (behind outfield)
-        sb.alpha = 0.92;
-        this.stadiumLayer.addChild(sb);
-        this._scoreboardSprite = sb;
-      }
-
-      this._sceneAssetsLoaded = true;
-      return true;
-    } catch (err) {
-      console.warn('[DiamondRenderer] Scene sprites failed, field still renders:', err);
-      return false;
-    }
+    return true;
   }
 
-  /**
-   * Swap the sky backdrop to a different weather type.
-   * Does nothing if scene sprites haven't loaded yet.
-   */
-  async setWeather(type: WeatherType): Promise<void> {
-    if (!this._skySprite || !this._sceneAssetsLoaded) return;
-
-    try {
-      const assets = await loadSceneAssets();
-      if (this._destroyed) return;
-      const tex = assets.weatherTextures[type];
-      if (tex) {
-        this._skySprite.texture = tex;
-      }
-    } catch {
-      // silently ignore
-    }
-  }
-
-  /** Returns the loaded SceneAssets (for PlaySequencer to use homerun/dust frames). */
+  /** SceneAssets getter — still needed by PlaySequencer for homerun/dust sprite effects. */
   async getSceneAssets() {
-    if (!this._sceneAssetsLoaded) return null;
     try {
       return await loadSceneAssets();
     } catch {
@@ -354,9 +300,13 @@ export class DiamondRenderer {
     }
   }
 
+  /** No-op weather setter (weather is baked into the background image). */
+  async setWeather(_type: string): Promise<void> {
+    // Weather is baked into gameplayfield2.png (night game). No-op.
+  }
+
   /**
    * Toggle between sprite-based and procedural player figures at runtime.
-   * Pass `true` to use sprites (if loaded), `false` for procedural vectors.
    */
   setSpriteMode(enabled: boolean): void {
     if (enabled && this.spriteScene === null) {
@@ -365,14 +315,9 @@ export class DiamondRenderer {
     }
     this._spriteMode = enabled;
 
-    // Show/hide the appropriate layers
-    // The procedural scene layer is always the first child of fielderLayer,
-    // sprite layer (if loaded) is the second child.
-    if (this.fielderLayer && this.fielderLayer.children.length >= 2) {
-      // First child: procedural layer
-      this.fielderLayer.children[0].visible = !enabled;
-      // Second child: sprite layer
-      this.fielderLayer.children[1].visible = enabled;
+    if (this.playerLayer && this.playerLayer.children.length >= 2) {
+      this.playerLayer.children[0].visible = !enabled;
+      this.playerLayer.children[1].visible = enabled;
     }
   }
 
@@ -380,276 +325,50 @@ export class DiamondRenderer {
     return this._spriteMode;
   }
 
-  /** Returns the active SpritePlayerScene when in sprite mode, or null. */
-  getSpriteScene(): import('./sprites/SpritePlayerScene.ts').SpritePlayerScene | null {
+  getSpriteScene(): SpritePlayerScene | null {
     return this._spriteMode ? this.spriteScene : null;
   }
 
   destroy(): void {
     this._destroyed = true;
-    // Stop the ticker before destroying scenes to avoid in-flight render errors
     if (this.app) {
       this.app.ticker.stop();
     }
     this.playerScene.destroy();
     this.spriteScene?.destroy();
     this.spriteScene = null;
-    // Clear cached scene assets (GPU textures)
     clearSceneAssets();
-    this._skySprite = null;
-    this._stadiumSprite = null;
-    this._scoreboardSprite = null;
-    this._sceneAssetsLoaded = false;
     if (this.app) {
-      // Remove Pixi's canvas from its parent container before destroying,
-      // so the next Pixi instance gets a clean container div.
       const canvas = this.app.canvas as HTMLCanvasElement;
       canvas.parentElement?.removeChild(canvas);
       this.app.destroy(true, { children: true });
       this.app = null;
     }
     this.root = null;
-    this.fielderDots.clear();
     this.fielderLabels.clear();
-    this.baseDiamonds.clear();
-    this.runnerDots.clear();
-    this.baseHighlights.clear();
     this.ballGraphic = null;
   }
 
-  // ── Layer setup ───────────────────────────────────────────────────
+  // ── Effects layer ─────────────────────────────────────────────────────
 
-  private createLayers(): void {
-    if (!this.root) return;
-
-    // Z-order (bottom → top):
-    //   skyLayer → stadiumLayer → grassLayer → dirtLayer → lineLayer
-    //   → baseLayer → fielderLayer → labelLayer → runnerLayer → ballLayer → effectsLayer
-
-    this.skyLayer = new Container();
-    this.stadiumLayer = new Container();
-    this.grassLayer = new Graphics();
-    this.dirtLayer = new Graphics();
-    this.lineLayer = new Graphics();
-    this.baseLayer = new Container();
-    this.fielderLayer = new Container();
-    this.runnerLayer = new Container();
-    this.ballLayer = new Container();
-    this.labelLayer = new Container();
-    this.effectsLayer = new Container();
-
-    this.root.addChild(this.skyLayer);       // 0 — sky backdrop (bottommost)
-    this.root.addChild(this.stadiumLayer);   // 1 — stadium panorama
-    this.root.addChild(this.grassLayer);     // 2
-    this.root.addChild(this.dirtLayer);      // 3
-    this.root.addChild(this.lineLayer);      // 4
-    this.root.addChild(this.baseLayer);      // 5
-    this.root.addChild(this.fielderLayer);   // 6
-    this.root.addChild(this.labelLayer);     // 7
-    this.root.addChild(this.runnerLayer);    // 8
-    this.root.addChild(this.ballLayer);      // 9
-    // Effects layer above ball/field, below any UI overlays
-    this.root.addChild(this.effectsLayer);   // 10
+  getEffectsLayer(): Container {
+    return this.effectsLayer!;
   }
 
-  // ── Field drawing ─────────────────────────────────────────────────
-
-  private drawField(): void {
-    this.drawOutfieldGrass();
-    this.drawInfieldDirt();
-    this.drawBasePaths();
-    this.drawFoulLines();
-    this.drawBatterBoxes();
-    this.drawOnDeckCircles();
-    this.drawMound();
+  getApp(): Application | null {
+    return this.app;
   }
 
-  private drawOutfieldGrass(): void {
-    const g = this.grassLayer;
-    if (!g) return;
-
-    // Outfield is a large pie-slice / fan shape from home plate
-    g.moveTo(HOME_X, HOME_Y);
-    g.lineTo(HOME_X - 320, HOME_Y - 320);
-    g.arc(HOME_X, HOME_Y, 340, Math.PI * 1.25, Math.PI * 1.75, false);
-    g.lineTo(HOME_X, HOME_Y);
-    g.fill({ color: COLORS.outfieldGrass });
-
-    // Infield grass patch — draw directly into the same grassLayer Graphics
-    // (instead of inserting a new child at a specific index, which can cause
-    // Pixi 8 rendering issues when the layer order shifts after async init)
-    g.circle(MOUND_X, MOUND_Y - 10, 28);
-    g.fill({ color: COLORS.outfieldGrass });
-  }
-
-  private drawInfieldDirt(): void {
-    const g = this.dirtLayer;
-    if (!g) return;
-
-    // Diamond-shaped infield dirt area (slightly larger than the base paths)
-    const pad = 32;
-    g.moveTo(HOME_X, HOME_Y + pad);
-    g.lineTo(BASE_1_X + pad, BASE_1_Y);
-    g.lineTo(BASE_2_X, BASE_2_Y - pad);
-    g.lineTo(BASE_3_X - pad, BASE_3_Y);
-    g.closePath();
-    g.fill({ color: COLORS.infieldDirt });
-
-    // Dirt cutouts around bases (circles at each base)
-    g.circle(HOME_X, HOME_Y, 18);
-    g.fill({ color: COLORS.infieldDirt });
-    g.circle(BASE_1_X, BASE_1_Y, 14);
-    g.fill({ color: COLORS.infieldDirt });
-    g.circle(BASE_2_X, BASE_2_Y, 14);
-    g.fill({ color: COLORS.infieldDirt });
-    g.circle(BASE_3_X, BASE_3_Y, 14);
-    g.fill({ color: COLORS.infieldDirt });
-
-    // Home plate area — wider dirt arc
-    g.moveTo(HOME_X - 60, HOME_Y);
-    g.arc(HOME_X, HOME_Y, 60, Math.PI, 0, false);
-    g.lineTo(HOME_X - 60, HOME_Y);
-    g.fill({ color: COLORS.infieldDirt });
-  }
-
-  private drawBasePaths(): void {
-    const g = this.lineLayer;
-    if (!g) return;
-
-    // Base paths (thin lines connecting bases)
-    const pathColor = { width: 1.5, color: COLORS.basePath, alpha: 0.3 };
-
-    g.moveTo(HOME_X, HOME_Y);
-    g.lineTo(BASE_1_X, BASE_1_Y);
-    g.stroke(pathColor);
-
-    g.moveTo(BASE_1_X, BASE_1_Y);
-    g.lineTo(BASE_2_X, BASE_2_Y);
-    g.stroke(pathColor);
-
-    g.moveTo(BASE_2_X, BASE_2_Y);
-    g.lineTo(BASE_3_X, BASE_3_Y);
-    g.stroke(pathColor);
-
-    g.moveTo(BASE_3_X, BASE_3_Y);
-    g.lineTo(HOME_X, HOME_Y);
-    g.stroke(pathColor);
-  }
-
-  private drawFoulLines(): void {
-    const g = this.lineLayer;
-    if (!g) return;
-
-    const lineStyle = { width: 2, color: COLORS.foulLine, alpha: 0.85 };
-
-    // Left field foul line — from home plate through 3B to the wall
-    g.moveTo(HOME_X, HOME_Y);
-    g.lineTo(HOME_X - 300, HOME_Y - 300);
-    g.stroke(lineStyle);
-
-    // Right field foul line — from home plate through 1B to the wall
-    g.moveTo(HOME_X, HOME_Y);
-    g.lineTo(HOME_X + 300, HOME_Y - 300);
-    g.stroke(lineStyle);
-  }
-
-  private drawBatterBoxes(): void {
-    const g = this.lineLayer;
-    if (!g) return;
-
-    const boxStyle = { width: 1, color: COLORS.white, alpha: 0.5 };
-    const boxW = 14;
-    const boxH = 28;
-
-    // Left batter's box
-    g.rect(HOME_X - boxW - 10, HOME_Y - boxH / 2, boxW, boxH);
-    g.stroke(boxStyle);
-
-    // Right batter's box
-    g.rect(HOME_X + 10, HOME_Y - boxH / 2, boxW, boxH);
-    g.stroke(boxStyle);
-  }
-
-  private drawOnDeckCircles(): void {
-    const g = this.lineLayer;
-    if (!g) return;
-
-    const circleStyle = { width: 1, color: COLORS.white, alpha: 0.3 };
-
-    // Left on-deck circle (behind 3B side)
-    g.circle(HOME_X - 90, HOME_Y + 30, 12);
-    g.stroke(circleStyle);
-
-    // Right on-deck circle (behind 1B side)
-    g.circle(HOME_X + 90, HOME_Y + 30, 12);
-    g.stroke(circleStyle);
-  }
-
-  private drawMound(): void {
-    const g = this.dirtLayer;
-    if (!g) return;
-
-    // Pitcher's mound — small dirt circle
-    g.circle(MOUND_X, MOUND_Y, 12);
-    g.fill({ color: COLORS.mound });
-
-    // Pitching rubber — small white rectangle
-    const rubber = new Graphics();
-    rubber.rect(MOUND_X - 6, MOUND_Y - 1.5, 12, 3);
-    rubber.fill({ color: COLORS.white, alpha: 0.8 });
-    this.lineLayer?.addChild(rubber);
-  }
-
-  // ── Bases ─────────────────────────────────────────────────────────
-
-  private drawBases(): void {
-    if (!this.baseLayer) return;
-
-    const baseSize = 8;
-    const coords: [number, { x: number; y: number }][] = [
-      [1, { x: BASE_1_X, y: BASE_1_Y }],
-      [2, { x: BASE_2_X, y: BASE_2_Y }],
-      [3, { x: BASE_3_X, y: BASE_3_Y }],
-    ];
-
-    for (const [num, pos] of coords) {
-      const g = new Graphics();
-      // Draw a rotated square (diamond shape) for each base
-      g.moveTo(pos.x, pos.y - baseSize);
-      g.lineTo(pos.x + baseSize, pos.y);
-      g.lineTo(pos.x, pos.y + baseSize);
-      g.lineTo(pos.x - baseSize, pos.y);
-      g.closePath();
-      g.fill({ color: COLORS.white });
-      this.baseLayer.addChild(g);
-      this.baseDiamonds.set(num, g);
-    }
-
-    // Home plate — pentagon
-    const hp = new Graphics();
-    const hx = HOME_X;
-    const hy = HOME_Y;
-    hp.moveTo(hx, hy - 6);
-    hp.lineTo(hx + 6, hy - 2);
-    hp.lineTo(hx + 6, hy + 4);
-    hp.lineTo(hx - 6, hy + 4);
-    hp.lineTo(hx - 6, hy - 2);
-    hp.closePath();
-    hp.fill({ color: COLORS.white });
-    this.baseLayer.addChild(hp);
-  }
-
-  // ── Fielders ──────────────────────────────────────────────────────
+  // ── Public API ────────────────────────────────────────────────────────
 
   drawFielders(positions: string[]): void {
-    // Delegate to whichever player scene is active
     if (this._spriteMode && this.spriteScene !== null) {
       this.spriteScene.positionFielders(positions);
     } else {
       this.playerScene.positionFielders(positions);
     }
 
-    // Keep labels for positions in the label layer (text overlays remain)
+    // Position labels
     if (!this.labelLayer) return;
     for (const lbl of this.fielderLabels.values()) lbl.destroy();
     this.fielderLabels.clear();
@@ -663,7 +382,7 @@ export class DiamondRenderer {
         style: {
           fontSize: 8,
           fontFamily: 'IBM Plex Mono, monospace',
-          fill: COLORS.labelText,
+          fill: 0xaaaaaa,
           fontWeight: 'bold',
         },
       });
@@ -674,23 +393,6 @@ export class DiamondRenderer {
       this.fielderLabels.set(pos, label);
     }
   }
-
-  // ── Effects layer ─────────────────────────────────────────────────
-
-  /**
-   * Returns the particle-effects Container. PlaySequencer passes this as the
-   * `parent` argument to all spawn functions so effects render above the field.
-   */
-  getEffectsLayer(): Container {
-    return this.effectsLayer!;
-  }
-
-  /** Returns the Pixi Application instance, needed by particle spawners. */
-  getApp(): Application | null {
-    return this.app;
-  }
-
-  // ── Public API ────────────────────────────────────────────────────
 
   updateBases(bases: { first: boolean; second: boolean; third: boolean }): void {
     const runnerBases: [boolean, number][] = [
@@ -719,14 +421,7 @@ export class DiamondRenderer {
   }
 
   highlightBase(base: number): void {
-    if (!this.baseLayer) return;
-
-    // Remove previous highlight for this base
-    const existing = this.baseHighlights.get(base);
-    if (existing) {
-      existing.destroy();
-      this.baseHighlights.delete(base);
-    }
+    if (!this.effectsLayer) return;
 
     const coords: Record<number, { x: number; y: number }> = {
       1: { x: BASE_1_X, y: BASE_1_Y },
@@ -739,34 +434,21 @@ export class DiamondRenderer {
 
     const glow = new Graphics();
     glow.circle(pos.x, pos.y, 16);
-    glow.fill({ color: COLORS.runner, alpha: 0.35 });
-    this.baseLayer.addChild(glow);
-    this.baseHighlights.set(base, glow);
+    glow.fill({ color: 0xd4a843, alpha: 0.45 });
+    this.effectsLayer.addChild(glow);
 
-    // Auto-remove highlight after 1.5s
     setTimeout(() => {
       if (!this._destroyed && glow.parent) {
         glow.destroy();
-        this.baseHighlights.delete(base);
       }
     }, 1500);
   }
 
   reset(): void {
-    // Clear runners
-    for (const dot of this.runnerDots.values()) dot.destroy();
-    this.runnerDots.clear();
-
-    // Clear highlights
-    for (const glow of this.baseHighlights.values()) glow.destroy();
-    this.baseHighlights.clear();
-
-    // Clear lingering particle effects
     if (this.effectsLayer) {
       this.effectsLayer.removeChildren().forEach((c) => c.destroy());
     }
 
-    // Hide ball
     if (this.ballGraphic) {
       this.ballGraphic.visible = false;
     }
@@ -778,36 +460,30 @@ export class DiamondRenderer {
     return this._animating;
   }
 
-  // ── Ball ──────────────────────────────────────────────────────────
+  // ── Ball ──────────────────────────────────────────────────────────────
 
-  private createBall(): void {
+  private _createBall(): void {
     if (!this.ballLayer) return;
     const ball = new Graphics();
     ball.circle(0, 0, 4);
-    ball.fill({ color: COLORS.ball });
+    ball.fill({ color: 0xffffff });
     ball.visible = false;
     this.ballLayer.addChild(ball);
     this.ballGraphic = ball;
   }
 
-  // ── Public ball API (for PlaySequencer) ──────────────────────────
-
-  /** Returns the ball Graphics object. */
   getBall(): Graphics | null {
     return this.ballGraphic;
   }
 
-  /** Make the ball visible. */
   showBall(): void {
     if (this.ballGraphic) this.ballGraphic.visible = true;
   }
 
-  /** Hide the ball immediately. */
   hideBall(): void {
     if (this.ballGraphic) this.ballGraphic.visible = false;
   }
 
-  /** Smoothly fade out and hide the ball. */
   async fadeBall(duration: number): Promise<void> {
     if (!this.ballGraphic) return;
     const ball = this.ballGraphic;
@@ -817,7 +493,6 @@ export class DiamondRenderer {
     ball.alpha = 1;
   }
 
-  /** Tween ball to target position. */
   async moveBallTo(x: number, y: number, duration: number): Promise<void> {
     if (!this.ballGraphic || this._destroyed) return;
     const ball = this.ballGraphic;
@@ -825,10 +500,6 @@ export class DiamondRenderer {
     await tweenTo(ball, { x, y }, duration, Easing.easeOutCubic, this);
   }
 
-  /**
-   * Animate ball along a quadratic bezier path.
-   * Ball is made visible at start and stays visible after (caller must hideBall).
-   */
   async animateBallBezier(
     start: Point,
     control: Point,
@@ -850,10 +521,6 @@ export class DiamondRenderer {
     this._animating = false;
   }
 
-  /**
-   * Animate ball along a parabolic arc (fly balls, home runs).
-   * Ball scales smaller at apex (depth simulation). Shadow shown beneath.
-   */
   async animateBallParabolic(
     start: Point,
     end: Point,
@@ -870,7 +537,6 @@ export class DiamondRenderer {
     ball.visible = true;
     this._animating = true;
 
-    // Create shadow
     const shadow = new Graphics();
     shadow.ellipse(0, 0, 5, 3);
     shadow.fill({ color: 0x000000, alpha: 0.4 });
@@ -886,9 +552,7 @@ export class DiamondRenderer {
       duration,
       this,
       (_t, heightFraction) => {
-        // Ball shrinks at apex (depth illusion)
         ball.scale.set(1 - heightFraction * 0.45);
-        // Shadow moves along ground line
         const groundY = start.y + (end.y - start.y) * _t;
         shadow.x = ball.x;
         shadow.y = groundY + 3;
@@ -904,9 +568,6 @@ export class DiamondRenderer {
     this._animating = false;
   }
 
-  /**
-   * Animate ball as a rolling/bouncing ground ball.
-   */
   async animateBallGround(
     start: Point,
     end: Point,
@@ -928,9 +589,6 @@ export class DiamondRenderer {
     this._animating = false;
   }
 
-  /**
-   * Home-run ball arc — travels out of the park with apex sparkle and wall flash.
-   */
   async animateBallHomeRun(angleDeg: number, distNorm: number): Promise<void> {
     if (!this.ballGraphic || this._destroyed) return;
 
@@ -994,23 +652,17 @@ export class DiamondRenderer {
     this._animating = false;
   }
 
-  /**
-   * Show a contact flash (spark burst) at the bat-ball contact point.
-   */
   showContactFlash(x: number, y: number): void {
     if (!this.ballLayer || this._destroyed) return;
     this._spawnSparkle(x, y, 0xffffff, 10);
   }
 
-  /**
-   * Show a brief golden screen flash for home runs.
-   */
   showHomeRunFlash(): void {
     if (this._destroyed) return;
     this._showScreenFlash(0xffd700, 0.22);
   }
 
-  // ── Private effects helpers ───────────────────────────────────────
+  // ── Private effects helpers ───────────────────────────────────────────
 
   private _spawnSparkle(cx: number, cy: number, color: number, count: number): void {
     if (!this.ballLayer) return;
@@ -1077,45 +729,35 @@ export class DiamondRenderer {
     Ticker.shared.add(onTick);
   }
 
-  // ── Animations ────────────────────────────────────────────────────
+  // ── Animations (for backwards-compat callers) ─────────────────────────
 
   animatePitch(): Promise<void> {
     return this.animateBallTravel(
       { x: MOUND_X, y: MOUND_Y },
       { x: HOME_X, y: HOME_Y },
-      320, // duration ms
+      320,
     );
   }
 
   animateHit(type: HitType, angle: number, distance: number): Promise<void> {
     const landing = hitLandingPoint(type, angle, distance);
-
-    // Clamp landing point inside viewport
     landing.x = Math.max(20, Math.min(WIDTH - 20, landing.x));
     landing.y = Math.max(20, Math.min(HEIGHT - 20, landing.y));
 
     const duration = type === 'popup' ? 600 : type === 'home_run' ? 900 : 500;
-
-    return this.animateBallTravel(
-      { x: HOME_X, y: HOME_Y },
-      landing,
-      duration,
-    );
+    return this.animateBallTravel({ x: HOME_X, y: HOME_Y }, landing, duration);
   }
 
   animateFielding(fielderPos: string): Promise<void> {
     const coord = FIELDER_POSITIONS[fielderPos];
     if (!coord) return Promise.resolve();
 
-    // Animate the fielder's throw to 1B (most common)
     return this.animateBallTravel(
       { x: coord.x, y: coord.y },
       { x: BASE_1_X, y: BASE_1_Y },
       280,
     );
   }
-
-  // ── Core ball animation ───────────────────────────────────────────
 
   private animateBallTravel(
     from: { x: number; y: number },
@@ -1145,8 +787,6 @@ export class DiamondRenderer {
 
         elapsed += ticker.deltaMS;
         const t = Math.min(elapsed / durationMs, 1);
-
-        // Ease-out cubic
         const ease = 1 - Math.pow(1 - t, 3);
 
         ball.x = from.x + (to.x - from.x) * ease;
@@ -1154,7 +794,6 @@ export class DiamondRenderer {
 
         if (t >= 1) {
           this.app?.ticker.remove(onTick);
-          // Hold the ball briefly at landing, then hide
           setTimeout(() => {
             if (!this._destroyed && ball.parent) {
               ball.visible = false;

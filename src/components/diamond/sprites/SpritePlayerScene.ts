@@ -18,15 +18,16 @@ import {
 import type { Texture } from 'pixi.js';
 
 // ── Coordinate constants (mirror DiamondRenderer) ─────────────────────────
+// Tuned to match visual positions in gameplayfield2.png (behind-home-plate view).
 
 const HOME_X = 300;
-const HOME_Y = 420;
-const BASE_1_X = 420;
-const BASE_1_Y = 300;
+const HOME_Y = 425;
+const BASE_1_X = 390;
+const BASE_1_Y = 335;
 const BASE_2_X = 300;
-const BASE_2_Y = 190;
-const BASE_3_X = 180;
-const BASE_3_Y = 300;
+const BASE_2_Y = 235;
+const BASE_3_X = 210;
+const BASE_3_Y = 335;
 const MOUND_X = 300;
 const MOUND_Y = 310;
 
@@ -34,52 +35,49 @@ const MOUND_Y = 310;
 
 const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
   P:    { x: MOUND_X, y: MOUND_Y },
-  C:    { x: HOME_X, y: HOME_Y + 25 },
-  '1B': { x: 410, y: 295 },
-  '2B': { x: 355, y: 240 },
-  SS:   { x: 245, y: 240 },
-  '3B': { x: 190, y: 295 },
-  LF:   { x: 130, y: 150 },
-  CF:   { x: 300, y: 90 },
-  RF:   { x: 470, y: 150 },
+  C:    { x: HOME_X, y: HOME_Y + 22 },
+  '1B': { x: 382, y: 330 },
+  '2B': { x: 345, y: 268 },
+  SS:   { x: 255, y: 268 },
+  '3B': { x: 218, y: 330 },
+  LF:   { x: 150, y: 158 },
+  CF:   { x: 300, y: 100 },
+  RF:   { x: 450, y: 158 },
 };
 
 // ── Perspective scale factors ──────────────────────────────────────────────
-// V2 sprites are PNGs at their natural resolution. Each frame in a 4x3 grid
-// on a typical 2048-wide sheet → ~512px wide per frame.
-// We target the same rendered heights as before.
+// V2 sprites: each frame is ~512px tall (natural size from PNG sheet).
+// We scale to approximate perspective depth matching gameplayfield2.png.
 //
-// Approximate natural frame heights for v2 sprites (full height, no trim):
-//   pitcherV2: image ~1536px tall / 3 rows = 512px per frame
-//   batterV2:  image ~1536px tall / 3 rows = 512px per frame
-//   fielderV2: image ~1536px tall / 3 rows = 512px per frame
-//   runnerV2:  image ~2048px tall / 4 rows = 512px per frame
-//   catcherUmpireV2: image ~1024px tall / 2 rows = 512px per frame
+// gameplayfield2.png is a behind-home-plate view with strong perspective:
+//   - Players near home plate (batter, catcher, umpire) appear largest
+//   - Pitcher on mound is medium-large
+//   - Infielders are medium
+//   - Outfielders are small (far back in the image)
 //
-// Target rendered heights (same as before):
-//   Batter  ~80px → scale = 80/512 ≈ 0.156
-//   Pitcher ~65px → scale = 65/512 ≈ 0.127
-//   Infield ~55px → scale = 55/512 ≈ 0.107
-//   Outfield~38px → scale = 38/512 ≈ 0.074
-//   Catcher ~68px → scale = 68/512 ≈ 0.133
-//   Umpire  ~68px → scale = 68/512 ≈ 0.133
-//   Runner  ~40px → scale = 40/512 ≈ 0.078
+// Target rendered heights on 600×500 canvas:
+//   Batter/Catcher/Umpire (bottom):  ~75px → 0.146
+//   Pitcher (mound, ~62% y):         ~60px → 0.117
+//   Infielders (2/3 up field):       ~48px → 0.094
+//   2B/SS (slightly further):        ~42px → 0.082
+//   Outfielders (top ~30% of image): ~30px → 0.059
+//   CF (furthest back):              ~26px → 0.051
 
 const FIELDER_SCALES: Record<string, number> = {
-  P:    0.127,   // pitcher: far-ish → 65px rendered height
-  C:    0.133,   // catcher
-  '1B': 0.107,   // infielder → 55px
-  '2B': 0.097,   // slightly smaller — further from camera
-  SS:   0.097,
-  '3B': 0.107,
-  LF:   0.074,   // outfielder → 38px
-  CF:   0.068,   // CF furthest back
-  RF:   0.074,
+  P:    0.117,   // pitcher on mound → ~60px
+  C:    0.133,   // catcher at plate → ~68px
+  '1B': 0.094,   // infielder → ~48px
+  '2B': 0.082,   // middle infield, further back
+  SS:   0.082,
+  '3B': 0.094,
+  LF:   0.059,   // outfielder → ~30px
+  CF:   0.051,   // CF furthest back → ~26px
+  RF:   0.059,
 };
 
-const BATTER_SCALE  = 0.156; // ~80px
+const BATTER_SCALE  = 0.146; // ~75px — biggest near bottom of canvas
 const UMPIRE_SCALE  = 0.133; // ~68px
-const RUNNER_SCALE  = 0.078; // ~40px
+const RUNNER_SCALE  = 0.072; // ~37px
 
 // ── Facing / flip rules ───────────────────────────────────────────────────
 // Sprite sheets drawn facing LEFT by default (player faces left).
