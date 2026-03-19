@@ -138,6 +138,23 @@ export class StandingsTracker {
   getAllRecords(): TeamRecord[] {
     return Array.from(this.records.values());
   }
+
+  /** Serialize standings to a plain JSON-safe object */
+  serialize(): { records: TeamRecord[] } {
+    return { records: Array.from(this.records.values()) };
+  }
+
+  /** Restore standings from a serialized snapshot */
+  static deserialize(
+    data: { records: TeamRecord[] },
+    leagueStructure: Record<string, Record<string, string[]>>,
+  ): StandingsTracker {
+    const tracker = new StandingsTracker(leagueStructure);
+    for (const record of data.records) {
+      tracker.records.set(record.teamId, { ...record });
+    }
+    return tracker;
+  }
 }
 
 export function winPct(r: TeamRecord): string {

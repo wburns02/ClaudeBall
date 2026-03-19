@@ -58,6 +58,7 @@ const AllStarPage = lazy(() => import('@/pages/AllStarPage.tsx').then(m => ({ de
 const AwardsPage = lazy(() => import('@/pages/AwardsPage.tsx').then(m => ({ default: m.AwardsPage })));
 const TradeProposalPage = lazy(() => import('@/pages/TradeProposalPage.tsx').then(m => ({ default: m.TradeProposalPage })));
 const FranchiseHistoryPage = lazy(() => import('@/pages/FranchiseHistoryPage.tsx').then(m => ({ default: m.FranchiseHistoryPage })));
+const ScoutingPage = lazy(() => import('@/pages/ScoutingPage.tsx').then(m => ({ default: m.ScoutingPage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -165,6 +166,7 @@ function AppRoutes() {
           <Route path="/franchise/awards" element={<FranchiseLayout><AwardsPage /></FranchiseLayout>} />
           <Route path="/franchise/trade-proposals" element={<FranchiseLayout><TradeProposalPage /></FranchiseLayout>} />
           <Route path="/franchise/history" element={<FranchiseLayout><FranchiseHistoryPage /></FranchiseLayout>} />
+          <Route path="/franchise/scouting" element={<FranchiseLayout><ScoutingPage /></FranchiseLayout>} />
         </Routes>
       </Suspense>
     </FadeWrapper>

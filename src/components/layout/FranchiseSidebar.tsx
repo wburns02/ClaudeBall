@@ -51,6 +51,7 @@ const Icons = {
   awards: 'M8.21 13.89L7 23l5-3 5 3-1.21-9.12 M12 2a4 4 0 100 8 4 4 0 000-8z',
   tradeProposals: 'M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z',
   history: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+  scouting: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z M10 10.5a.5.5 0 11-1 0 .5.5 0 011 0z',
 };
 
 interface NavItem {
@@ -104,6 +105,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: 'GM',
     items: [
+      { label: 'Scouting Hub', path: '/franchise/scouting', icon: 'scouting' },
       { label: 'Trades', path: '/franchise/trade', icon: 'trades' },
       { label: 'Free Agency', path: '/franchise/free-agency', icon: 'freeAgency' },
       { label: 'Draft', path: '/franchise/draft', icon: 'draft' },

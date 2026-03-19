@@ -124,14 +124,36 @@ export function PlayoffsPage() {
     if (!isInitialized) navigate('/franchise/new');
   }, [isInitialized, navigate]);
 
-  // Ensure playoffs are started — must be before any early return (hooks rules)
-  useEffect(() => {
-    if (season && (season.phase === 'regular' || season.phase === 'preseason')) {
-      startPlayoffs();
-    }
-  }, [season, startPlayoffs]);
-
   if (!season || !engine) return null;
+
+  // If still in regular season / preseason, don't auto-start — show a prompt
+  if (season.phase === 'regular' || season.phase === 'preseason') {
+    const gamesLeft = season.schedule.filter(g => !g.played).length;
+    return (
+      <div className="min-h-screen p-6 max-w-5xl mx-auto flex items-center justify-center">
+        <Panel className="text-center space-y-4 max-w-md">
+          <h2 className="font-display text-2xl text-gold tracking-wide uppercase">Playoffs</h2>
+          <p className="font-mono text-cream-dim text-sm">
+            The regular season is still in progress.
+          </p>
+          <p className="font-mono text-xs text-cream-dim/60">
+            {gamesLeft > 0
+              ? `${gamesLeft} game${gamesLeft !== 1 ? 's' : ''} remaining`
+              : 'All games complete — ready to start playoffs!'}
+          </p>
+          {gamesLeft === 0 ? (
+            <Button onClick={() => { startPlayoffs(); }} className="w-full">
+              Begin Playoffs
+            </Button>
+          ) : (
+            <Button onClick={() => navigate('/franchise')} variant="secondary" className="w-full">
+              ← Back to Dashboard
+            </Button>
+          )}
+        </Panel>
+      </div>
+    );
+  }
 
   const bracket = season.playoffBracket;
   const champion = bracket?.getChampion();

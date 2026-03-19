@@ -17,6 +17,7 @@ const STANDINGS_COLS = [
   { key: 'l10', label: 'L10', align: 'right' as const },
   { key: 'home', label: 'HOME', align: 'right' as const },
   { key: 'away', label: 'AWAY', align: 'right' as const },
+  { key: 'stats', label: '', align: 'right' as const },
 ];
 
 export function StandingsPage() {
@@ -59,6 +60,14 @@ export function StandingsPage() {
                   l10: last10Str(t),
                   home: `${t.homeWins}-${t.homeLosses}`,
                   away: `${t.awayWins}-${t.awayLosses}`,
+                  stats: (
+                    <button
+                      onClick={() => navigate(`/franchise/team-stats/${t.teamId}`)}
+                      className="text-xs font-mono text-gold/60 hover:text-gold transition-colors cursor-pointer px-1"
+                    >
+                      Stats
+                    </button>
+                  ),
                 };
               })}
               compact

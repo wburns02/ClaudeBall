@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Team } from '@/engine/types/index.ts';
 import type { SeasonState, DayEvents } from '@/engine/season/index.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
@@ -43,6 +44,9 @@ interface FranchiseState {
   userTradeLog: string[];
   waiverLog: WaiverEvent[];
   callupLog: CallupEvent[];
+
+  // Internal: used only during persist/rehydrate cycle
+  _seasonSnapshot?: unknown;
 
   // Actions
   startFranchise: (teams: Team[], leagueStructure: Record<string, Record<string, string[]>>, userTeamId: string) => void;
@@ -93,7 +97,9 @@ interface FranchiseState {
   reorderLineup: (teamId: string, newLineup: Team['lineup']) => void;
 }
 
-export const useFranchiseStore = create<FranchiseState>((set, get) => ({
+export const useFranchiseStore = create<FranchiseState>()(
+  persist(
+    (set, get) => ({
   engine: null,
   season: null,
   userTeamId: null,
@@ -689,4 +695,57 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
       if (et) et.lineup = newLineup;
     }
   },
-}));
+    }),
+    {
+      name: 'claudeball-franchise',
+      // Only persist serializable fields — exclude engine (class instance) and lastDayEvents
+      partialize: (state) => ({
+        userTeamId: state.userTeamId,
+        teams: state.teams,
+        leagueStructure: state.leagueStructure,
+        isInitialized: state.isInitialized,
+        draftClass: state.draftClass,
+        draftPickOrder: state.draftPickOrder,
+        currentDraftPick: state.currentDraftPick,
+        draftComplete: state.draftComplete,
+        freeAgentPool: state.freeAgentPool,
+        injuryLog: state.injuryLog,
+        tradeLog: state.tradeLog,
+        userTradeLog: state.userTradeLog,
+        waiverLog: state.waiverLog,
+        callupLog: state.callupLog,
+        // Serialize the season without the StandingsTracker class instance
+        _seasonSnapshot: state.season
+          ? {
+              year: state.season.year,
+              currentDay: state.season.currentDay,
+              totalDays: state.season.totalDays,
+              schedule: state.season.schedule,
+              standingsRecords: state.season.standings.getAllRecords(),
+              userTeamId: state.season.userTeamId,
+              phase: state.season.phase,
+              tradeDeadlinePassed: state.season.tradeDeadlinePassed,
+              playoffBracket: state.season.playoffBracket,
+              playoffQualifiers: state.season.playoffQualifiers,
+              offseasonAwards: state.season.offseasonAwards,
+              offseasonRetirements: state.season.offseasonRetirements,
+            }
+          : null,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (!state?.isInitialized || !state.teams.length || !state.userTeamId) return;
+        // Rebuild engine from persisted data
+        const engine = new SeasonEngine(state.teams, state.leagueStructure, state.userTeamId);
+        if (state._seasonSnapshot) {
+          engine.restoreState(state._seasonSnapshot as Parameters<SeasonEngine['restoreState']>[0]);
+        }
+        // @ts-ignore — inject engine into the rehydrated state
+        state.engine = engine;
+        // @ts-ignore — set season from the restored engine state
+        state.season = engine.getState();
+        // @ts-ignore — clean up the temporary snapshot field
+        delete state._seasonSnapshot;
+      },
+    },
+  )
+);

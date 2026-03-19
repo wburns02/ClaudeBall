@@ -512,4 +512,47 @@ export class SeasonEngine {
     }
     return false;
   }
+
+  /**
+   * Restore this engine's internal state from a serialized snapshot.
+   * Used by the franchise store's persist/rehydrate logic.
+   */
+  restoreState(snapshot: {
+    year: number;
+    currentDay: number;
+    totalDays: number;
+    schedule: SeasonState['schedule'];
+    standingsRecords: import('./StandingsTracker.ts').TeamRecord[];
+    userTeamId: string;
+    phase: SeasonState['phase'];
+    tradeDeadlinePassed: boolean;
+    playoffBracket?: unknown;
+    playoffQualifiers?: unknown;
+    offseasonAwards?: unknown;
+    offseasonRetirements?: unknown;
+  }): void {
+    this.state.year = snapshot.year;
+    this.state.currentDay = snapshot.currentDay;
+    this.state.totalDays = snapshot.totalDays;
+    this.state.schedule = snapshot.schedule;
+    this.state.userTeamId = snapshot.userTeamId;
+    this.state.phase = snapshot.phase;
+    this.state.tradeDeadlinePassed = snapshot.tradeDeadlinePassed;
+    this.state.standings = StandingsTracker.deserialize(
+      { records: snapshot.standingsRecords },
+      this.leagueStructure,
+    );
+    if (snapshot.playoffBracket) {
+      this.state.playoffBracket = snapshot.playoffBracket as SeasonState['playoffBracket'];
+    }
+    if (snapshot.playoffQualifiers) {
+      this.state.playoffQualifiers = snapshot.playoffQualifiers as SeasonState['playoffQualifiers'];
+    }
+    if (snapshot.offseasonAwards) {
+      this.state.offseasonAwards = snapshot.offseasonAwards as SeasonState['offseasonAwards'];
+    }
+    if (snapshot.offseasonRetirements) {
+      this.state.offseasonRetirements = snapshot.offseasonRetirements as SeasonState['offseasonRetirements'];
+    }
+  }
 }

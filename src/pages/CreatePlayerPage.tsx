@@ -301,6 +301,17 @@ export function CreatePlayerPage() {
         {/* Begin Career */}
         <div className="text-center space-y-2 pb-8">
           {error && <p className="text-red-400 text-sm font-mono">{error}</p>}
+          {/* Checklist shows what's still required */}
+          {!canStart && (
+            <div className="flex items-center justify-center gap-4 text-xs font-mono mb-1">
+              <span className={firstName.trim() && lastName.trim() ? 'text-green-light' : 'text-cream-dim/40'}>
+                {firstName.trim() && lastName.trim() ? '✓' : '○'} Name
+              </span>
+              <span className={archetype !== null ? 'text-green-light' : 'text-gold'}>
+                {archetype !== null ? '✓' : '● Select archetype below'}
+              </span>
+            </div>
+          )}
           <Button
             size="lg"
             className="w-72"
