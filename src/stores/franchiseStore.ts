@@ -99,6 +99,8 @@ interface FranchiseState {
   movePlayer: (playerId: string, fromTeamId: string, toTeamId: string) => void;
   updateTeam: (teamId: string, updates: Partial<Omit<Team, 'id' | 'roster' | 'lineup'>>) => void;
   reorderLineup: (teamId: string, newLineup: Team['lineup']) => void;
+  setRotation: (teamId: string, rotation: string[]) => void;
+  setBullpen: (teamId: string, bullpen: string[]) => void;
 }
 
 export const useFranchiseStore = create<FranchiseState>()(
@@ -762,6 +764,30 @@ export const useFranchiseStore = create<FranchiseState>()(
     if (engine) {
       const et = engine.getTeam(teamId);
       if (et) et.lineup = newLineup;
+    }
+  },
+  setRotation: (teamId, rotation) => {
+    const { teams } = get();
+    const newTeams = teams.map(team =>
+      team.id === teamId ? { ...team, rotation, rotationIndex: 0 } : team
+    );
+    set({ teams: newTeams });
+    const { engine } = get();
+    if (engine) {
+      const et = engine.getTeam(teamId);
+      if (et) { et.rotation = rotation; et.rotationIndex = 0; }
+    }
+  },
+  setBullpen: (teamId, bullpen) => {
+    const { teams } = get();
+    const newTeams = teams.map(team =>
+      team.id === teamId ? { ...team, bullpen } : team
+    );
+    set({ teams: newTeams });
+    const { engine } = get();
+    if (engine) {
+      const et = engine.getTeam(teamId);
+      if (et) et.bullpen = bullpen;
     }
   },
     }),
