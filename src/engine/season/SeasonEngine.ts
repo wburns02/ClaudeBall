@@ -431,14 +431,14 @@ export class SeasonEngine {
   }
 
   /** Start offseason — generate awards, age players, handle retirements */
-  startOffseason(): void {
+  startOffseason(trainingAssignments?: Record<string, import('../player/DevelopmentEngine.ts').TrainingAssignment>): void {
     const allTeams = Array.from(this.teams.values());
     const standingsMap = new Map(
       allTeams.map(t => [t.id, this.state.standings.getRecord(t.id)!])
     );
 
     const awards = OffseasonEngine.generateAwards(standingsMap, allTeams, this.leagueStructure);
-    const result = OffseasonEngine.runOffseason(allTeams, this.rng);
+    const result = OffseasonEngine.runOffseason(allTeams, this.rng, trainingAssignments);
 
     this.state.offseasonAwards = awards;
     this.state.offseasonRetirements = result.retirements;

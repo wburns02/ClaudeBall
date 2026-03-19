@@ -4,6 +4,7 @@ import type { TeamRecord } from './StandingsTracker.ts';
 import type { SeasonState } from './SeasonEngine.ts'; // used by advanceYear
 import { getPlayerName } from '../types/player.ts';
 import { DevelopmentEngine } from '../player/DevelopmentEngine.ts';
+import type { TrainingAssignment } from '../player/DevelopmentEngine.ts';
 import { evaluatePlayer } from '../gm/TradeEngine.ts';
 
 export type AwardType = 'MVP' | 'CyYoung' | 'ROY';
@@ -166,7 +167,11 @@ export class OffseasonEngine {
    * Age all players +1 year. Retire players age 37+ with probability,
    * or any player 40+. Returns retirement list.
    */
-  static runOffseason(teams: Team[], rng: RandomProvider): OffseasonResult {
+  static runOffseason(
+    teams: Team[],
+    rng: RandomProvider,
+    trainingAssignments?: Record<string, TrainingAssignment>,
+  ): OffseasonResult {
     const retirements: RetirementInfo[] = [];
     const development: DevelopmentChange[] = [];
     let agingCount = 0;
@@ -177,7 +182,8 @@ export class OffseasonEngine {
 
       for (const player of team.roster.players) {
         const ovrBefore = Math.round(evaluatePlayer(player));
-        const devResult = DevelopmentEngine.developPlayer(player, rng);
+        const training = trainingAssignments?.[player.id];
+        const devResult = DevelopmentEngine.developPlayer(player, rng, training);
         const developed = devResult.player; // has age+1 and updated ratings
         agingCount++;
 

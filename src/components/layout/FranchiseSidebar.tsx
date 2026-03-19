@@ -55,6 +55,7 @@ const Icons = {
   payroll: 'M12 1v22 M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6',
   lineup: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01',
   development: 'M22 12h-4l-3 9L9 3l-3 9H2',
+  training: 'M6.5 6.5a5.5 5.5 0 0111 0c0 4-5.5 8-5.5 8S6.5 10.5 6.5 6.5z M12 6.5h.01',
 };
 
 interface NavItem {
@@ -83,6 +84,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Roster', path: '/franchise/roster', icon: 'roster' },
       { label: 'Development Hub', path: '/franchise/development', icon: 'development' },
+      { label: 'Training Center', path: '/franchise/training', icon: 'training' },
       { label: 'Lineup Editor', path: '/franchise/lineup-editor', icon: 'lineup' },
       {
         label: 'Player Editor',

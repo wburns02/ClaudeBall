@@ -18,6 +18,7 @@ import type { MinorLeagueRoster, CallupEvent } from '@/engine/season/MinorLeague
 import type { WaiverPlayer, WaiverEvent } from '@/engine/gm/WaiverWire.ts';
 import type { PlayerContract } from '@/engine/gm/ContractEngine.ts';
 import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
+import type { TrainingAssignment } from '@/engine/player/DevelopmentEngine.ts';
 import type { TradeProposal } from '@/engine/gm/TradeEngine.ts';
 
 /** Serializable trade proposal stored in the franchise store so it persists across navigation */
@@ -63,6 +64,11 @@ interface FranchiseState {
   // Trade proposals (persisted across navigation)
   tradeProposals: StoredTradeProposal[];
   setTradeProposals: (proposals: StoredTradeProposal[]) => void;
+
+  // Training assignments — playerId → assignment
+  trainingAssignments: Record<string, TrainingAssignment>;
+  setTrainingAssignment: (playerId: string, assignment: TrainingAssignment) => void;
+  clearTrainingAssignments: () => void;
 
   // Internal: used only during persist/rehydrate cycle
   _seasonSnapshot?: unknown;
@@ -145,6 +151,10 @@ export const useFranchiseStore = create<FranchiseState>()(
   lastDevelopmentChanges: null,
   tradeProposals: [],
   setTradeProposals: (proposals) => set({ tradeProposals: proposals }),
+  trainingAssignments: {},
+  setTrainingAssignment: (playerId, assignment) =>
+    set(s => ({ trainingAssignments: { ...s.trainingAssignments, [playerId]: assignment } })),
+  clearTrainingAssignments: () => set({ trainingAssignments: {} }),
 
   startFranchise: (teams, leagueStructure, userTeamId) => {
     // Deep-clone teams and randomize player ages + mental ratings for realism
@@ -375,15 +385,17 @@ export const useFranchiseStore = create<FranchiseState>()(
   },
 
   startOffseason: () => {
-    const { engine } = get();
+    const { engine, trainingAssignments } = get();
     if (!engine) return;
-    engine.startOffseason();
+    engine.startOffseason(trainingAssignments);
     const state = engine.getState();
     set({
       season: { ...state },
       // Update teams to reflect development changes applied by offseason engine
       teams: engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } })),
       lastDevelopmentChanges: state.offseasonDevelopment ?? null,
+      // Clear training assignments after offseason applies them
+      trainingAssignments: {},
     });
   },
 
@@ -901,6 +913,10 @@ export const useFranchiseStore = create<FranchiseState>()(
         state.season = engine.getState();
         // @ts-ignore — clean up the temporary snapshot field
         delete state._seasonSnapshot;
+        // FreeAgentPool uses a Map internally which loses its prototype after JSON serialization.
+        // Null it out so the page's useEffect will call initFreeAgency() to generate a proper instance.
+        // @ts-ignore
+        state.freeAgentPool = null;
       },
     },
   )

@@ -20,6 +20,19 @@ export interface DevelopmentResult {
   shouldRetire: boolean;
 }
 
+// ---- Training types -------------------------------------------------------
+
+export type TrainingFocus =
+  | 'contact' | 'power' | 'eye' | 'speed' | 'mental'  // hitter focuses
+  | 'stuff' | 'movement' | 'control' | 'stamina';       // pitcher focuses
+
+export type TrainingIntensity = 'rest' | 'light' | 'normal' | 'intense';
+
+export interface TrainingAssignment {
+  focus: TrainingFocus | 'none';
+  intensity: TrainingIntensity;
+}
+
 // ---- Constants -----------------------------------------------------------
 
 const BATTING_KEYS: (keyof Player['batting'])[] = [
@@ -31,6 +44,19 @@ const PITCHING_KEYS: (keyof Player['pitching'])[] = [
   'stuff', 'movement', 'control', 'stamina',
 ];
 
+/** Which raw rating keys each training focus targets */
+const TRAINING_KEYS: Record<TrainingFocus, string[]> = {
+  contact:  ['contact_L', 'contact_R'],
+  power:    ['power_L', 'power_R'],
+  eye:      ['eye', 'avoid_k'],
+  speed:    ['speed', 'steal'],
+  mental:   [], // handled separately via work_ethic bonus
+  stuff:    ['stuff'],
+  movement: ['movement'],
+  control:  ['control'],
+  stamina:  ['stamina'],
+};
+
 // Base injury probability per game appearance (modified by durability)
 const BASE_INJURY_CHANCE_PER_GAME = 0.02;
 
@@ -41,9 +67,19 @@ export class DevelopmentEngine {
    * Apply offseason rating changes based on age curve.
    * Returns a new Player object with updated ratings and the changelog.
    */
-  static developPlayer(player: Player, rng: RandomProvider): DevelopmentResult {
+  static developPlayer(
+    player: Player,
+    rng: RandomProvider,
+    training?: TrainingAssignment,
+  ): DevelopmentResult {
     const age = player.age;
-    const workEthic = player.mental.work_ethic / 100; // 0-1
+    // Training intensity boosts effective work ethic for the development roll
+    const intensityBonus =
+      !training || training.intensity === 'rest' ? -0.1 :
+      training.intensity === 'light' ? 0 :
+      training.intensity === 'normal' ? 0 :
+      0.15; // 'intense'
+    const workEthic = Math.min(1, player.mental.work_ethic / 100 + intensityBonus);
 
     // Clone ratings
     const newBatting = { ...player.batting };
@@ -124,6 +160,38 @@ export class DevelopmentEngine {
         if (rng.chance(0.8)) {
           const delta = -Math.round(rng.nextFloat(2, steepDecline + 2));
           applyChange(newPitching as unknown as Record<string, number>, key, Math.min(delta, -2));
+        }
+      }
+    }
+
+    // Apply training focus bonus (extra improvement to targeted attributes)
+    if (training && training.focus !== 'none' && training.intensity !== 'rest') {
+      const intensityMult =
+        training.intensity === 'light' ? 0.6 :
+        training.intensity === 'normal' ? 1.0 : 1.8; // intense
+      const focusKeys = TRAINING_KEYS[training.focus];
+      const isPitcher = player.position === 'P';
+
+      for (const key of focusKeys) {
+        const obj = isPitcher
+          ? (newPitching as unknown as Record<string, number>)
+          : (newBatting as unknown as Record<string, number>);
+
+        // Skip if wrong type for position
+        if (isPitcher && BATTING_KEYS.includes(key as keyof Player['batting'])) continue;
+        if (!isPitcher && PITCHING_KEYS.includes(key as keyof Player['pitching'])) continue;
+
+        const bonus = Math.round(rng.nextFloat(0.5, 2.5) * intensityMult);
+        if (bonus > 0) applyChange(obj, key, bonus);
+      }
+
+      // Mental focus: boost next offseason's work ethic itself slightly
+      if (training.focus === 'mental') {
+        const mentalBoost = Math.round(rng.nextFloat(0.5, 2) * intensityMult);
+        if (mentalBoost > 0) {
+          const prev = player.mental.work_ethic;
+          const next = clamp(prev + mentalBoost, 1, 100);
+          if (next !== prev) changes['mental.work_ethic'] = next - prev;
         }
       }
     }
