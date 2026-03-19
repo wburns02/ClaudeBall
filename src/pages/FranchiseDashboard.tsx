@@ -352,7 +352,11 @@ export function FranchiseDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
         <Panel title="Recent Results">
           {recent.length === 0 ? (
-            <p className="text-cream-dim text-sm font-mono">No games played yet</p>
+            <div className="py-6 text-center space-y-2">
+              <div className="text-3xl opacity-30">⚾</div>
+              <p className="text-cream-dim text-sm font-mono">No games played yet</p>
+              <p className="text-cream-dim/40 text-xs font-mono">Advance a day or simulate to see results here</p>
+            </div>
           ) : (
             <div className="space-y-1 font-mono text-sm">
               {recent.map(g => {

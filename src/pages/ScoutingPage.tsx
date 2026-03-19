@@ -136,9 +136,11 @@ function FogGradeBar({ label, report }: { label: string; report: GradeReport | u
     return (
       <div className="flex items-center gap-2">
         <span className="text-[10px] font-mono text-cream-dim/25 w-14 shrink-0">{label}</span>
-        <div className="flex-1 h-1.5 bg-navy-lighter/10 rounded-full" />
-        <span className="text-xs font-mono font-bold w-5 text-right text-cream-dim/15">??</span>
-        <span className="text-[9px] font-mono text-cream-dim/15 w-8">—</span>
+        <div className="flex-1 h-1.5 bg-navy-lighter/10 rounded-full overflow-hidden">
+          <div className="h-full w-full bg-cream-dim/8 rounded-full" style={{ background: 'repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(232,224,212,0.04) 4px, rgba(232,224,212,0.04) 8px)' }} />
+        </div>
+        <span className="text-[10px] font-mono w-5 text-right text-cream-dim/20">—</span>
+        <span className="text-[9px] font-mono text-cream-dim/15 w-8">?</span>
       </div>
     );
   }
@@ -307,9 +309,12 @@ function ScoutCard({
               <span className="text-[10px] font-mono text-cream-dim/40">Age {player.age} · {team.abbreviation}</span>
             </div>
             <p className="font-display text-cream text-sm tracking-wide leading-tight">{player.firstName} {player.lastName}</p>
-            <p className="text-[10px] font-mono text-cream-dim/25 mt-0.5">Unscouted</p>
+            <p className="text-[10px] font-mono text-cream-dim/30 mt-0.5">🔒 Unscouted</p>
           </div>
-          <div className="text-2xl font-display font-bold text-cream-dim/15 ml-2">??</div>
+          <div className="text-center ml-2 shrink-0">
+            <div className="text-xl font-display font-bold text-cream-dim/20">??</div>
+            <div className="text-[8px] font-mono text-cream-dim/15 uppercase tracking-wider">grade</div>
+          </div>
         </div>
         <div className="px-3 pb-2 space-y-1">
           {pillLabels.map(lbl => <FogGradeBar key={lbl} label={lbl} report={undefined} />)}
@@ -317,7 +322,7 @@ function ScoutCard({
         <div className="px-3 pb-3">
           <button
             onClick={e => { e.stopPropagation(); onScout(); }}
-            className="w-full py-1.5 rounded-lg bg-gold/10 border border-gold/20 text-gold text-xs font-mono hover:bg-gold/20 transition-colors"
+            className="w-full py-1.5 rounded-lg bg-gold text-navy text-xs font-mono font-bold hover:bg-gold/90 active:bg-gold/80 transition-colors"
           >
             🔭 Scout Player
           </button>
@@ -429,7 +434,7 @@ function DetailedReport({
         </p>
         <button
           onClick={onScout}
-          className="mt-2 px-4 py-2 rounded-lg bg-gold/15 border border-gold/30 text-gold text-sm font-mono hover:bg-gold/25 transition-colors"
+          className="mt-2 px-4 py-2 rounded-lg bg-gold text-navy text-sm font-mono font-bold hover:bg-gold/90 transition-colors"
         >
           🔭 Scout Player
         </button>

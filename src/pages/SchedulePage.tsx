@@ -258,10 +258,10 @@ export function SchedulePage() {
                     const abbr = opp?.abbreviation ?? (isHome ? g.awayId : g.homeId).slice(0, 3);
 
                     if (!isUserG) {
-                      // Non-user game — small dot
+                      if (!g.played) return null;
                       return (
-                        <div key={g.id} className="text-[9px] font-mono text-cream-dim/30 truncate">
-                          {g.played ? `${g.awayScore}-${g.homeScore}` : '···'}
+                        <div key={g.id} className="text-[9px] font-mono text-cream-dim/25 truncate">
+                          {g.awayScore}-{g.homeScore}
                         </div>
                       );
                     }
