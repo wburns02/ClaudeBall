@@ -2,8 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { StatsTable } from '@/components/ui/StatsTable.tsx';
+import { Modal } from '@/components/ui/Modal.tsx';
 import { useCareerStore } from '@/stores/careerStore.ts';
-import type { CareerLevel } from '@/engine/player/CareerEngine.ts';
+import type { CareerLevel, Milestone } from '@/engine/player/CareerEngine.ts';
 import { cn } from '@/lib/cn.ts';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -56,7 +57,78 @@ function LevelIndicator({ current }: { current: CareerLevel }) {
   );
 }
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
+function DynamicsBar({ label, value, color = '#d4a843' }: { label: string; value: number; color?: string }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs font-mono">
+        <span className="text-cream-dim">{label}</span>
+        <span className="text-cream">{value}</span>
+      </div>
+      <div className="h-1.5 bg-navy rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${value}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
+}
+
+function MilestoneToast({ milestone, onDismiss }: { milestone: Milestone; onDismiss: () => void }) {
+  return (
+    <div
+      className="p-4 rounded-lg border-2 border-yellow-400 text-center space-y-2"
+      style={{ backgroundColor: '#d4a84322', boxShadow: '0 0 24px #d4a84355' }}
+    >
+      <p className="font-display text-xl text-gold tracking-wide uppercase">Milestone Achieved!</p>
+      <p className="text-cream text-sm font-body">{milestone.label}</p>
+      <p className="text-cream-dim text-xs">{milestone.description}</p>
+      <Button size="sm" onClick={onDismiss}>Awesome!</Button>
+    </div>
+  );
+}
+
+// ─── Contract Negotiation Modal ────────────────────────────────────────────────
+
+function ContractNegotiationModal() {
+  const { contractOffers, showContractNegotiation, signContract, dismissContractNegotiation } = useCareerStore();
+
+  return (
+    <Modal
+      isOpen={showContractNegotiation}
+      onClose={dismissContractNegotiation}
+      title="Contract Negotiation"
+      size="md"
+    >
+      <div className="space-y-4">
+        <p className="text-cream-dim text-sm font-body">
+          Your contract has expired. Choose an offer or decline all (stay unsigned).
+        </p>
+        <div className="space-y-2">
+          {contractOffers.map((offer, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-3 rounded-lg border border-navy-lighter bg-navy/50"
+            >
+              <div>
+                <p className="text-cream font-mono text-sm font-bold">{offer.teamName}</p>
+                <p className="text-cream-dim text-xs">
+                  {offer.years} yr{offer.years > 1 ? 's' : ''} · ${(offer.salary / 1000).toFixed(1)}M/yr
+                  {' '}· Total: ${((offer.salary * offer.years) / 1000).toFixed(1)}M
+                </p>
+              </div>
+              <Button size="sm" onClick={() => signContract(offer)}>Sign</Button>
+            </div>
+          ))}
+        </div>
+        <div className="text-right">
+          <Button variant="ghost" size="sm" onClick={dismissContractNegotiation}>
+            Test Free Agency Later
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ─── Main Dashboard ────────────────────────────────────────────────────────────
 
 export function CareerDashboardPage() {
   const navigate    = useNavigate();
@@ -68,7 +140,9 @@ export function CareerDashboardPage() {
     simToCallUp,
     advanceOffseason,
     dismissPromotion,
+    dismissPendingMilestone,
     resetCareer,
+    retirePlayer,
   } = useCareerStore();
 
   if (!isInitialized || !careerState) {
@@ -89,12 +163,19 @@ export function CareerDashboardPage() {
     );
   }
 
-  const { player, currentTeam, year, level, seasonStats: ss, careerStats: cs, dayOfSeason, recentEvents, promotionPending, promotionMessage } = careerState;
+  const {
+    player, currentTeam, year, level, seasonStats: ss, careerStats: cs,
+    dayOfSeason, recentEvents, promotionPending, promotionMessage,
+    pendingMilestones, teamDynamics: dyn, contract, retired, hofStatus,
+    currentSeasonAwards,
+  } = careerState;
 
   const isPitcher   = player.position === 'P';
   const isOffseason = dayOfSeason >= 140;
 
-  // Batting season stat columns
+  // Show first pending milestone
+  const topMilestone = pendingMilestones[0] ?? null;
+
   const batSeasonCols = [
     { key: 'g',  label: 'G',   align: 'right' as const },
     { key: 'ab', label: 'AB',  align: 'right' as const },
@@ -141,7 +222,6 @@ export function CareerDashboardPage() {
     era: ss.era.toFixed(2), whip: ss.whip.toFixed(3),
   }];
 
-  // Career stats
   const careerAvg = cs.batting.ab > 0 ? cs.batting.h / cs.batting.ab : 0;
   const careerERA = cs.pitching.ip > 0 ? (cs.pitching.er / cs.pitching.ip) * 9 : 0;
 
@@ -186,6 +266,14 @@ export function CareerDashboardPage() {
     <div className="min-h-screen p-4 md:p-6">
       <div className="max-w-5xl mx-auto space-y-4">
 
+        {/* Milestone Toast */}
+        {topMilestone && (
+          <MilestoneToast
+            milestone={topMilestone}
+            onDismiss={() => dismissPendingMilestone(topMilestone.id)}
+          />
+        )}
+
         {/* Promotion Banner */}
         {promotionPending && promotionMessage && (
           <div
@@ -196,6 +284,34 @@ export function CareerDashboardPage() {
             <Button size="sm" onClick={dismissPromotion} data-testid="dismiss-promotion-btn">
               Acknowledge
             </Button>
+          </div>
+        )}
+
+        {/* Retirement Banner */}
+        {retired && (
+          <div
+            className="p-4 rounded-lg border-2 border-purple-400 text-center space-y-2"
+            style={{ backgroundColor: '#a855f722' }}
+          >
+            <p className="font-display text-2xl text-purple-300 tracking-wide uppercase">Retired</p>
+            {hofStatus.inducted && (
+              <p className="text-gold font-display text-lg">Hall of Fame Inductee — {hofStatus.inductionYear}</p>
+            )}
+            {!hofStatus.inducted && (
+              <p className="text-cream-dim text-sm">HOF Score: {hofStatus.hofScore}/100 (need 75 to be inducted)</p>
+            )}
+            <Button size="sm" onClick={() => navigate('/career/hof')}>View HOF Status</Button>
+          </div>
+        )}
+
+        {/* Season Awards */}
+        {currentSeasonAwards.length > 0 && (
+          <div className="p-3 rounded-lg border border-gold/40 bg-gold/5 flex flex-wrap gap-2">
+            {currentSeasonAwards.map(award => (
+              <span key={award} className="px-2 py-1 rounded bg-gold/20 text-gold text-xs font-mono uppercase tracking-wide">
+                {award}
+              </span>
+            ))}
           </div>
         )}
 
@@ -217,7 +333,9 @@ export function CareerDashboardPage() {
             </div>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>← Menu</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/career/stats')}>Stats</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/career/training')}>Training</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/career/contract')}>Contract</Button>
             <Button
               variant="secondary"
               size="sm"
@@ -231,10 +349,10 @@ export function CareerDashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-          {/* Left: Ratings */}
+          {/* Left column */}
           <div className="space-y-4">
             <Panel title="Ratings">
-              {isPitcher ? (
+              {isPitcher && player.pitching ? (
                 <div className="space-y-2.5">
                   <RatingBar label="Stuff"    value={player.pitching.stuff} />
                   <RatingBar label="Control"  value={player.pitching.control} />
@@ -247,7 +365,7 @@ export function CareerDashboardPage() {
                     <p className="text-cream-dim text-xs font-mono">{player.pitching.velocity} mph</p>
                   </div>
                 </div>
-              ) : (
+              ) : player.batting ? (
                 <div className="space-y-2.5">
                   <RatingBar label="Contact" value={Math.round((player.batting.contact_L + player.batting.contact_R) / 2)} />
                   <RatingBar label="Power"   value={Math.round((player.batting.power_L + player.batting.power_R) / 2)} />
@@ -257,9 +375,50 @@ export function CareerDashboardPage() {
                   <RatingBar label="Steal"   value={player.batting.steal} />
                   <RatingBar label="Clutch"  value={player.batting.clutch} />
                 </div>
+              ) : (
+                <p className="text-cream-dim text-xs font-mono">No batting ratings available.</p>
               )}
             </Panel>
 
+            {/* Team Dynamics */}
+            <Panel title="Team Dynamics">
+              <div className="space-y-3">
+                <DynamicsBar label="Manager Relationship" value={dyn.managerRelationship} color="#3b82f6" />
+                <DynamicsBar label="Team Chemistry"       value={dyn.teamChemistry}       color="#22c55e" />
+                <DynamicsBar label="Media Attention"      value={dyn.mediaAttention}       color="#f59e0b" />
+                <DynamicsBar label="Morale"               value={dyn.morale}               color="#a855f7" />
+                {dyn.fanFavorite && (
+                  <p className="text-xs text-gold font-mono text-center pt-1">Fan Favorite</p>
+                )}
+              </div>
+            </Panel>
+
+            {/* Contract */}
+            <Panel title="Contract">
+              <div className="space-y-1 text-sm font-mono">
+                <div className="flex justify-between">
+                  <span className="text-cream-dim">Team</span>
+                  <span className="text-cream">{contract.teamName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-cream-dim">Salary</span>
+                  <span className="text-cream">${(contract.annualSalary / 1000).toFixed(1)}M/yr</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-cream-dim">Yrs Left</span>
+                  <span className={cn('font-bold', contract.yearsRemaining === 0 ? 'text-red-400' : 'text-cream')}>
+                    {contract.yearsRemaining}
+                  </span>
+                </div>
+                {contract.yearsRemaining === 0 && (
+                  <Button size="sm" className="w-full mt-2" onClick={() => navigate('/career/contract')}>
+                    Negotiate New Deal
+                  </Button>
+                )}
+              </div>
+            </Panel>
+
+            {/* Mental */}
             <Panel title="Mental">
               <div className="space-y-2.5">
                 <RatingBar label="Intel"    value={player.mental.intelligence} color="#a855f7" />
@@ -277,15 +436,40 @@ export function CareerDashboardPage() {
 
             {/* Simulation controls */}
             <Panel title="Simulation">
-              {isOffseason ? (
+              {retired ? (
+                <div className="text-center py-4 space-y-2">
+                  <p className="text-cream-dim font-body">Your career has ended.</p>
+                  <div className="flex gap-2 justify-center">
+                    <Button size="sm" onClick={() => navigate('/career/hof')}>View HOF</Button>
+                    <Button size="sm" onClick={() => navigate('/career/stats')}>Career Stats</Button>
+                  </div>
+                </div>
+              ) : isOffseason ? (
                 <div className="space-y-3">
                   <p className="text-cream-dim text-sm font-body">
                     Season complete. Develop your skills during the offseason, then begin Year {year + 1}.
                   </p>
                   <div className="flex gap-2 flex-wrap">
                     <Button onClick={advanceOffseason} data-testid="advance-offseason-btn">
-                      Advance Offseason →
+                      Advance Offseason
                     </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => navigate('/career/training')}
+                    >
+                      Set Training Plan
+                    </Button>
+                    {player.age >= 38 && !retired && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400"
+                        onClick={() => { if (confirm('Retire your player? This cannot be undone.')) retirePlayer(); }}
+                      >
+                        Retire
+                      </Button>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -328,6 +512,13 @@ export function CareerDashboardPage() {
                     >
                       Sim to Call-Up
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => navigate('/career/game')}
+                    >
+                      Play Game
+                    </Button>
                   </div>
                 </div>
               )}
@@ -344,8 +535,8 @@ export function CareerDashboardPage() {
                     ? `You've made it to The Show! Playing for the ${currentTeam}.`
                     : `Currently with ${currentTeam} (${LEVEL_LABELS[level]}). ${
                         isPitcher
-                          ? `ERA ${ss.era.toFixed(2)} in ${ss.gs} starts. Need ERA < 3.00 over ${Math.max(0, 6 - ss.gs)} more starts for promotion.`
-                          : `Batting ${ss.avg >= 1 ? ss.avg.toFixed(3) : ss.avg.toFixed(3).replace(/^0/,'')} in ${ss.g} games. Need .300+ over ${Math.max(0, 30 - ss.g)} more games for promotion.`
+                          ? `ERA ${ss.era.toFixed(2)} in ${ss.gs} starts.`
+                          : `Batting ${ss.avg.toFixed(3).replace(/^0/, '')} in ${ss.g} games.`
                       }`
                   }
                 </p>
@@ -366,6 +557,11 @@ export function CareerDashboardPage() {
                 ? <StatsTable columns={pitchCareerCols} rows={pitchCareerRow} compact />
                 : <StatsTable columns={batCareerCols}   rows={batCareerRow}   compact />
               }
+              <div className="mt-2 text-right">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/career/stats')}>
+                  Full Stats →
+                </Button>
+              </div>
             </Panel>
 
             {/* Recent events */}
@@ -383,6 +579,9 @@ export function CareerDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Contract Negotiation Modal */}
+      <ContractNegotiationModal />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn.ts';
 
 const NAV_LINKS = [
   { label: 'Home', path: '/' },
-  { label: 'Quick Game', path: '/game/live' },
+  { label: 'Quick Game', path: '/game/quick' },
   { label: 'Franchise', path: '/franchise' },
   { label: 'Career', path: '/career' },
   { label: 'Historical', path: '/historical' },
