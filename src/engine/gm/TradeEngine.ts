@@ -146,13 +146,14 @@ export function generateTradeOffer(
  */
 export function wouldAccept(
   _team: Team,
-  offering: TradePackage,  // what the AI receives
-  receiving: TradePackage, // what the AI gives up
+  offering: TradePackage,  // what the AI receives (user's players)
+  receiving: TradePackage, // what the AI gives up (AI's players)
   allTeams: Team[]
 ): boolean {
+  // fairness = receivingValue - offeringValue = (AI gives value) - (AI gets value)
+  // positive = AI is giving more than it gets = bad for AI
+  // negative = AI is getting more than it gives = good for AI
+  // AI accepts if it's getting roughly fair value or better (tolerance: up to +8 means AI gives slightly more)
   const fairness = evaluateTrade(offering, receiving, allTeams);
-  // AI accepts if they gain value or break even (tolerance: -8 points)
-  // fairness = receivingValue - offeringValue
-  // negative = AI gives more than they get = bad for AI
-  return fairness >= -8;
+  return fairness <= 8;
 }

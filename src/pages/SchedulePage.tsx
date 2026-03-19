@@ -283,12 +283,14 @@ export function SchedulePage() {
                         )}
                         {!g.played && isFuture && (
                           <div className="flex gap-1 mt-0.5">
-                            <button
-                              className="font-mono text-[9px] text-gold bg-gold/10 rounded px-1 hover:bg-gold/20 cursor-pointer"
-                              onClick={e => { e.stopPropagation(); handlePlayGame(g); }}
-                            >
-                              Play
-                            </button>
+                            {day === currentDay + 1 && (
+                              <button
+                                className="font-mono text-[9px] text-gold bg-gold/10 rounded px-1 hover:bg-gold/20 cursor-pointer"
+                                onClick={e => { e.stopPropagation(); handlePlayGame(g); }}
+                              >
+                                Play
+                              </button>
+                            )}
                             <button
                               className="font-mono text-[9px] text-cream-dim bg-navy-lighter/30 rounded px-1 hover:bg-navy-lighter/60 cursor-pointer"
                               onClick={e => { e.stopPropagation(); handleSimGame(g); }}

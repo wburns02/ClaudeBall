@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
-import { useGMStore } from '@/stores/gmStore.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { cn } from '@/lib/cn.ts';
@@ -146,8 +145,7 @@ function FACard({
 }
 
 export function FreeAgencyPage() {
-  const { teams, userTeamId, engine } = useFranchiseStore();
-  const { freeAgentPool, initGM, getFreeAgents, signFreeAgent } = useGMStore();
+  const { freeAgentPool, initFreeAgency, signFreeAgent } = useFranchiseStore();
 
   const [posFilter, setPosFilter] = useState<FilterPos>('ALL');
   const [sortMode, setSortMode] = useState<SortMode>('ovr');
@@ -155,16 +153,11 @@ export function FreeAgencyPage() {
   const [signing, setSigning] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!freeAgentPool) initGM();
-  }, [freeAgentPool, initGM]);
-
-  const userTeam = useMemo(
-    () => teams.find(t => t.id === userTeamId) ?? engine?.getTeam(userTeamId ?? '') ?? null,
-    [teams, userTeamId, engine]
-  );
+    if (!freeAgentPool) initFreeAgency();
+  }, [freeAgentPool, initFreeAgency]);
 
   const agents = useMemo(() => {
-    let list = getFreeAgents();
+    let list: FreeAgent[] = freeAgentPool ? freeAgentPool.getAll() : [];
     if (posFilter !== 'ALL') list = list.filter(fa => fa.player.position === posFilter);
     switch (sortMode) {
       case 'ovr': list = [...list].sort((a, b) => evaluatePlayer(b.player) - evaluatePlayer(a.player)); break;
@@ -173,12 +166,11 @@ export function FreeAgencyPage() {
       case 'pos': list = [...list].sort((a, b) => a.player.position.localeCompare(b.player.position)); break;
     }
     return list;
-  }, [getFreeAgents, posFilter, sortMode, freeAgentPool]);
+  }, [freeAgentPool, posFilter, sortMode]);
 
   const handleSign = (fa: FreeAgent, years: number, salary: number) => {
-    if (!userTeam) return;
     setSigning(fa.player.id);
-    const result = signFreeAgent(userTeam, fa.player.id, years, salary);
+    const result = signFreeAgent(fa.player.id, years, salary);
     setNotice({ msg: result.reason ?? `Signed ${getPlayerName(fa.player)}!`, ok: result.success });
     setSigning(null);
     setTimeout(() => setNotice(null), 3500);

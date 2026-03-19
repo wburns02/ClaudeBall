@@ -129,7 +129,9 @@ export function GameLogPage() {
               <p className="text-xs text-cream-dim">Games Played</p>
             </div>
             <div className="font-mono text-center">
-              <p className="text-lg font-bold text-cream">{(162 - completedGames.length)}</p>
+              <p className="text-lg font-bold text-cream">
+                {season.schedule.filter(g => g.awayId === userTeamId || g.homeId === userTeamId).length - completedGames.length}
+              </p>
               <p className="text-xs text-cream-dim">Remaining</p>
             </div>
           </div>

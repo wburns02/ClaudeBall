@@ -166,8 +166,10 @@ export function TradePage() {
 
   const handlePropose = () => {
     if (!partnerTeam || userBlock.length === 0 || theirBlock.length === 0) return;
-    const offering: import('@/engine/gm/TradeEngine.ts').TradePackage = { teamId: partnerTeam.id, playerIds: theirBlock };
-    const receiving: import('@/engine/gm/TradeEngine.ts').TradePackage = { teamId: userTeam.id, playerIds: userBlock };
+    // offering = what AI receives (user's players going to AI)
+    // receiving = what AI gives up (AI's players going to user)
+    const offering: import('@/engine/gm/TradeEngine.ts').TradePackage = { teamId: userTeam.id, playerIds: userBlock };
+    const receiving: import('@/engine/gm/TradeEngine.ts').TradePackage = { teamId: partnerTeam.id, playerIds: theirBlock };
     const allT = teams.length > 0 ? teams : [userTeam, partnerTeam];
     const accepts = checkAIAccepts(partnerTeam, offering, receiving, allT);
 

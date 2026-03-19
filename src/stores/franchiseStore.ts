@@ -65,6 +65,7 @@ interface FranchiseState {
   draftPlayer: (prospectId: string) => boolean;
   advanceSeason: () => void;
   initFreeAgency: () => void;
+  signFreeAgent: (playerId: string, years: number, salaryPerYear: number) => { success: boolean; reason?: string };
 
   // Injury actions
   getActiveInjuries: () => InjuryRecord[];
@@ -269,11 +270,15 @@ export const useFranchiseStore = create<FranchiseState>()(
       }
     } catch { /* non-critical */ }
 
-    set({
+    const events = engine.getLastDayEvents();
+    set(s => ({
       season: { ...engine.getState() },
       injuryLog: engine.injuryEngine.getAllInjuries(),
       tradeLog: engine.aiTradeManager.getTradeLog(),
-    });
+      lastDayEvents: events,
+      waiverLog: [...s.waiverLog, ...events.waivers],
+      callupLog: [...s.callupLog, ...events.callups],
+    }));
   },
 
   simGame: (gameId) => {
@@ -505,6 +510,33 @@ export const useFranchiseStore = create<FranchiseState>()(
     const rng = engine.getRng();
     const pool = generateFreeAgents(40, rng);
     set({ freeAgentPool: pool });
+  },
+
+  signFreeAgent: (playerId, years, salaryPerYear) => {
+    const { engine, freeAgentPool, teams, userTeamId } = get();
+    if (!engine || !freeAgentPool || !userTeamId) return { success: false, reason: 'Not initialized' };
+    const fa = freeAgentPool.get(playerId);
+    if (!fa) return { success: false, reason: 'Player not in free agent pool' };
+    // Salary check: must be within 20% of asking
+    if (salaryPerYear < fa.askingSalary * 0.8) {
+      return { success: false, reason: `${fa.player.firstName} ${fa.player.lastName} wants at least $${(fa.askingSalary * 0.8 / 1000).toFixed(1)}M/yr` };
+    }
+    // Add player to engine's live team
+    const engineTeam = engine.getTeam(userTeamId);
+    if (!engineTeam) return { success: false, reason: 'Team not found' };
+    const signedPlayer = { ...fa.player };
+    engineTeam.roster.players.push(signedPlayer);
+    // Sign contract via engine
+    engine.contractEngine.signContract(signedPlayer, userTeamId, { years, salaryPerYear });
+    // Remove from pool and update React state
+    freeAgentPool.remove(playerId);
+    const newTeams = teams.map(t =>
+      t.id === userTeamId
+        ? { ...t, roster: { ...t.roster, players: [...t.roster.players, signedPlayer] } }
+        : t
+    );
+    set({ freeAgentPool, teams: newTeams });
+    return { success: true };
   },
 
   // Injury actions
