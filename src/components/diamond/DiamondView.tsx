@@ -84,27 +84,27 @@ export function DiamondView({
     const renderer = new DiamondRenderer();
     rendererRef.current = renderer;
 
+    // Create camera early — before init completes. It becomes active once attachRoot() is called.
+    const cam = new AtBatCamera();
+    cameraRef.current = cam;
+
     const sequencer = new PlaySequencer(renderer);
     sequencer.speedFactor = animationSpeed;
+    // Wire camera + overlay callback into sequencer IMMEDIATELY (camera will attach to root later)
+    sequencer.camera = cam;
+    sequencer.onOverlayUpdate = (state) => {
+      setOverlayState(prev => ({ ...prev, ...state }));
+    };
     sequencerRef.current = sequencer;
 
     renderer.initInContainer(container, w, h)
       .then(async () => {
-        // Set up AtBatCamera now that the renderer is initialized and base transform is known
+        // Attach Pixi root to camera now that renderer is initialized
         const root = renderer.getRoot();
-        if (root) {
+        if (root && !renderer._destroyed) {
           const bt = renderer.getRootBaseTransform();
-          const cam = new AtBatCamera(root, bt.scaleX, bt.scaleY, bt.x, bt.y);
-          cameraRef.current = cam;
-
-          // Wire camera + overlay callback into the sequencer
-          const seq = sequencerRef.current;
-          if (seq) {
-            seq.camera = cam;
-            seq.onOverlayUpdate = (state) => {
-              setOverlayState(prev => ({ ...prev, ...state }));
-            };
-          }
+          // Attach to the camera that's already wired to the sequencer
+          cameraRef.current?.attachRoot(root, bt.scaleX, bt.scaleY, bt.x, bt.y);
         }
 
         // Load scene/environment assets (stadium, weather, scoreboard) — non-blocking
@@ -126,7 +126,7 @@ export function DiamondView({
     return () => {
       sequencer.destroy();
       sequencerRef.current = null;
-      cameraRef.current?.destroy();
+      cam.destroy();
       cameraRef.current = null;
       renderer.destroy();
       rendererRef.current = null;

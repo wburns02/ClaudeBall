@@ -236,6 +236,9 @@ export function LiveGamePage() {
     }
 
     const ab = eng.startNextAtBat();
+    // Sync events immediately so any inning_change event added by startNextAtBat is animated
+    setEvents([...eng.getState().events]);
+
     if (!ab) {
       setGameState({ ...eng.getState() });
       return;
@@ -277,7 +280,16 @@ export function LiveGamePage() {
 
       const newCount = result.atBatOver ? { balls: 0, strikes: 0 } : result.count;
       setCurrentCount(newCount);
-      setEvents([...eng.getState().events]);
+      // eng.getState().events only has events that ended an at-bat (via applyAtBatResult).
+      // For mid-at-bat pitches (ball, strike, foul), result.events holds the pitch event
+      // but it's NOT yet in state.events. Merge them so DiamondView animates every pitch.
+      const engineEvents = eng.getState().events;
+      const pitchEvents = result.events ?? [];
+      // Avoid duplicates: pitchEvents are already in engineEvents when atBatOver=true
+      const mergedEvents = result.atBatOver
+        ? engineEvents
+        : [...engineEvents, ...pitchEvents];
+      setEvents(mergedEvents);
       setGameState({ ...eng.getState() });
 
       if (result.atBatOver) {

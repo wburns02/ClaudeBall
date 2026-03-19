@@ -56,7 +56,7 @@ interface CameraState {
  *   cam.destroy();
  */
 export class AtBatCamera {
-  private root: Container;
+  private root: Container | null = null;
 
   /** The scale/position set by DiamondRenderer.initInContainer() — our "home base". */
   private baseScaleX: number;
@@ -71,18 +71,28 @@ export class AtBatCamera {
   /** Current logical zoom state (at-bat or field). */
   private _zoomedIn = false;
 
-  constructor(
-    root: Container,
-    baseScaleX: number,
-    baseScaleY: number,
-    baseX: number,
-    baseY: number,
-  ) {
+  constructor() {
+    this.baseScaleX = 1;
+    this.baseScaleY = 1;
+    this.baseX = 0;
+    this.baseY = 0;
+  }
+
+  /**
+   * Attach the Pixi root container. Called once the renderer finishes init.
+   * Before this is called, all zoom operations are no-ops.
+   */
+  attachRoot(root: Container, baseScaleX: number, baseScaleY: number, baseX: number, baseY: number): void {
     this.root = root;
     this.baseScaleX = baseScaleX;
     this.baseScaleY = baseScaleY;
     this.baseX = baseX;
     this.baseY = baseY;
+  }
+
+  /** Whether the camera has been attached to a Pixi root. */
+  get isReady(): boolean {
+    return this.root !== null;
   }
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -107,6 +117,7 @@ export class AtBatCamera {
    * Returns a Promise that resolves when the zoom animation completes.
    */
   zoomToAtBat(duration = 500): Promise<void> {
+    if (!this.root) return Promise.resolve();
     this._zoomedIn = true;
 
     // Focus point: midway between mound and home plate, slightly biased toward home
@@ -139,6 +150,7 @@ export class AtBatCamera {
    * Returns a Promise that resolves when the zoom animation completes.
    */
   zoomToField(duration = 400): Promise<void> {
+    if (!this.root) return Promise.resolve();
     this._zoomedIn = false;
     return this._tweenTo(
       { scaleX: this.baseScaleX, scaleY: this.baseScaleY, x: this.baseX, y: this.baseY },
@@ -152,6 +164,7 @@ export class AtBatCamera {
    * Direction: 'left' | 'right' | 'center'
    */
   zoomToOutfield(direction: 'left' | 'right' | 'center', duration = 500): Promise<void> {
+    if (!this.root) return Promise.resolve();
     this._zoomedIn = false;
 
     // Outfield target positions (world coords)
@@ -183,6 +196,7 @@ export class AtBatCamera {
   snapToField(): void {
     this._cancelCurrentAnim();
     this._zoomedIn = false;
+    if (!this.root) return;
     this.root.scale.set(this.baseScaleX, this.baseScaleY);
     this.root.x = this.baseX;
     this.root.y = this.baseY;
@@ -203,19 +217,22 @@ export class AtBatCamera {
   }
 
   private _tweenTo(target: CameraState, durationMs: number, easeFn: (t: number) => number): Promise<void> {
+    const root = this.root;
+    if (!root) return Promise.resolve();
+
     this._cancelCurrentAnim();
 
     if (durationMs <= 0 || this._destroyed) {
-      this.root.scale.set(target.scaleX, target.scaleY);
-      this.root.x = target.x;
-      this.root.y = target.y;
+      root.scale.set(target.scaleX, target.scaleY);
+      root.x = target.x;
+      root.y = target.y;
       return Promise.resolve();
     }
 
-    const startScaleX = this.root.scale.x;
-    const startScaleY = this.root.scale.y;
-    const startX = this.root.x;
-    const startY = this.root.y;
+    const startScaleX = root.scale.x;
+    const startScaleY = root.scale.y;
+    const startX = root.x;
+    const startY = root.y;
 
     let elapsed = 0;
     let cancelled = false;
@@ -232,12 +249,12 @@ export class AtBatCamera {
         const progress = Math.min(elapsed / durationMs, 1);
         const ease = easeFn(progress);
 
-        this.root.scale.set(
+        root.scale.set(
           startScaleX + (target.scaleX - startScaleX) * ease,
           startScaleY + (target.scaleY - startScaleY) * ease,
         );
-        this.root.x = startX + (target.x - startX) * ease;
-        this.root.y = startY + (target.y - startY) * ease;
+        root.x = startX + (target.x - startX) * ease;
+        root.y = startY + (target.y - startY) * ease;
 
         if (progress >= 1) {
           Ticker.shared.remove(onTick);
