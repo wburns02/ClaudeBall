@@ -70,7 +70,7 @@ function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; tota
 
 export function FranchiseDashboard() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents } = useFranchiseStore();
+  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries } = useFranchiseStore();
   const [showEvents, setShowEvents] = useState(true);
   const [simConfirm, setSimConfirm] = useState<number | null>(null); // days pending confirm
 
@@ -88,6 +88,16 @@ export function FranchiseDashboard() {
 
   // Find user's division
   const userDiv = divStandings.find(d => d.teams.some(t => t.teamId === userTeamId));
+
+  // IL action: injured players not yet placed on IL
+  const activeInjuries = getTeamInjuries(userTeamId).filter(r => !r.returned);
+  const ilPlayerIds = new Set(ilRoster.map(s => s.playerId));
+  const unplacedInjuries = activeInjuries.filter(r => !ilPlayerIds.has(r.playerId));
+  // Players healed but still on IL
+  const healedOnIL = ilRoster.filter(slot => {
+    const rec = activeInjuries.find(r => r.playerId === slot.playerId);
+    return !rec || rec.returned;
+  });
 
   const handleAdvance = () => {
     setShowEvents(true);
@@ -134,6 +144,32 @@ export function FranchiseDashboard() {
           </span>
         </p>
       </div>
+
+      {/* IL Action Banner */}
+      {(unplacedInjuries.length > 0 || healedOnIL.length > 0) && (
+        <div
+          className="mb-4 px-4 py-3 rounded-lg border border-red-500/30 bg-red-950/20 flex items-center justify-between gap-3 cursor-pointer hover:border-red-500/50 transition-colors"
+          onClick={() => navigate('/franchise/injuries')}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-red-400 text-lg shrink-0">🏥</span>
+            <div>
+              {unplacedInjuries.length > 0 && (
+                <p className="font-mono text-xs text-red-400 font-bold">
+                  {unplacedInjuries.length} injured player{unplacedInjuries.length !== 1 ? 's' : ''} not on IL
+                  {' '}— <span className="text-cream-dim">{unplacedInjuries.map(r => r.playerName.split(' ').pop()).join(', ')}</span>
+                </p>
+              )}
+              {healedOnIL.length > 0 && (
+                <p className="font-mono text-xs text-green-light font-bold">
+                  {healedOnIL.length} player{healedOnIL.length !== 1 ? 's' : ''} ready to activate from IL
+                </p>
+              )}
+            </div>
+          </div>
+          <span className="font-mono text-xs text-red-400/60 shrink-0">Manage IL →</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Team Record */}

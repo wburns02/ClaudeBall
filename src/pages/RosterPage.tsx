@@ -204,7 +204,7 @@ function ExtensionDialog({
 
 export function RosterPage() {
   const navigate = useNavigate();
-  const { engine, userTeamId, teams, getPlayerContract, releasePlayerToWaivers, signExtension } = useFranchiseStore();
+  const { engine, userTeamId, teams, getPlayerContract, releasePlayerToWaivers, signExtension, ilRoster, getTeamInjuries, season } = useFranchiseStore();
 
   const [sortKey, setSortKey] = useState<SortKey>('ovr');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -267,12 +267,28 @@ export function RosterPage() {
     const contract = getPlayerContract(p.id);
     const salary = contract ? `$${(contract.salaryPerYear / 1000).toFixed(1)}M` : '—';
     const contractYrs = contract && !contract.isFreeAgent ? `${contract.yearsRemaining}yr` : 'FA';
+    const onIL = ilRoster.some(s => s.playerId === p.id);
+    const activeInjury = getTeamInjuries(userTeamId ?? '').find(r => r.playerId === p.id && !r.returned);
+    const daysRemaining = activeInjury ? Math.max(0, activeInjury.injuredUntilDay - (season?.currentDay ?? 0)) : 0;
     return (
       <tr
-        className="group border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors cursor-pointer"
+        className={cn(
+          'group border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors cursor-pointer',
+          onIL && 'opacity-75',
+        )}
         onClick={() => navigate(`/franchise/player-stats/${p.id}`)}
       >
-        <td className="px-3 py-2 text-cream font-body text-sm group-hover:text-gold transition-colors hover:underline">{getPlayerName(p)}</td>
+        <td className="px-3 py-2 font-body text-sm group-hover:text-gold transition-colors">
+          <div className="flex items-center gap-1.5">
+            <span className={cn(onIL ? 'text-cream-dim' : 'text-cream')}>{getPlayerName(p)}</span>
+            {onIL && (
+              <span className="font-mono text-[9px] font-bold uppercase text-red-400 border border-red-500/30 bg-red-950/20 px-1 py-0.5 rounded shrink-0">IL</span>
+            )}
+            {activeInjury && !onIL && (
+              <span className="font-mono text-[9px] text-orange-400/80 border border-orange-500/20 bg-orange-950/20 px-1 py-0.5 rounded shrink-0">{daysRemaining}d</span>
+            )}
+          </div>
+        </td>
         <td className="px-3 py-2 font-mono text-xs text-gold text-center">{p.position}</td>
         <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.bats}/{p.throws}</td>
         <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.age}</td>

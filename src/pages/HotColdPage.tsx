@@ -147,7 +147,7 @@ export function HotColdPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-3 text-center">
-          <p className="font-display text-2xl text-orange-400">{summaries.filter(s => s.status === 'hot').length}</p>
+          <p className="font-display text-2xl text-orange-400">{summaries.filter(s => s.status === 'hot' || s.status === 'warm').length}</p>
           <p className="font-mono text-xs text-orange-300/70 uppercase tracking-wider mt-0.5">🔥 On Fire</p>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-3 text-center">
@@ -159,7 +159,7 @@ export function HotColdPage() {
           <p className="font-mono text-xs text-blue/70 uppercase tracking-wider mt-0.5">↓ Slowing Down</p>
         </div>
         <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-3 text-center">
-          <p className="font-display text-2xl text-blue-300">{summaries.filter(s => s.status === 'cold').length}</p>
+          <p className="font-display text-2xl text-blue-300">{summaries.filter(s => s.status === 'cold' || s.status === 'cool').length}</p>
           <p className="font-mono text-xs text-blue-200/70 uppercase tracking-wider mt-0.5">❄ Ice Cold</p>
         </div>
       </div>

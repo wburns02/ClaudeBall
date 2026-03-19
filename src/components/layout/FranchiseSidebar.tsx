@@ -204,7 +204,7 @@ export function FranchiseSidebar() {
     <div
       data-testid="franchise-sidebar"
       className={cn(
-        'flex flex-col h-screen bg-[#060b14] border-r border-navy-lighter/60 transition-all duration-200 shrink-0',
+        'relative flex flex-col h-screen bg-[#060b14] border-r border-navy-lighter/60 transition-all duration-200 shrink-0',
         collapsed ? 'w-[60px]' : 'w-[240px]',
       )}
       style={{ position: 'sticky', top: 0 }}
@@ -214,6 +214,15 @@ export function FranchiseSidebar() {
         'flex items-center border-b border-navy-lighter/60 bg-navy-light/40',
         collapsed ? 'flex-col py-3 px-2 gap-2 min-h-[80px] justify-center' : 'px-4 py-3 gap-3 min-h-[80px]',
       )}>
+        {/* Collapsed: tap team badge to expand */}
+        {collapsed && (
+          <button
+            onClick={() => setCollapsed(false)}
+            title="Expand sidebar"
+            className="absolute inset-x-0 top-0 h-[80px] cursor-pointer z-10 hover:bg-navy-lighter/10 transition-colors"
+            aria-label="Expand navigation"
+          />
+        )}
         {/* Baseball icon */}
         <div className={cn(
           'rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center text-gold font-display font-bold shrink-0',

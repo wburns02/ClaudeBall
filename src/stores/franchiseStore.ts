@@ -22,6 +22,15 @@ import type { TrainingAssignment } from '@/engine/player/DevelopmentEngine.ts';
 import type { TradeProposal } from '@/engine/gm/TradeEngine.ts';
 import { computeFormSummary } from '@/engine/performance/HotColdEngine.ts';
 
+/** Injured List slot — tracks a player placed on the IL */
+export interface ILSlot {
+  playerId: string;
+  playerName: string;
+  position: string;
+  ilType: '10-day' | '60-day';
+  placedDay: number;
+}
+
 /** Serializable trade proposal stored in the franchise store so it persists across navigation */
 export interface StoredTradeProposal {
   id: string;
@@ -61,6 +70,7 @@ interface FranchiseState {
   userTradeLog: string[];
   waiverLog: WaiverEvent[];
   callupLog: CallupEvent[];
+  ilRoster: ILSlot[];
   lastDevelopmentChanges: DevelopmentChange[] | null;
   prospectDevelopmentLog: ProspectDevelopmentEvent[];
   lastProspectDevelopment: ProspectDevelopmentEvent[];
@@ -102,6 +112,11 @@ interface FranchiseState {
   advanceSeason: () => void;
   initFreeAgency: () => void;
   signFreeAgent: (playerId: string, years: number, salaryPerYear: number) => { success: boolean; reason?: string };
+
+  // IL (Injured List) management — user team only
+  placeOnIL: (playerId: string, playerName: string, position: string, ilType: '10-day' | '60-day') => void;
+  activateFromIL: (playerId: string) => void;
+  isOnIL: (playerId: string) => boolean;
 
   // Injury actions
   getActiveInjuries: () => InjuryRecord[];
@@ -167,6 +182,21 @@ export const useFranchiseStore = create<FranchiseState>()(
   lastDevelopmentChanges: null,
   prospectDevelopmentLog: [],
   lastProspectDevelopment: [],
+  ilRoster: [],
+  placeOnIL: (playerId, playerName, position, ilType) => {
+    set(s => {
+      if (s.ilRoster.some(slot => slot.playerId === playerId)) return {};
+      const placedDay = s.season?.currentDay ?? 0;
+      return { ilRoster: [...s.ilRoster, { playerId, playerName, position, ilType, placedDay }] };
+    });
+  },
+  activateFromIL: (playerId) => {
+    set(s => ({ ilRoster: s.ilRoster.filter(slot => slot.playerId !== playerId) }));
+  },
+  isOnIL: (playerId: string): boolean => {
+    return get().ilRoster.some((slot: ILSlot) => slot.playerId === playerId);
+  },
+
   tradeProposals: [],
   setTradeProposals: (proposals) => set({ tradeProposals: proposals }),
   trainingAssignments: {},
@@ -257,6 +287,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       userTradeLog: [],
       waiverLog: [],
       callupLog: [],
+      ilRoster: [],
       lastDevelopmentChanges: null,
       prospectDevelopmentLog: [],
       lastProspectDevelopment: [],
@@ -667,6 +698,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       tradeLog: [],
       waiverLog: [],
       callupLog: [],
+      ilRoster: [],
       prospectDevelopmentLog: [],
       lastProspectDevelopment: [],
     });
@@ -1070,6 +1102,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         waiverLog: state.waiverLog,
         callupLog: state.callupLog,
         prospectDevelopmentLog: state.prospectDevelopmentLog,
+        ilRoster: state.ilRoster,
         tradeProposals: state.tradeProposals,
         trainingAssignments: state.trainingAssignments,
         lastDevelopmentChanges: state.lastDevelopmentChanges,

@@ -80,9 +80,10 @@ export function computeFormSummary(
     const totalK = pitcherGames.reduce((s, g) => s + g.kPitching, 0);
     const recentERA = totalIP > 0 ? (totalER / totalIP) * 9 : 99;
 
-    const seasonERA = seasonPitching && seasonPitching.ip > 0
+    // Use season ERA as baseline; fall back to league average when sample is tiny
+    const seasonERA = seasonPitching && seasonPitching.ip >= 3  // at least 1 full start
       ? (seasonPitching.er / seasonPitching.ip) * 9
-      : recentERA;
+      : 4.00; // league average ERA baseline for early season
 
     // Form score: how much better/worse than season ERA
     // -3 ERA below season = +20, +3 ERA above season = -20
@@ -128,9 +129,11 @@ export function computeFormSummary(
     : 0;
   const recentOPS = recentOBP + recentSlg;
 
-  const seasonBA = seasonBatting && seasonBatting.ab > 0
+  // Use season BA as baseline; fall back to league average when sample is tiny
+  // (< 15 AB means last-7 ≈ whole season → baDiff would always be ~0)
+  const seasonBA = seasonBatting && seasonBatting.ab >= 15
     ? seasonBatting.h / seasonBatting.ab
-    : recentBA;
+    : 0.265; // league average baseline for early season
 
   // Form score: difference from season BA, scaled
   // +0.060 BA above season = +20, -0.060 BA below = -20
