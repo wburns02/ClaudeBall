@@ -623,23 +623,15 @@ export function ScoutingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(36);
 
-  // Must be before early return (rules of hooks)
+  // All hooks must be before any conditional return (Rules of Hooks)
   useEffect(() => {
     if (userTeamId) scoutOwnRoster(userTeamId);
   }, [userTeamId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!season || !engine || !userTeamId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
-      </div>
-    );
-  }
+  // Use optional chaining so these run unconditionally even before franchise is loaded
+  const allTeams = useMemo(() => engine?.getAllTeams() ?? [], [engine]);
+  const userTeam = useMemo(() => engine?.getTeam(userTeamId ?? '') ?? null, [engine, userTeamId]);
 
-  const userTeam = engine.getTeam(userTeamId);
-  const allTeams = engine.getAllTeams();
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const allLeaguePlayers = useMemo((): { player: Player; team: Team }[] => {
     const result: { player: Player; team: Team }[] = [];
     for (const team of allTeams) {
@@ -648,7 +640,6 @@ export function ScoutingPage() {
     return result;
   }, [allTeams]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const topProspects = useMemo(() =>
     allLeaguePlayers
       .filter(({ team }) => team.id !== userTeamId)
@@ -658,14 +649,12 @@ export function ScoutingPage() {
       .slice(0, 15),
   [allLeaguePlayers, userTeamId]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const playerPool = useMemo((): { player: Player; team: Team }[] => {
     if (view === 'roster') return userTeam ? userTeam.roster.players.map(p => ({ player: p, team: userTeam })) : [];
     if (view === 'prospects') return topProspects.map(({ player, team }) => ({ player, team }));
     return allLeaguePlayers;
   }, [view, userTeam, allLeaguePlayers, topProspects]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const displayedPlayers = useMemo(() => {
     let filtered = playerPool;
     if (posFilter !== 'ALL') filtered = filtered.filter(({ player }) => player.position === posFilter);
@@ -682,6 +671,14 @@ export function ScoutingPage() {
       return a.player.lastName.localeCompare(b.player.lastName);
     });
   }, [playerPool, posFilter, searchQuery, sortMode]);
+
+  if (!season || !engine || !userTeamId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      </div>
+    );
+  }
 
   function handleSelect(p: Player) {
     setSelectedPlayer(p);

@@ -133,12 +133,25 @@ export function TradePage() {
   );
 
   // Pre-select target player from URL
+  // If the player is on the user's team → add to userBlock (they're offering them)
+  // If on partner's team → add to theirBlock (they want to acquire them)
   useEffect(() => {
     const tp = searchParams.get('targetPlayer');
-    if (tp && partnerTeam?.roster.players.some(p => p.id === tp)) {
+    if (!tp) return;
+    if (userTeam?.roster.players.some(p => p.id === tp)) {
+      setUserBlock([tp]);
+    } else if (partnerTeam?.roster.players.some(p => p.id === tp)) {
       setTheirBlock([tp]);
+    } else {
+      // Player is on a different team — find it and switch partner
+      const ownerTeam = otherTeams.find(t => t.roster.players.some(p => p.id === tp));
+      if (ownerTeam) {
+        setPartnerId(ownerTeam.id);
+        // theirBlock will be set once partnerTeam updates
+        setTheirBlock([tp]);
+      }
     }
-  }, [searchParams, partnerTeam]);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!userTeam || otherTeams.length === 0) {
     return (

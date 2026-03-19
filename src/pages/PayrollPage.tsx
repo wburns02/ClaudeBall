@@ -270,6 +270,8 @@ export function PayrollPage() {
   const [budgetModal, setBudgetModal] = useState(false);
   const [budgetRequestAmt, setBudgetRequestAmt] = useState(10_000);
   const [budgetResult, setBudgetResult] = useState<{ approved: boolean; reason: string } | null>(null);
+  // Increment after contract changes to force re-render of derived data
+  const [contractVersion, setContractVersion] = useState(0);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -280,7 +282,6 @@ export function PayrollPage() {
   }
 
   const userTeam = engine.getTeam(userTeamId);
-  const userContracts = getAllTeamContracts(userTeamId);
   const totalPayrollRaw = getTeamPayroll(userTeamId);
   const totalPayroll = isNaN(totalPayrollRaw) ? 0 : (totalPayrollRaw || 0);
   const teamBudget = teamBudgets[userTeamId] ?? 150_000;
@@ -288,9 +289,13 @@ export function PayrollPage() {
   const budgetPct = Math.min(100, (totalPayroll / teamBudget) * 100);
   const overBudget = totalPayroll > teamBudget;
 
+  // Re-fetch contracts fresh — contractVersion increments after signing extension, forcing recalc
+  const freshContracts = useMemo(() => getAllTeamContracts(userTeamId),
+    [userTeamId, contractVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sorted contracts
   const sortedContracts = useMemo(() => {
-    return [...userContracts].sort((a, b) => {
+    return [...freshContracts].sort((a, b) => {
       switch (sortMode) {
         case 'salary': return b.contract.salaryPerYear - a.contract.salaryPerYear;
         case 'ovr': return evaluatePlayer(b.player) - evaluatePlayer(a.player);
@@ -299,7 +304,7 @@ export function PayrollPage() {
         default: return 0;
       }
     });
-  }, [userContracts, sortMode]);
+  }, [freshContracts, sortMode]);
 
   // League-wide payrolls
   const leaguePayrolls = useMemo(() => {
@@ -310,12 +315,12 @@ export function PayrollPage() {
         isUser: team.id === userTeamId,
       }))
       .sort((a, b) => b.payroll - a.payroll);
-  }, [engine, userTeamId]);
+  }, [engine, userTeamId, contractVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Future commitment analysis
   const futureCommitments = useMemo(() => {
     const byYear: Record<number, number> = {};
-    for (const { contract } of userContracts) {
+    for (const { contract } of freshContracts) {
       if (contract.isFreeAgent) continue;
       for (let y = 1; y <= contract.yearsRemaining; y++) {
         byYear[y] = (byYear[y] ?? 0) + contract.salaryPerYear;
@@ -325,11 +330,11 @@ export function PayrollPage() {
       .map(([yr, amt]) => ({ yr: Number(yr), amt }))
       .sort((a, b) => a.yr - b.yr)
       .slice(0, 5);
-  }, [userContracts]);
+  }, [freshContracts]);
 
   // Expiring contracts (1 year or less, not FA)
-  const expiring = userContracts.filter(c => c.contract.yearsRemaining <= 1 && !c.contract.isFreeAgent);
-  const topEarners = [...userContracts].sort((a, b) => b.contract.salaryPerYear - a.contract.salaryPerYear).slice(0, 3);
+  const expiring = freshContracts.filter(c => c.contract.yearsRemaining <= 1 && !c.contract.isFreeAgent);
+  const topEarners = [...freshContracts].sort((a, b) => b.contract.salaryPerYear - a.contract.salaryPerYear).slice(0, 3);
 
   // Luxury tax status
   const aboveLuxury = totalPayroll > LUXURY_TAX;
@@ -342,6 +347,7 @@ export function PayrollPage() {
     const result = signExtension(extendPlayer.player.id, userTeamId, years, salary);
     if (result.success) {
       setSignResult(`✓ ${getPlayerName(extendPlayer.player)} signed a ${years}-year, ${fmt(salary)}/yr extension.`);
+      setContractVersion(v => v + 1); // force contracts list to re-derive
     } else {
       setSignResult(`✗ ${result.reason}`);
     }
@@ -528,8 +534,8 @@ export function PayrollPage() {
           },
           {
             label: 'Contracts',
-            value: `${userContracts.filter(c => !c.contract.isFreeAgent).length}`,
-            sub: `${userContracts.length} rostered`,
+            value: `${freshContracts.filter(c => !c.contract.isFreeAgent).length}`,
+            sub: `${freshContracts.length} rostered`,
             color: 'text-cream',
           },
         ].map(({ label, value, sub, color }) => (
@@ -719,7 +725,7 @@ export function PayrollPage() {
             <Panel title="Value Watch">
               <p className="font-mono text-xs text-cream-dim/50 mb-3">Best & worst contract value</p>
               {(() => {
-                const withValue = userContracts
+                const withValue = freshContracts
                   .filter(c => !c.contract.isFreeAgent)
                   .map(({ player, contract }) => ({
                     player, contract,

@@ -167,11 +167,15 @@ function ScoutReport({
   isUserTurn,
   draftComplete,
   onDraft,
+  isFavorite,
+  onToggleFavorite,
 }: {
   prospect: DraftProspect;
   isUserTurn: boolean;
   draftComplete: boolean;
   onDraft: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }) {
   const isPitcher = prospect.position === 'P';
   const t = prospect.tools;
@@ -257,7 +261,20 @@ function ScoutReport({
           Draft {prospect.firstName} {prospect.lastName}
         </Button>
       )}
-      {!isUserTurn && !draftComplete && (
+      {!isUserTurn && !draftComplete && onToggleFavorite && (
+        <button
+          onClick={onToggleFavorite}
+          className={cn(
+            'w-full py-2 rounded-lg border text-sm font-mono font-bold transition-all',
+            isFavorite
+              ? 'bg-gold/20 border-gold/40 text-gold hover:bg-gold/30'
+              : 'bg-navy-lighter/20 border-navy-lighter text-cream-dim hover:border-gold/40 hover:text-gold',
+          )}
+        >
+          {isFavorite ? '★ On Watchlist — Remove' : '☆ Add to Watchlist'}
+        </button>
+      )}
+      {!isUserTurn && !draftComplete && !onToggleFavorite && (
         <p className="text-center font-mono text-xs text-cream-dim/40 py-1">Waiting for your pick...</p>
       )}
       {draftComplete && (
@@ -377,6 +394,12 @@ function PreDraftScouting({
               isUserTurn={false}
               draftComplete={false}
               onDraft={() => {}}
+              isFavorite={favorites.has(selected.id)}
+              onToggleFavorite={() => setFavorites(prev => {
+                const next = new Set(prev);
+                if (next.has(selected.id)) next.delete(selected.id); else next.add(selected.id);
+                return next;
+              })}
             />
           ) : (
             <div className="py-12 text-center">

@@ -93,10 +93,23 @@ export function SchedulePage() {
   };
 
   const handleSimGame = (game: ScheduledGame) => {
-    // Sim all days up to and including the selected game's day
     const daysToSim = game.date - currentDay;
-    if (daysToSim > 0) simDays(daysToSim);
-    else simDays(1); // fallback: sim at least one day
+    if (daysToSim <= 0) { simDays(1); return; }
+
+    // Warn if skipping intermediate user games
+    if (daysToSim > 1) {
+      const skipped = season!.schedule.filter(g =>
+        (g.awayId === userTeamId || g.homeId === userTeamId) &&
+        g.date > currentDay && g.date < game.date && !g.played
+      ).length;
+      if (skipped > 0) {
+        const ok = window.confirm(
+          `This will skip ${skipped} unplayed game${skipped > 1 ? 's' : ''} on your schedule.\n\nThose games will be auto-simulated. Continue?`
+        );
+        if (!ok) return;
+      }
+    }
+    simDays(daysToSim);
   };
 
   const maxWeekOffset = Math.ceil(totalDays / DAYS_PER_WEEK) - WEEKS_PER_VIEW;
