@@ -3,6 +3,8 @@ import type { RandomProvider } from '../core/RandomProvider.ts';
 import type { TeamRecord } from './StandingsTracker.ts';
 import type { SeasonState } from './SeasonEngine.ts'; // used by advanceYear
 import { getPlayerName } from '../types/player.ts';
+import { DevelopmentEngine } from '../player/DevelopmentEngine.ts';
+import { evaluatePlayer } from '../gm/TradeEngine.ts';
 
 export type AwardType = 'MVP' | 'CyYoung' | 'ROY';
 
@@ -22,10 +24,26 @@ export interface RetirementInfo {
   teamId: string;
 }
 
+export type DevelopmentPhase = 'growth' | 'peak' | 'decline' | 'steep';
+
+export interface DevelopmentChange {
+  playerId: string;
+  playerName: string;
+  teamId: string;
+  position: string;
+  age: number;         // age after the offseason
+  ovrBefore: number;
+  ovrAfter: number;
+  ovrDelta: number;
+  phase: DevelopmentPhase;
+  changes: Record<string, number>; // key → delta
+}
+
 export interface OffseasonResult {
   awards: Award[];
   retirements: RetirementInfo[];
   agingCount: number;
+  development: DevelopmentChange[];
 }
 
 /**
@@ -150,55 +168,74 @@ export class OffseasonEngine {
    */
   static runOffseason(teams: Team[], rng: RandomProvider): OffseasonResult {
     const retirements: RetirementInfo[] = [];
+    const development: DevelopmentChange[] = [];
     let agingCount = 0;
 
     for (const team of teams) {
       const toRetire: string[] = [];
+      const newPlayers: Player[] = [];
 
       for (const player of team.roster.players) {
-        player.age += 1;
+        const ovrBefore = Math.round(evaluatePlayer(player));
+        const devResult = DevelopmentEngine.developPlayer(player, rng);
+        const developed = devResult.player; // has age+1 and updated ratings
         agingCount++;
 
-        // Retirement probability:
-        // age 37: 15%, 38: 25%, 39: 40%, 40+: 65%
-        const age = player.age;
-        let retireProbability = 0;
-        if (age >= 40) retireProbability = 0.65;
-        else if (age === 39) retireProbability = 0.40;
-        else if (age === 38) retireProbability = 0.25;
-        else if (age === 37) retireProbability = 0.15;
+        const age = developed.age;
+        const phase: DevelopmentPhase =
+          age <= 26 ? 'growth' :
+          age <= 31 ? 'peak' :
+          age <= 36 ? 'decline' : 'steep';
 
-        if (retireProbability > 0 && rng.chance(retireProbability)) {
+        const ovrAfter = Math.round(evaluatePlayer(developed));
+        development.push({
+          playerId: player.id,
+          playerName: getPlayerName(player),
+          teamId: team.id,
+          position: player.position,
+          age,
+          ovrBefore,
+          ovrAfter,
+          ovrDelta: ovrAfter - ovrBefore,
+          phase,
+          changes: devResult.changes,
+        });
+
+        if (devResult.shouldRetire) {
           retirements.push({
             playerId: player.id,
             playerName: getPlayerName(player),
-            age: player.age,
+            age,
             teamId: team.id,
           });
           toRetire.push(player.id);
+        } else {
+          // Reset state for new season
+          newPlayers.push({
+            ...developed,
+            state: {
+              ...developed.state,
+              fatigue: 0,
+              pitchCount: 0,
+              morale: Math.min(100, developed.state.morale + 10),
+            },
+          });
         }
       }
 
-      // Remove retired players
-      team.roster.players = team.roster.players.filter(p => !toRetire.includes(p.id));
+      team.roster.players = newPlayers;
 
       // Clean up lineup / bullpen references for retired players
-      team.lineup = team.lineup.filter(s => !toRetire.includes(s.playerId));
-      team.bullpen = team.bullpen.filter(id => !toRetire.includes(id));
+      const retiredSet = new Set(toRetire);
+      team.lineup = team.lineup.filter(s => !retiredSet.has(s.playerId));
+      team.bullpen = team.bullpen.filter(id => !retiredSet.has(id));
       if (toRetire.includes(team.pitcherId)) {
         const newSP = team.roster.players.find(p => p.position === 'P');
         team.pitcherId = newSP?.id ?? '';
       }
-
-      // Reset player state for new season
-      for (const player of team.roster.players) {
-        player.state.fatigue = 0;
-        player.state.pitchCount = 0;
-        player.state.morale = Math.min(100, player.state.morale + 10);
-      }
     }
 
-    return { retirements, agingCount, awards: [] };
+    return { retirements, agingCount, awards: [], development };
   }
 
   /**

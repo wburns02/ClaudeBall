@@ -17,6 +17,7 @@ import type { AITradeRecord } from '@/engine/season/AITradeManager.ts';
 import type { MinorLeagueRoster, CallupEvent } from '@/engine/season/MinorLeagues.ts';
 import type { WaiverPlayer, WaiverEvent } from '@/engine/gm/WaiverWire.ts';
 import type { PlayerContract } from '@/engine/gm/ContractEngine.ts';
+import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
 
 interface FranchiseState {
   // State
@@ -45,6 +46,7 @@ interface FranchiseState {
   userTradeLog: string[];
   waiverLog: WaiverEvent[];
   callupLog: CallupEvent[];
+  lastDevelopmentChanges: DevelopmentChange[] | null;
 
   // Internal: used only during persist/rehydrate cycle
   _seasonSnapshot?: unknown;
@@ -124,6 +126,7 @@ export const useFranchiseStore = create<FranchiseState>()(
   userTradeLog: [],
   waiverLog: [],
   callupLog: [],
+  lastDevelopmentChanges: null,
 
   startFranchise: (teams, leagueStructure, userTeamId) => {
     // Deep-clone teams and randomize player ages + mental ratings for realism
@@ -175,6 +178,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       userTradeLog: [],
       waiverLog: [],
       callupLog: [],
+      lastDevelopmentChanges: null,
     });
   },
 
@@ -356,7 +360,13 @@ export const useFranchiseStore = create<FranchiseState>()(
     const { engine } = get();
     if (!engine) return;
     engine.startOffseason();
-    set({ season: { ...engine.getState() } });
+    const state = engine.getState();
+    set({
+      season: { ...state },
+      // Update teams to reflect development changes applied by offseason engine
+      teams: engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } })),
+      lastDevelopmentChanges: state.offseasonDevelopment ?? null,
+    });
   },
 
   initDraft: () => {
@@ -491,6 +501,7 @@ export const useFranchiseStore = create<FranchiseState>()(
     engine.advanceToNextYear();
     set({
       season: { ...engine.getState() },
+      teams: engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } })),
       draftClass: null,
       draftPickOrder: [],
       currentDraftPick: 0,

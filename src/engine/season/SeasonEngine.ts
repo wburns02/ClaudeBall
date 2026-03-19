@@ -40,6 +40,7 @@ export interface SeasonState {
   // Offseason state
   offseasonAwards?: Award[];
   offseasonRetirements?: RetirementInfo[];
+  offseasonDevelopment?: import('./OffseasonEngine.ts').DevelopmentChange[];
   // Deep season tracking
   tradeDeadlinePassed: boolean;
 }
@@ -441,6 +442,7 @@ export class SeasonEngine {
 
     this.state.offseasonAwards = awards;
     this.state.offseasonRetirements = result.retirements;
+    this.state.offseasonDevelopment = result.development;
     this.state.phase = 'offseason';
   }
 
