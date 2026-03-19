@@ -135,8 +135,27 @@ export function generatePitcherLine(
   won: boolean,
   rng: RandomProvider
 ): BoxScorePitcher[] {
-  const starterId = team.rotation?.[team.rotationIndex ?? 0] ?? team.pitcherId;
+  // Auto-build rotation from pitching staff if not set
+  if (!team.rotation || team.rotation.length === 0) {
+    const pitchers = team.roster.players.filter(p => p.position === 'P');
+    if (pitchers.length > 0) {
+      team.rotation = pitchers
+        .sort((a, b) => (b.pitching.stuff + b.pitching.control) - (a.pitching.stuff + a.pitching.control))
+        .slice(0, 5)
+        .map(p => p.id);
+      team.rotationIndex = 0;
+    }
+  }
+
+  const rotLen = team.rotation?.length ?? 0;
+  const rotIdx = rotLen > 0 ? ((team.rotationIndex ?? 0) % rotLen) : 0;
+  const starterId = (rotLen > 0 ? team.rotation![rotIdx] : null) ?? team.pitcherId;
   const starter = team.roster.players.find(p => p.id === starterId);
+
+  // Advance rotation so next game uses the next starter
+  if (rotLen > 0) {
+    team.rotationIndex = (rotIdx + 1) % rotLen;
+  }
 
   if (!starter) return [];
 

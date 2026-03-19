@@ -106,10 +106,10 @@ export function RosterPage() {
     const contractYrs = contract && !contract.isFreeAgent ? `${contract.yearsRemaining}yr` : 'FA';
     return (
       <tr
-        className="border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors cursor-pointer"
+        className="group border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors cursor-pointer"
         onClick={() => navigate(`/franchise/player-stats/${p.id}`)}
       >
-        <td className="px-3 py-2 text-cream font-body text-sm">{getPlayerName(p)}</td>
+        <td className="px-3 py-2 text-cream font-body text-sm group-hover:text-gold transition-colors hover:underline">{getPlayerName(p)}</td>
         <td className="px-3 py-2 font-mono text-xs text-gold text-center">{p.position}</td>
         <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.bats}/{p.throws}</td>
         <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.age}</td>

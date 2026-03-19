@@ -38,10 +38,12 @@ function makeTeam(id: string, name: string, abbr: string, city: string, c1: stri
   const pos = players.filter(p => p.position !== 'P');
   const pitchers = players.filter(p => p.position === 'P');
   const sp1 = pitchers[0];
-  const bullpen = pitchers.slice(1).map(p => p.id);
+  // First 5 pitchers form the starting rotation; rest go to bullpen
+  const rotation = pitchers.slice(0, 5).map(p => p.id);
+  const bullpen = pitchers.slice(5).map(p => p.id);
   // lineup = first 9 position players
   const lineup = pos.slice(0, 9).map(p => ({ playerId: p.id, position: p.position }));
-  return { id, name, abbreviation: abbr, city, primaryColor: c1, secondaryColor: c2, roster: { players }, lineup, pitcherId: sp1.id, bullpen };
+  return { id, name, abbreviation: abbr, city, primaryColor: c1, secondaryColor: c2, roster: { players }, lineup, pitcherId: sp1.id, rotation, bullpen };
 }
 
 // ═══════════════════════════════════════════════════════════

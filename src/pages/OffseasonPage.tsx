@@ -50,6 +50,31 @@ export function OffseasonPage() {
 
   if (!season || !engine) return null;
 
+  // Guard: only show offseason page when actually in offseason
+  if (season.phase !== 'offseason') {
+    return (
+      <div className="min-h-screen p-6 max-w-5xl mx-auto">
+        <div className="mb-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/franchise')}>← Back to Dashboard</Button>
+        </div>
+        <Panel>
+          <div className="text-center py-12">
+            <p className="font-display text-2xl text-gold tracking-wide uppercase mb-2">Season in Progress</p>
+            <p className="font-mono text-cream-dim text-sm">
+              The offseason begins after the World Series ends.
+            </p>
+            <p className="font-mono text-cream-dim/50 text-xs mt-2">
+              {season.phase === 'regular' && `${season.schedule.filter(g => !g.played).length} games remaining`}
+            </p>
+            <div className="mt-6">
+              <Button onClick={() => navigate('/franchise')}>Back to Dashboard</Button>
+            </div>
+          </div>
+        </Panel>
+      </div>
+    );
+  }
+
   const awards = season.offseasonAwards ?? [];
   const retirements = season.offseasonRetirements ?? [];
   const userTeam = userTeamId ? engine.getTeam(userTeamId) : null;
