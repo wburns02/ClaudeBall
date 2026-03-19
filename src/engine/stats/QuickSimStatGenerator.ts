@@ -81,11 +81,17 @@ export function generateBatterLines(
     const hr = Math.min(h, Math.min(totalHRLeft, hrBase + hrBonus));
     totalHRLeft = Math.max(0, totalHRLeft - hr);
 
-    // Doubles/triples — use consistent rates, not 0..1 random multiplier
+    // Doubles/triples — per-hit probability to avoid rounding-to-zero on low hit counts
     const nonHrHits = h - hr;
     const doublesRate = clamp(0.12 + (power / 100) * 0.12, 0.08, 0.25);
-    const doubles = Math.min(nonHrHits, Math.round(nonHrHits * doublesRate * (0.7 + rng.next() * 0.6)));
-    const triples = nonHrHits - doubles > 0 ? (speed > 65 && rng.next() > 0.65 ? 1 : 0) : 0;
+    const triplesRate = speed > 70 ? 0.05 : speed > 60 ? 0.02 : 0.01;
+    let doubles = 0;
+    let triples = 0;
+    for (let j = 0; j < nonHrHits; j++) {
+      const roll = rng.next();
+      if (roll < triplesRate) triples++;
+      else if (roll < triplesRate + doublesRate) doubles++;
+    }
 
     // SO from avoid_k
     const kRate = clamp(0.10 + ((100 - p.batting.avoid_k) / 100) * 0.20, 0.08, 0.32);

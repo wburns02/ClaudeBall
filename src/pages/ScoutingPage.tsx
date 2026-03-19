@@ -9,14 +9,9 @@ import type { Team } from '@/engine/types/index.ts';
 
 // ── 20-80 Scout Grade System ─────────────────────────────────────────────────
 function to80(val: number): number {
-  if (val >= 90) return 80;
-  if (val >= 80) return 70;
-  if (val >= 70) return 60;
-  if (val >= 55) return 50;
-  if (val >= 45) return 45;
-  if (val >= 35) return 40;
-  if (val >= 25) return 30;
-  return 20;
+  // Linear mapping from 0-100 → 20-80, rounded to nearest 5 (standard scouting steps)
+  const raw = 20 + (val / 100) * 60;
+  return Math.round(Math.max(20, Math.min(80, raw)) / 5) * 5;
 }
 
 function gradeLabel(g: number): string {

@@ -120,6 +120,25 @@ export class WaiverWire {
       }
     }
 
+    // AI teams periodically release low-value players (roster management)
+    // Each AI team has a ~8% daily chance to release their weakest player
+    if (currentDay % 7 === 0) {
+      for (const team of teams.values()) {
+        if (team.id === userTeamId) continue;
+        if (!rng.chance(0.35)) continue; // ~35% of teams release someone each week
+        const players = [...team.roster.players].sort(
+          (a, b) => evaluatePlayer(a) - evaluatePlayer(b)
+        );
+        // Release the weakest player IF they're below replacement level (< 40 OVR)
+        const candidate = players[0];
+        if (candidate && evaluatePlayer(candidate) < 40) {
+          team.roster.players = team.roster.players.filter(p => p.id !== candidate.id);
+          const ev = this.releasePlayer(candidate, team.id, currentDay);
+          newEvents.push(ev);
+        }
+      }
+    }
+
     // AI teams consider claiming available players
     const available = this.getAvailable(currentDay);
     if (available.length === 0) return newEvents;

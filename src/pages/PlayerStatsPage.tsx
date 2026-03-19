@@ -178,7 +178,7 @@ export function PlayerStatsPage() {
         </div>
         <div className="flex gap-2">
           {player && (
-            <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster')}>
+            <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/player/${playerId}`)}>
               Edit Player
             </Button>
           )}
@@ -288,6 +288,8 @@ export function PlayerStatsPage() {
                         <>
                           <th className="px-2 py-1.5 text-right text-gold-dim uppercase tracking-wider">AB</th>
                           <th className="px-2 py-1.5 text-right text-gold-dim uppercase tracking-wider">H</th>
+                          <th className="px-2 py-1.5 text-right text-gold-dim uppercase tracking-wider">2B</th>
+                          <th className="px-2 py-1.5 text-right text-gold-dim uppercase tracking-wider">3B</th>
                           <th className="px-2 py-1.5 text-right text-gold-dim uppercase tracking-wider">R</th>
                           <th className="px-2 py-1.5 text-right text-gold-dim uppercase tracking-wider">RBI</th>
                           <th className="px-2 py-1.5 text-right text-gold-dim uppercase tracking-wider">HR</th>
@@ -325,6 +327,8 @@ export function PlayerStatsPage() {
                             <>
                               <td className="px-2 py-1 text-right text-cream">{g.ab}</td>
                               <td className="px-2 py-1 text-right text-cream">{g.h}</td>
+                              <td className="px-2 py-1 text-right text-cream">{g.doubles ?? 0}</td>
+                              <td className="px-2 py-1 text-right text-cream">{g.triples ?? 0}</td>
                               <td className="px-2 py-1 text-right text-cream">{g.r}</td>
                               <td className="px-2 py-1 text-right text-cream">{g.rbi}</td>
                               <td className="px-2 py-1 text-right text-cream">{g.hr > 0 ? <span className="text-gold font-bold">{g.hr}</span> : 0}</td>
