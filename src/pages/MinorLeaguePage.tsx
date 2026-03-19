@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -8,47 +8,406 @@ import { getPlayerName } from '@/engine/types/player.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Player } from '@/engine/types/player.ts';
 
-function OVR({ v }: { v: number }) {
-  const color = v >= 75 ? 'text-gold' : v >= 60 ? 'text-green-light' : v >= 45 ? 'text-cream' : 'text-red-400';
-  return <span className={cn('font-mono text-xs font-bold', color)}>{v}</span>;
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function grade20to80(raw: number): number {
+  // raw is already roughly 20–85 scale from the engine
+  return Math.max(20, Math.min(80, Math.round(raw / 5) * 5));
 }
 
-function PlayerRow({
-  player,
-  actions,
-}: {
-  player: Player;
-  actions?: React.ReactNode;
-}) {
-  const ovr = Math.round(evaluatePlayer(player));
+function gradeColor(g: number): string {
+  if (g >= 75) return 'text-gold';
+  if (g >= 65) return 'text-green-light';
+  if (g >= 55) return 'text-blue-300';
+  if (g >= 45) return 'text-cream';
+  if (g >= 35) return 'text-orange-400';
+  return 'text-red-400';
+}
+
+function gradeBg(g: number): string {
+  if (g >= 75) return 'bg-gold';
+  if (g >= 65) return 'bg-green-light';
+  if (g >= 55) return 'bg-blue-300';
+  if (g >= 45) return 'bg-cream/70';
+  if (g >= 35) return 'bg-orange-400';
+  return 'bg-red-400';
+}
+
+function gradeLabel(g: number): string {
+  if (g >= 75) return 'Elite';
+  if (g >= 65) return 'Plus';
+  if (g >= 55) return 'Avg+';
+  if (g >= 45) return 'Avg';
+  if (g >= 35) return 'Fringe';
+  return 'Below';
+}
+
+function etaLabel(ovr: number, age: number): { label: string; color: string } {
+  if (ovr >= 63) return { label: 'MLB Ready', color: 'text-green-light' };
+  if (ovr >= 53) return { label: '~1 yr', color: 'text-blue-300' };
+  if (age <= 21) return { label: '3+ yrs', color: 'text-cream-dim' };
+  if (ovr >= 43) return { label: '2–3 yrs', color: 'text-cream' };
+  return { label: '3+ yrs', color: 'text-cream-dim' };
+}
+
+function prospectPotential(ovr: number, age: number): number {
+  // Younger players with upside get a potential bonus
+  const ageFactor = Math.max(0, 27 - age) * 1.8;
+  return Math.min(80, Math.round(ovr + ageFactor));
+}
+
+/** Map position + stamina to role label */
+function posLabel(p: Player): string {
+  if (p.position !== 'P') return p.position;
+  return p.pitching.stamina >= 52 ? 'SP' : 'RP';
+}
+
+/** Group positions for filter */
+type PosFilter = 'All' | 'SP' | 'RP' | 'C' | 'IF' | 'OF';
+const POS_FILTERS: PosFilter[] = ['All', 'SP', 'RP', 'C', 'IF', 'OF'];
+const IF_POSITIONS = new Set(['1B', '2B', '3B', 'SS', 'DH']);
+const OF_POSITIONS = new Set(['LF', 'CF', 'RF']);
+
+function matchesFilter(p: Player, f: PosFilter): boolean {
+  if (f === 'All') return true;
+  const role = posLabel(p);
+  if (f === 'SP') return role === 'SP';
+  if (f === 'RP') return role === 'RP';
+  if (f === 'C') return p.position === 'C';
+  if (f === 'IF') return IF_POSITIONS.has(p.position);
+  if (f === 'OF') return OF_POSITIONS.has(p.position);
+  return true;
+}
+
+type SortKey = 'ovr' | 'potential' | 'age' | 'pos';
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function GradeBar({ label, value }: { label: string; value: number }) {
+  const g = grade20to80(value);
+  const pct = ((g - 20) / 60) * 100;
   return (
-    <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-md bg-navy-lighter/20 border border-navy-lighter/40 hover:border-navy-lighter/80 transition-colors">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="font-body text-sm text-cream">{getPlayerName(player)}</span>
-          {player.state.isInjured && (
-            <span className="font-mono text-xs text-red-400 bg-red-900/20 px-1 rounded">INJ</span>
-          )}
-        </div>
-        <p className="font-mono text-xs text-cream-dim">{player.position} · Age {player.age}</p>
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-[10px] text-cream-dim/60 w-14 shrink-0 text-right">{label}</span>
+      <div className="flex-1 h-2 bg-navy-lighter/40 rounded-full overflow-hidden">
+        <div
+          className={cn('h-full rounded-full transition-all', gradeBg(g))}
+          style={{ width: `${pct}%` }}
+        />
       </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <OVR v={ovr} />
-        {actions}
-      </div>
+      <span className={cn('font-mono text-[10px] font-bold w-6 text-right', gradeColor(g))}>{g}</span>
     </div>
   );
 }
+
+function StarRating({ value, max = 5 }: { value: number; max?: number }) {
+  // value 0–80 → star count 0–5
+  const stars = Math.round((value / 80) * max);
+  return (
+    <span className="text-gold text-xs">
+      {'★'.repeat(stars)}{'☆'.repeat(max - stars)}
+    </span>
+  );
+}
+
+function ProspectDetailPanel({
+  player,
+  onCallUp,
+  canCallUp,
+  onClose,
+}: {
+  player: Player;
+  onCallUp: (id: string) => void;
+  canCallUp: boolean;
+  onClose: () => void;
+}) {
+  const ovr = Math.round(evaluatePlayer(player));
+  const pot = prospectPotential(ovr, player.age);
+  const eta = etaLabel(ovr, player.age);
+  const role = posLabel(player);
+  const isPitcher = player.position === 'P';
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h2 className="font-display text-xl text-gold tracking-wide">{getPlayerName(player)}</h2>
+          <p className="font-mono text-sm text-cream-dim mt-0.5">
+            {role} · Age {player.age} · Bats {player.bats} · Throws {player.throws}
+          </p>
+        </div>
+        <button
+          onClick={onClose}
+          className="font-mono text-cream-dim/50 hover:text-cream-dim text-lg leading-none mt-0.5"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* OVR / Potential */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-navy-lighter/20 rounded-lg p-3 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/60 mb-1">CURRENT</p>
+          <p className={cn('font-mono text-2xl font-bold', gradeColor(ovr))}>{ovr}</p>
+          <p className="font-mono text-[10px] text-cream-dim/40">{gradeLabel(ovr)}</p>
+        </div>
+        <div className="bg-navy-lighter/20 rounded-lg p-3 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/60 mb-1">CEILING</p>
+          <p className={cn('font-mono text-2xl font-bold', gradeColor(pot))}>{pot}</p>
+          <StarRating value={pot} />
+        </div>
+        <div className="bg-navy-lighter/20 rounded-lg p-3 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/60 mb-1">ETA</p>
+          <p className={cn('font-mono text-sm font-bold mt-1', eta.color)}>{eta.label}</p>
+        </div>
+      </div>
+
+      {/* Attributes */}
+      <div className="space-y-3 flex-1 overflow-y-auto pr-1">
+        {isPitcher ? (
+          <>
+            <div>
+              <p className="font-mono text-[10px] text-cream-dim/40 uppercase mb-1.5">Pitching</p>
+              <div className="space-y-1.5">
+                <GradeBar label="Stuff" value={player.pitching.stuff} />
+                <GradeBar label="Movement" value={player.pitching.movement} />
+                <GradeBar label="Control" value={player.pitching.control} />
+                <GradeBar label="Stamina" value={player.pitching.stamina} />
+                <GradeBar label="Hold Run" value={player.pitching.hold_runners} />
+              </div>
+            </div>
+            <div>
+              <p className="font-mono text-[10px] text-cream-dim/40 uppercase mb-1">Velocity</p>
+              <p className="font-mono text-sm text-cream">{player.pitching.velocity} mph</p>
+              <p className="font-mono text-[10px] text-cream-dim/50 mt-0.5">
+                Repertoire: {player.pitching.repertoire.join(', ')}
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <p className="font-mono text-[10px] text-cream-dim/40 uppercase mb-1.5">Batting</p>
+              <div className="space-y-1.5">
+                <GradeBar label="Contact" value={(player.batting.contact_L + player.batting.contact_R) / 2} />
+                <GradeBar label="Power" value={(player.batting.power_L + player.batting.power_R) / 2} />
+                <GradeBar label="Eye" value={player.batting.eye} />
+                <GradeBar label="Avoid K" value={player.batting.avoid_k} />
+                <GradeBar label="Speed" value={player.batting.speed} />
+                <GradeBar label="Steal" value={player.batting.steal} />
+              </div>
+            </div>
+            {player.fielding[0] && (
+              <div>
+                <p className="font-mono text-[10px] text-cream-dim/40 uppercase mb-1.5">Fielding</p>
+                <div className="space-y-1.5">
+                  <GradeBar label="Range" value={player.fielding[0].range} />
+                  <GradeBar label="Arm" value={player.fielding[0].arm_strength} />
+                  <GradeBar label="Accuracy" value={player.fielding[0].arm_accuracy} />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        <div>
+          <p className="font-mono text-[10px] text-cream-dim/40 uppercase mb-1.5">Mental</p>
+          <div className="space-y-1.5">
+            <GradeBar label="Work Eth" value={player.mental.work_ethic} />
+            <GradeBar label="Composure" value={player.mental.composure} />
+            <GradeBar label="Intel" value={player.mental.intelligence} />
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      {canCallUp && (
+        <div className="mt-4 pt-3 border-t border-navy-lighter/30">
+          <Button
+            className="w-full"
+            onClick={() => onCallUp(player.id)}
+          >
+            ↑ Call Up to MLB
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProspectRow({
+  player,
+  rank,
+  isSelected,
+  onClick,
+}: {
+  player: Player;
+  rank: number;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const ovr = Math.round(evaluatePlayer(player));
+  const pot = prospectPotential(ovr, player.age);
+  const eta = etaLabel(ovr, player.age);
+  const role = posLabel(player);
+  const isPitcher = player.position === 'P';
+
+  // Key attributes to show in the row
+  const keyAttrs = isPitcher
+    ? [
+        { label: 'STF', v: player.pitching.stuff },
+        { label: 'MOV', v: player.pitching.movement },
+        { label: 'CTL', v: player.pitching.control },
+      ]
+    : [
+        { label: 'CON', v: (player.batting.contact_L + player.batting.contact_R) / 2 },
+        { label: 'PWR', v: (player.batting.power_L + player.batting.power_R) / 2 },
+        { label: 'SPD', v: player.batting.speed },
+      ];
+
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        'grid items-center gap-2 px-3 py-2.5 rounded-lg border cursor-pointer transition-all',
+        'grid-cols-[28px_1fr_36px_36px_auto_auto]',
+        isSelected
+          ? 'border-gold/60 bg-gold/10'
+          : 'border-navy-lighter/40 bg-navy-lighter/10 hover:border-navy-lighter/70 hover:bg-navy-lighter/20',
+      )}
+    >
+      {/* Rank */}
+      <span className="font-mono text-xs text-cream-dim/40 text-right">{rank}</span>
+
+      {/* Name + meta */}
+      <div className="min-w-0">
+        <p className="font-body text-sm text-cream truncate">{getPlayerName(player)}</p>
+        <p className="font-mono text-[10px] text-cream-dim/50">
+          {role} · {player.age}y
+          {player.state.isInjured && <span className="ml-1 text-red-400">INJ</span>}
+        </p>
+      </div>
+
+      {/* OVR */}
+      <div className="text-center">
+        <span className={cn('font-mono text-sm font-bold', gradeColor(ovr))}>{ovr}</span>
+      </div>
+
+      {/* Ceiling */}
+      <div className="text-center">
+        <span className={cn('font-mono text-xs', gradeColor(pot))}>{pot}</span>
+      </div>
+
+      {/* Key grades */}
+      <div className="flex gap-1.5">
+        {keyAttrs.map(a => (
+          <div key={a.label} className="text-center hidden sm:block">
+            <p className="font-mono text-[9px] text-cream-dim/40">{a.label}</p>
+            <p className={cn('font-mono text-[10px] font-bold', gradeColor(grade20to80(a.v)))}>
+              {grade20to80(a.v)}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* ETA */}
+      <span className={cn('font-mono text-[10px] whitespace-nowrap hidden sm:block', eta.color)}>
+        {eta.label}
+      </span>
+    </div>
+  );
+}
+
+function MLBPlayerRow({
+  player,
+  onSendDown,
+}: {
+  player: Player;
+  onSendDown: (id: string) => void;
+}) {
+  const ovr = Math.round(evaluatePlayer(player));
+  const role = posLabel(player);
+
+  return (
+    <div className={cn(
+      'flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-colors',
+      player.state.isInjured
+        ? 'border-red-900/40 bg-red-900/10'
+        : 'border-navy-lighter/40 bg-navy-lighter/10 hover:border-navy-lighter/70',
+    )}>
+      <div className="min-w-0 flex-1">
+        <p className="font-body text-sm text-cream truncate">{getPlayerName(player)}</p>
+        <p className="font-mono text-[10px] text-cream-dim/50">
+          {role} · Age {player.age}
+          {player.state.isInjured && <span className="ml-1 text-red-400">INJ</span>}
+        </p>
+      </div>
+      <span className={cn('font-mono text-sm font-bold shrink-0', gradeColor(ovr))}>{ovr}</span>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => onSendDown(player.id)}
+        className="shrink-0 text-xs"
+      >
+        ↓ AAA
+      </Button>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function MinorLeaguePage() {
   const navigate = useNavigate();
   const {
     engine, season, userTeamId,
-    getAAATeam, callUpPlayer, callUpSpecificPlayer, sendDownPlayer, callupLog,
+    getAAATeam, callUpSpecificPlayer, sendDownPlayer, callupLog,
   } = useFranchiseStore();
 
-  const [lastEvent, setLastEvent] = useState<string | null>(null);
-  const [showAllMLB, setShowAllMLB] = useState(false);
+  const [tab, setTab] = useState<'prospects' | 'mlb' | 'log'>('prospects');
+  const [posFilter, setPosFilter] = useState<PosFilter>('All');
+  const [sortKey, setSortKey] = useState<SortKey>('ovr');
+  const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [version, setVersion] = useState(0); // force re-render after callup/senddown
+
+  const showFeedback = useCallback((msg: string, ok = true) => {
+    setFeedback({ msg, ok });
+    setTimeout(() => setFeedback(null), 3000);
+  }, []);
+
+  // All hooks before early return
+  const userTeam = useMemo(() => engine?.getTeam(userTeamId ?? '') ?? null, [engine, userTeamId, version]);
+  const aaaRoster = useMemo(() => getAAATeam(userTeamId ?? ''), [engine, userTeamId, version]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const allTeams = useMemo(() => engine?.getAllTeams() ?? [], [engine, version]);
+
+  const mlbRoster = useMemo(() => [...(userTeam?.roster.players ?? [])]
+    .map(p => ({ p, ovr: evaluatePlayer(p) }))
+    .sort((a, b) => a.ovr - b.ovr), // lowest OVR first = best send-down candidates
+    [userTeam, version]);
+
+  const prospects = useMemo(() => {
+    const raw = aaaRoster?.players ?? [];
+    return raw
+      .filter(p => matchesFilter(p, posFilter))
+      .map(p => ({ p, ovr: Math.round(evaluatePlayer(p)), pot: prospectPotential(Math.round(evaluatePlayer(p)), p.age) }))
+      .sort((a, b) => {
+        if (sortKey === 'ovr') return b.ovr - a.ovr;
+        if (sortKey === 'potential') return b.pot - a.pot;
+        if (sortKey === 'age') return a.p.age - b.p.age;
+        // pos: group pitchers then by position
+        const ap = posLabel(a.p);
+        const bp = posLabel(b.p);
+        return ap.localeCompare(bp);
+      });
+  }, [aaaRoster, posFilter, sortKey, version]);
+
+  const selectedProspect = useMemo(
+    () => prospects.find(x => x.p.id === selectedProspectId)?.p ?? null,
+    [prospects, selectedProspectId],
+  );
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -58,205 +417,351 @@ export function MinorLeaguePage() {
     );
   }
 
-  const userTeam = engine.getTeam(userTeamId);
-  const aaaRoster = getAAATeam(userTeamId);
   const currentDay = season.currentDay;
   const isSeptemberCallups = currentDay >= 150;
+  const maxRoster = isSeptemberCallups ? 40 : 26;
+  const mlbCount = userTeam?.roster.players.length ?? 0;
+  const aaaCount = aaaRoster?.players.length ?? 0;
+  const canCallUp = mlbCount < maxRoster;
 
-  const handleCallUp = () => {
-    const event = callUpPlayer(userTeamId);
-    if (event) {
-      setLastEvent(event.message);
-    } else {
-      setLastEvent('No callup available — roster may be full or AAA is empty.');
-    }
-  };
-
-  const handleCallUpSpecific = (playerId: string) => {
+  const handleCallUp = (playerId: string) => {
     const event = callUpSpecificPlayer(userTeamId, playerId);
     if (event) {
-      setLastEvent(event.message);
+      showFeedback(event.message);
+      setSelectedProspectId(null);
+      setVersion(v => v + 1);
     } else {
-      setLastEvent('Could not call up player — roster may be full.');
+      showFeedback('Could not call up — roster may be full.', false);
     }
   };
 
   const handleSendDown = (playerId: string) => {
     const event = sendDownPlayer(userTeamId, playerId);
     if (event) {
-      setLastEvent(event.message);
+      showFeedback(event.message);
+      setVersion(v => v + 1);
     }
   };
 
-  const mlbRoster = userTeam?.roster.players ?? [];
-  const maxRoster = isSeptemberCallups ? 40 : 26;
+  // Prospect grade summary for the farm header
+  const farmGrade = useMemo(() => {
+    if (!aaaRoster?.players.length) return null;
+    const avg = aaaRoster.players.reduce((s, p) => s + evaluatePlayer(p), 0) / aaaRoster.players.length;
+    return Math.round(avg);
+  }, [aaaRoster, version]);
 
-  // Full MLB roster sorted by OVR (lowest first = best send-down candidates)
-  const mlbSorted = [...mlbRoster]
-    .map(p => ({ p, v: evaluatePlayer(p) }))
-    .sort((a, b) => a.v - b.v);
+  // League-wide farm ranking
+  const leagueRankings = useMemo(() => {
+    return allTeams
+      .map(t => {
+        const aff = engine.minorLeagues.getAffiliate(t.id);
+        if (!aff || !aff.players.length) return { teamId: t.id, name: `${t.city} ${t.name}`, avg: 0, count: 0 };
+        const avg = aff.players.reduce((s, p) => s + evaluatePlayer(p), 0) / aff.players.length;
+        return { teamId: t.id, name: `${t.city} ${t.name}`, avg: Math.round(avg), count: aff.players.length };
+      })
+      .sort((a, b) => b.avg - a.avg);
+  }, [allTeams, version]);
 
-  const sendDownCandidates = showAllMLB ? mlbSorted : mlbSorted.slice(0, 5);
+  const userFarmRank = leagueRankings.findIndex(r => r.teamId === userTeamId) + 1;
 
   return (
-    <div className="min-h-screen p-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen p-4 md:p-6 max-w-7xl mx-auto">
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between mb-5 gap-4">
         <div>
           <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Minor Leagues</h1>
           <p className="font-mono text-cream-dim text-sm mt-1">
-            Day {currentDay} · {userTeam?.city} {userTeam?.name} AAA Affiliate
-            {isSeptemberCallups && (
-              <span className="ml-2 text-xs font-bold text-green-light bg-green-900/20 px-1.5 py-0.5 rounded">
-                SEPT CALLUPS OPEN
-              </span>
-            )}
+            {userTeam?.city} {userTeam?.name} — {season.year} AAA Affiliate
           </p>
+          {isSeptemberCallups && (
+            <span className="inline-block mt-1 font-mono text-xs font-bold text-green-light bg-green-900/20 px-2 py-0.5 rounded">
+              SEPTEMBER CALLUPS OPEN
+            </span>
+          )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/roster')}>MLB Roster</Button>
           <Button size="sm" variant="ghost" onClick={() => navigate('/franchise')}>Dashboard</Button>
         </div>
       </div>
 
-      {/* Status bar */}
-      <div className="flex items-center gap-4 mb-4 px-4 py-2 bg-navy-light border border-navy-lighter rounded-lg">
-        <span className="font-mono text-sm text-cream-dim">
-          MLB Roster: <span className={cn('font-bold', mlbRoster.length >= maxRoster ? 'text-red-400' : 'text-cream')}>{mlbRoster.length}</span>/{maxRoster}
-        </span>
-        <span className="font-mono text-sm text-cream-dim">
-          AAA Roster: <span className="font-bold text-cream">{aaaRoster?.players.length ?? 0}</span>
-        </span>
-        {mlbRoster.length < maxRoster && (
-          <Button size="sm" onClick={handleCallUp}>
-            Call Up Top Prospect
-          </Button>
-        )}
+      {/* ── Farm Status Cards ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="bg-navy-light border border-navy-lighter rounded-lg px-4 py-3">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase mb-1">MLB Roster</p>
+          <p className={cn('font-mono text-xl font-bold', mlbCount >= maxRoster ? 'text-red-400' : 'text-cream')}>
+            {mlbCount}<span className="text-cream-dim/40 text-sm">/{maxRoster}</span>
+          </p>
+          <p className="font-mono text-[10px] text-cream-dim/50 mt-0.5">
+            {maxRoster - mlbCount} open slot{maxRoster - mlbCount !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <div className="bg-navy-light border border-navy-lighter rounded-lg px-4 py-3">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase mb-1">AAA Roster</p>
+          <p className="font-mono text-xl font-bold text-cream">
+            {aaaCount}
+          </p>
+          <p className="font-mono text-[10px] text-cream-dim/50 mt-0.5">prospects</p>
+        </div>
+        <div className="bg-navy-light border border-navy-lighter rounded-lg px-4 py-3">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase mb-1">Farm Grade</p>
+          <p className={cn('font-mono text-xl font-bold', gradeColor(farmGrade ?? 0))}>
+            {farmGrade ?? '—'}
+          </p>
+          <p className="font-mono text-[10px] text-cream-dim/50 mt-0.5">avg prospect OVR</p>
+        </div>
+        <div className="bg-navy-light border border-navy-lighter rounded-lg px-4 py-3">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase mb-1">Farm Rank</p>
+          <p className="font-mono text-xl font-bold text-cream">
+            {userFarmRank > 0 ? `#${userFarmRank}` : '—'}<span className="text-cream-dim/40 text-sm">/{leagueRankings.length}</span>
+          </p>
+          <p className="font-mono text-[10px] text-cream-dim/50 mt-0.5">in the league</p>
+        </div>
       </div>
 
-      {/* Event feedback */}
-      {lastEvent && (
-        <div className="mb-4 px-4 py-2 bg-green-900/20 border border-green-light/30 rounded-md font-mono text-sm text-green-light">
-          {lastEvent}
+      {/* ── Feedback Banner ── */}
+      {feedback && (
+        <div className={cn(
+          'mb-4 px-4 py-2.5 rounded-md border font-mono text-sm transition-all',
+          feedback.ok
+            ? 'bg-green-900/20 border-green-light/30 text-green-light'
+            : 'bg-red-900/20 border-red-400/30 text-red-400',
+        )}>
+          {feedback.msg}
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* AAA Roster */}
-        <Panel title={`AAA Affiliate (${aaaRoster?.players.length ?? 0} players)`}>
-          {!aaaRoster || aaaRoster.players.length === 0 ? (
-            <p className="font-mono text-cream-dim text-sm py-4 text-center">AAA affiliate is empty</p>
-          ) : (
-            <div className="space-y-1.5 max-h-[480px] overflow-y-auto pr-1">
-              {[...aaaRoster.players]
-                .map(p => ({ p, v: evaluatePlayer(p) }))
-                .sort((a, b) => b.v - a.v)
-                .map(({ p }) => (
-                  <PlayerRow
-                    key={p.id}
-                    player={p}
-                    actions={
-                      mlbRoster.length < maxRoster ? (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleCallUpSpecific(p.id)}
-                        >
-                          ↑ MLB
-                        </Button>
-                      ) : undefined
-                    }
-                  />
-                ))}
-            </div>
-          )}
-        </Panel>
+      {/* ── Tabs ── */}
+      <div className="flex gap-1 mb-4 border-b border-navy-lighter/40 pb-0">
+        {(['prospects', 'mlb', 'log'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn(
+              'font-mono text-sm px-4 py-2 rounded-t-md transition-colors -mb-px border-b-2',
+              tab === t
+                ? 'text-gold border-gold bg-gold/5'
+                : 'text-cream-dim/60 border-transparent hover:text-cream-dim',
+            )}
+          >
+            {t === 'prospects' && `Prospects (${aaaCount})`}
+            {t === 'mlb' && `MLB Roster (${mlbCount})`}
+            {t === 'log' && `Log (${callupLog.length})`}
+          </button>
+        ))}
+      </div>
 
-        {/* Send-down panel — full MLB roster */}
-        <Panel title={`MLB Roster — Send Down (${mlbRoster.length}/${maxRoster})`}>
-          <p className="font-mono text-xs text-cream-dim mb-3">
-            Full MLB roster sorted by OVR (lowest first). Click ↓ AAA to option a player.
-          </p>
-          {mlbSorted.length === 0 ? (
-            <p className="font-mono text-cream-dim text-sm py-4 text-center">No MLB players</p>
-          ) : (
-            <>
-              <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-1">
-                {sendDownCandidates.map(({ p }) => (
-                  <PlayerRow
+      {/* ══ TAB: PROSPECTS ══ */}
+      {tab === 'prospects' && (
+        <div className="flex gap-4">
+          {/* Left: list */}
+          <div className="flex-1 min-w-0">
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <div className="flex gap-1 flex-wrap">
+                {POS_FILTERS.map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setPosFilter(f)}
+                    className={cn(
+                      'font-mono text-xs px-2.5 py-1 rounded-full border transition-colors',
+                      posFilter === f
+                        ? 'border-gold text-gold bg-gold/10'
+                        : 'border-navy-lighter/50 text-cream-dim/60 hover:border-navy-lighter hover:text-cream-dim',
+                    )}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+              <div className="ml-auto flex gap-1">
+                {(['ovr', 'potential', 'age', 'pos'] as SortKey[]).map(k => (
+                  <button
+                    key={k}
+                    onClick={() => setSortKey(k)}
+                    className={cn(
+                      'font-mono text-[10px] px-2 py-0.5 rounded border transition-colors',
+                      sortKey === k
+                        ? 'border-cream-dim/40 text-cream bg-navy-lighter/30'
+                        : 'border-transparent text-cream-dim/40 hover:text-cream-dim',
+                    )}
+                  >
+                    {k === 'ovr' ? 'OVR' : k === 'potential' ? 'POT' : k.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Column headers */}
+            <div className="grid grid-cols-[28px_1fr_36px_36px_auto_auto] gap-2 px-3 mb-1.5">
+              <span className="font-mono text-[9px] text-cream-dim/30">#</span>
+              <span className="font-mono text-[9px] text-cream-dim/30">NAME</span>
+              <span className="font-mono text-[9px] text-cream-dim/30 text-center">OVR</span>
+              <span className="font-mono text-[9px] text-cream-dim/30 text-center">POT</span>
+              <span className="font-mono text-[9px] text-cream-dim/30 hidden sm:block">GRADES</span>
+              <span className="font-mono text-[9px] text-cream-dim/30 hidden sm:block">ETA</span>
+            </div>
+
+            {prospects.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="font-mono text-3xl mb-3">⚾</p>
+                <p className="font-mono text-cream-dim/50 text-sm">
+                  {posFilter === 'All' ? 'AAA affiliate is empty.' : `No ${posFilter} prospects on the farm.`}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1.5 max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
+                {prospects.map(({ p }, i) => (
+                  <ProspectRow
                     key={p.id}
                     player={p}
-                    actions={
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleSendDown(p.id)}
-                      >
-                        ↓ AAA
-                      </Button>
-                    }
+                    rank={i + 1}
+                    isSelected={selectedProspectId === p.id}
+                    onClick={() => setSelectedProspectId(prev => prev === p.id ? null : p.id)}
                   />
                 ))}
               </div>
-              {mlbSorted.length > 5 && (
-                <button
-                  onClick={() => setShowAllMLB(v => !v)}
-                  className="mt-2 w-full font-mono text-xs text-cream-dim/50 hover:text-cream-dim transition-colors py-1"
-                >
-                  {showAllMLB ? '▲ Show fewer' : `▼ Show all ${mlbSorted.length} players`}
-                </button>
-              )}
-            </>
-          )}
-        </Panel>
+            )}
+          </div>
 
-        {/* Callup history */}
-        <Panel title={`Callup / Send-Down Log (${callupLog.length})`}>
+          {/* Right: detail panel */}
+          {selectedProspect && (
+            <div className="w-72 shrink-0">
+              <Panel title="Prospect Report" className="sticky top-4">
+                <ProspectDetailPanel
+                  player={selectedProspect}
+                  canCallUp={canCallUp}
+                  onCallUp={handleCallUp}
+                  onClose={() => setSelectedProspectId(null)}
+                />
+              </Panel>
+            </div>
+          )}
+
+          {/* Right: league farm rankings when no prospect selected */}
+          {!selectedProspect && (
+            <div className="w-64 shrink-0 hidden lg:block">
+              <Panel title="League Farm Rankings">
+                <div className="space-y-1.5 max-h-[calc(100vh-300px)] overflow-y-auto pr-1">
+                  {leagueRankings.map((r, i) => (
+                    <div
+                      key={r.teamId}
+                      className={cn(
+                        'flex items-center gap-2 px-2 py-1.5 rounded-md text-xs',
+                        r.teamId === userTeamId
+                          ? 'bg-gold/10 border border-gold/20'
+                          : 'border border-transparent',
+                      )}
+                    >
+                      <span className="font-mono text-cream-dim/40 w-5 shrink-0">#{i + 1}</span>
+                      <span className={cn('font-body flex-1 truncate', r.teamId === userTeamId ? 'text-gold' : 'text-cream-dim')}>
+                        {r.name}
+                      </span>
+                      <span className={cn('font-mono font-bold shrink-0', gradeColor(r.avg))}>{r.avg}</span>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ══ TAB: MLB ROSTER ══ */}
+      {tab === 'mlb' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Panel title={`Send Down Candidates — ${mlbCount}/${maxRoster} roster slots`}>
+            <p className="font-mono text-xs text-cream-dim/50 mb-3">
+              Sorted by OVR ascending. Click ↓ AAA to option a player to the affiliate.
+              {isSeptemberCallups && ' September rules: 40-man roster active.'}
+            </p>
+            {mlbRoster.length === 0 ? (
+              <p className="font-mono text-cream-dim text-sm py-4 text-center">No MLB players.</p>
+            ) : (
+              <div className="space-y-1.5 max-h-[520px] overflow-y-auto pr-1">
+                {mlbRoster.map(({ p }) => (
+                  <MLBPlayerRow key={p.id} player={p} onSendDown={handleSendDown} />
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="AAA Top Callup Candidates">
+            <p className="font-mono text-xs text-cream-dim/50 mb-3">
+              Sorted by OVR descending. {canCallUp ? `${maxRoster - mlbCount} open roster slot(s).` : 'Roster is full — send down first.'}
+            </p>
+            {prospects.length === 0 ? (
+              <p className="font-mono text-cream-dim text-sm py-4 text-center">AAA affiliate is empty.</p>
+            ) : (
+              <div className="space-y-1.5 max-h-[520px] overflow-y-auto pr-1">
+                {[...prospects]
+                  .sort((a, b) => b.ovr - a.ovr)
+                  .slice(0, 15)
+                  .map(({ p, ovr }) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md border border-navy-lighter/40 bg-navy-lighter/10 hover:border-navy-lighter/70 transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-body text-sm text-cream truncate">{getPlayerName(p)}</p>
+                        <p className="font-mono text-[10px] text-cream-dim/50">{posLabel(p)} · {p.age}y</p>
+                      </div>
+                      <span className={cn('font-mono text-sm font-bold shrink-0', gradeColor(ovr))}>{ovr}</span>
+                      {canCallUp ? (
+                        <Button size="sm" variant="secondary" onClick={() => handleCallUp(p.id)} className="shrink-0 text-xs">
+                          ↑ MLB
+                        </Button>
+                      ) : (
+                        <span className="font-mono text-[10px] text-red-400/60 bg-red-900/10 px-2 py-0.5 rounded">Full</span>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </Panel>
+        </div>
+      )}
+
+      {/* ══ TAB: LOG ══ */}
+      {tab === 'log' && (
+        <Panel title={`Transaction Log (${callupLog.length} moves)`}>
           {callupLog.length === 0 ? (
-            <p className="font-mono text-cream-dim text-sm py-4 text-center">No transactions yet</p>
+            <div className="text-center py-16">
+              <p className="font-mono text-3xl mb-3">📋</p>
+              <p className="font-mono text-cream-dim/50 text-sm">No transactions yet this season.</p>
+            </div>
           ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
               {[...callupLog].reverse().map((e, i) => (
-                <div key={i} className={cn(
-                  'flex items-start gap-2 px-3 py-2 rounded-md text-sm border',
-                  e.type === 'callup'
-                    ? 'bg-green-900/10 border-green-light/20 text-green-light'
-                    : 'bg-navy-lighter/20 border-navy-lighter/40 text-cream-dim',
-                )}>
-                  <span className="font-mono text-xs shrink-0 mt-0.5">
-                    {e.type === 'callup' ? '↑ MLB' : '↓ AAA'}
-                  </span>
-                  <span className="font-body">{e.message}</span>
+                <div
+                  key={i}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-lg border',
+                    e.type === 'callup'
+                      ? 'bg-green-900/10 border-green-light/20'
+                      : 'bg-navy-lighter/20 border-navy-lighter/40',
+                  )}
+                >
+                  <div className={cn(
+                    'w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-mono text-xs font-bold',
+                    e.type === 'callup'
+                      ? 'bg-green-900/40 text-green-light'
+                      : 'bg-navy-lighter/40 text-cream-dim',
+                  )}>
+                    {e.type === 'callup' ? '↑' : '↓'}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-body text-sm text-cream">{e.message}</p>
+                    <p className="font-mono text-[10px] text-cream-dim/40">
+                      {e.type === 'callup' ? 'Called up to MLB' : 'Optioned to AAA'}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </Panel>
-
-        {/* League-wide AAA info */}
-        <Panel title="League AAA Overview">
-          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-            {engine.getAllTeams().map(team => {
-              const affiliate = engine.minorLeagues.getAffiliate(team.id);
-              const isUser = team.id === userTeamId;
-              return (
-                <div key={team.id} className={cn(
-                  'flex items-center justify-between px-3 py-1.5 rounded-md',
-                  isUser ? 'bg-gold/10 border border-gold/30' : 'bg-navy-lighter/10 border border-transparent',
-                )}>
-                  <span className={cn('font-body text-sm', isUser ? 'text-gold' : 'text-cream')}>
-                    {team.city} {team.name}
-                    {isUser && <span className="ml-1 text-xs">(You)</span>}
-                  </span>
-                  <span className="font-mono text-xs text-cream-dim">
-                    {affiliate?.players.length ?? 0} AAA players
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </Panel>
-      </div>
+      )}
     </div>
   );
 }

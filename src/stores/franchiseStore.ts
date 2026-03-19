@@ -727,7 +727,7 @@ export const useFranchiseStore = create<FranchiseState>()(
     const team = engine.getTeam(teamId);
     if (!team) return null;
     const event = engine.minorLeagues.sendDown(teamId, team.roster.players, playerId);
-    if (event) set(s => ({ callupLog: [...s.callupLog, event] }));
+    if (event) set(s => ({ callupLog: [...s.callupLog, event], season: { ...engine.getState() } }));
     return event;
   },
 
