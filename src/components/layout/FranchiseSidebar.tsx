@@ -277,7 +277,8 @@ export function FranchiseSidebar() {
       )}
 
       {/* Nav sections */}
-      <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin">
+      <div className="relative flex-1 min-h-0">
+        <nav className="h-full overflow-y-auto py-2 scrollbar-thin">
         {NAV_SECTIONS.map(section => (
           <div key={section.heading} className="mb-1">
             {/* Section heading */}
@@ -316,7 +317,10 @@ export function FranchiseSidebar() {
             })}
           </div>
         ))}
-      </nav>
+        </nav>
+        {/* Scroll hint fade */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#0a0f1a] to-transparent" />
+      </div>
 
       {/* Collapse toggle */}
       <div className="border-t border-navy-lighter/60 p-2">

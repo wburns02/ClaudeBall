@@ -261,7 +261,7 @@ export function SchedulePage() {
 
                   {/* Games */}
                   {games.length === 0 && (
-                    <p className="font-mono text-[10px] text-cream-dim/30 text-center mt-2">—</p>
+                    <p className="font-mono text-[9px] text-cream-dim/35 text-center mt-2 uppercase tracking-wide">Off</p>
                   )}
 
                   {games.slice(0, 3).map(g => {
@@ -272,9 +272,11 @@ export function SchedulePage() {
 
                     if (!isUserG) {
                       if (!g.played) return null;
+                      const awayAbbr = engine.getTeam(g.awayId)?.abbreviation ?? g.awayId.slice(0, 3);
+                      const homeAbbr = engine.getTeam(g.homeId)?.abbreviation ?? g.homeId.slice(0, 3);
                       return (
                         <div key={g.id} className="text-[9px] font-mono text-cream-dim/25 truncate">
-                          {g.awayScore}-{g.homeScore}
+                          {awayAbbr} {g.awayScore}–{g.homeScore} {homeAbbr}
                         </div>
                       );
                     }
@@ -308,7 +310,7 @@ export function SchedulePage() {
                                 'font-mono text-[9px] rounded px-1 cursor-pointer',
                                 day === currentDay + 1
                                   ? 'text-cream-dim bg-navy-lighter/30 hover:bg-navy-lighter/60'
-                                  : 'text-blue bg-blue/10 hover:bg-blue/20',
+                                  : 'text-gold/70 bg-gold/10 hover:bg-gold/20',
                               )}
                               onClick={e => { e.stopPropagation(); handleSimGame(g); }}
                             >

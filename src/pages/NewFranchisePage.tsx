@@ -63,18 +63,21 @@ export function NewFranchisePage({ teamOptions, allTeams, leagueStructure }: New
                           'w-full text-left px-3 py-2 rounded-md transition-all cursor-pointer',
                           'flex items-center gap-2',
                           selectedId === team.id
-                            ? 'bg-gold/20 border border-gold/40'
-                            : 'hover:bg-navy-lighter/50 border border-transparent',
+                            ? 'bg-gold/15 border border-gold/50 border-l-2 border-l-gold'
+                            : 'hover:bg-navy-lighter/40 border border-transparent hover:border-navy-lighter/60',
                         )}
                       >
                         <div
                           className="w-3 h-3 rounded-full shrink-0"
                           style={{ backgroundColor: team.primaryColor }}
                         />
-                        <div>
-                          <p className="text-cream text-sm font-medium">{team.city} {team.name}</p>
+                        <div className="flex-1">
+                          <p className={cn('text-sm font-medium', selectedId === team.id ? 'text-gold' : 'text-cream')}>{team.city} {team.name}</p>
                           <p className="text-cream-dim text-xs font-mono">{team.abbreviation}</p>
                         </div>
+                        {selectedId === team.id && (
+                          <span className="text-gold text-xs font-bold shrink-0">✓</span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -85,11 +88,16 @@ export function NewFranchisePage({ teamOptions, allTeams, leagueStructure }: New
         ))}
       </div>
 
-      <div className="flex justify-center gap-4 mt-8">
-        <Button variant="ghost" onClick={() => navigate('/')}>Back</Button>
-        <Button size="lg" disabled={!selectedId} onClick={handleStart}>
-          Start Season
-        </Button>
+      <div className="flex flex-col items-center gap-2 mt-8">
+        <div className="flex gap-4">
+          <Button variant="ghost" onClick={() => navigate('/')}>Back</Button>
+          <Button size="lg" disabled={!selectedId} onClick={handleStart}>
+            Start Season
+          </Button>
+        </div>
+        {!selectedId && (
+          <p className="font-mono text-xs text-cream-dim/50">Select a team above to begin</p>
+        )}
       </div>
     </div>
   );

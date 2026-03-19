@@ -304,7 +304,7 @@ export function FranchiseDashboard() {
             <h3 className="font-display text-sm text-cream uppercase tracking-wider">Last Sim Summary</h3>
             <button
               onClick={() => setShowEvents(false)}
-              className="font-mono text-xs text-cream-dim/40 hover:text-cream-dim transition-colors"
+              className="font-mono text-xs text-cream-dim/60 hover:text-cream border border-cream-dim/20 hover:border-cream-dim/50 px-2 py-0.5 rounded transition-all cursor-pointer"
             >
               ✕ Dismiss
             </button>

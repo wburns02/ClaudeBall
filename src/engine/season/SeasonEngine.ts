@@ -350,31 +350,44 @@ export class SeasonEngine {
 
   /** Sim forward N days without stopping for user games */
   simDays(count: number): void {
+    // Accumulate all events across the sim window
+    const allTrades: AITradeRecord[] = [];
+    const allCallups: CallupEvent[] = [];
+    const allWaivers: WaiverEvent[] = [];
+    const allInjuries: InjuryEvent[] = [];
+    const allReturns: InjuryEvent[] = [];
+
     for (let i = 0; i < count && this.state.currentDay < this.state.totalDays; i++) {
       this.state.currentDay++;
       if (this.state.phase === 'preseason') this.state.phase = 'regular';
 
-      // Daily hooks during fast-sim
-      this.injuryEngine.checkReturns(this.teams, this.state.currentDay);
-      this.injuryEngine.rollDailyInjuries(this.teams, this.state.currentDay, this.rng);
+      // Daily hooks during fast-sim — accumulate results
+      const returns = this.injuryEngine.checkReturns(this.teams, this.state.currentDay);
+      allReturns.push(...returns);
+
+      const injuries = this.injuryEngine.rollDailyInjuries(this.teams, this.state.currentDay, this.rng);
+      allInjuries.push(...injuries);
 
       if (!this.state.tradeDeadlinePassed) {
         if (this.aiTradeManager.isDeadlinePassed(this.state.currentDay)) {
           this.state.tradeDeadlinePassed = true;
         } else {
-          this.aiTradeManager.runAITrades(
+          const trades = this.aiTradeManager.runAITrades(
             this.teams, this.state.standings, this.state.userTeamId, this.state.currentDay, this.rng
           );
+          allTrades.push(...trades);
         }
       }
 
       if (this.state.currentDay === 150) {
-        this.minorLeagues.runSeptemberCallups(this.teams, this.state.currentDay);
+        const callups = this.minorLeagues.runSeptemberCallups(this.teams, this.state.currentDay);
+        allCallups.push(...callups);
       }
 
-      this.waiverWire.processDailyWaivers(
+      const waiverEvents = this.waiverWire.processDailyWaivers(
         this.teams, this.state.userTeamId, this.state.currentDay, this.rng
       );
+      allWaivers.push(...waiverEvents);
 
       const todaysGames = this.state.schedule.filter(
         g => g.date === this.state.currentDay && !g.played
@@ -384,6 +397,15 @@ export class SeasonEngine {
         this.simGame(game);
       }
     }
+
+    // Store accumulated events so getLastDayEvents() reflects the full sim window
+    this.lastDayEvents = {
+      injuries: allInjuries,
+      returns: allReturns,
+      aiTrades: allTrades,
+      callups: allCallups,
+      waivers: allWaivers,
+    };
 
     // Auto-transition to postseason after simming past end
     if (this.state.currentDay >= this.state.totalDays && this.state.phase === 'regular') {
