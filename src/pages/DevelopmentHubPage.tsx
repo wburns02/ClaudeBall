@@ -67,12 +67,13 @@ function expectedOvrDelta(age: number, workEthic: number): { min: number; max: n
 
 // ── Player Projection Card ──────────────────────────────────────────────────
 function ProjectionCard({
-  player, userTeamId, teamId, training,
+  player, userTeamId, teamId, training, onGoToTraining,
 }: {
   player: Player;
   userTeamId: string;
   teamId: string;
   training?: TrainingAssignment;
+  onGoToTraining?: () => void;
 }) {
   const ovr = Math.round(evaluatePlayer(player));
   const age = player.age;
@@ -116,9 +117,13 @@ function ProjectionCard({
               </span>
             )}
             {isUserTeam && !hasTraining && (
-              <span className="font-mono text-[9px] text-cream-dim/30 uppercase tracking-wide border border-navy-lighter/30 px-1.5 py-0.5 rounded">
-                no training
-              </span>
+              <button
+                className="font-mono text-[9px] text-blue-400/70 hover:text-blue-400 uppercase tracking-wide border border-blue-500/20 hover:border-blue-400/40 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
+                onClick={e => { e.stopPropagation(); onGoToTraining?.(); }}
+                title="Set training in Training Center"
+              >
+                set training →
+              </button>
             )}
           </div>
           <div className="flex items-center gap-3 mt-1 font-mono text-xs">
@@ -460,6 +465,7 @@ export function DevelopmentHubPage() {
                       userTeamId={userTeamId}
                       teamId={teamId}
                       training={teamId === userTeamId ? trainingAssignments[player.id] : undefined}
+                      onGoToTraining={() => navigate('/franchise/training')}
                     />
                   ))}
                 </div>

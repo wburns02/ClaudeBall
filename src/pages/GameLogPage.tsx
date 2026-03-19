@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useStatsStore } from '@/stores/statsStore.ts';
 import { cn } from '@/lib/cn.ts';
 import type { ScheduledGame } from '@/engine/season/index.ts';
 
@@ -14,6 +15,7 @@ export function GameLogPage() {
 
   const [filter, setFilter] = useState<FilterMode>('user');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const playerStats = useStatsStore(s => s.playerStats);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -235,36 +237,66 @@ export function GameLogPage() {
                 </div>
 
                 {/* Expanded box score summary */}
-                {isExpanded && (
-                  <div className="px-4 pb-3 pt-1 border-t border-navy-lighter/30 bg-navy-lighter/5">
-                    <div className="grid grid-cols-2 gap-4 mb-3">
-                      {[
-                        { id: g.awayId, score: g.awayScore ?? 0, label: 'Away' },
-                        { id: g.homeId, score: g.homeScore ?? 0, label: 'Home' },
-                      ].map(({ id, score, label }) => (
-                        <div key={id} className="font-mono">
-                          <p className="text-xs text-cream-dim">{label}</p>
-                          <p className={cn(
-                            'text-sm font-bold',
-                            id === userTeamId ? 'text-gold' : 'text-cream',
-                          )}>
-                            {getTeamName(id)}
-                          </p>
-                          <p className="text-2xl font-bold text-cream">{score}</p>
+                {isExpanded && (() => {
+                  // Build highlights from statsStore game logs
+                  const gameEntries = Object.values(playerStats)
+                    .map(ps => ({ ps, log: ps.gameLog.find(l => l.gameId === g.id) }))
+                    .filter(({ log }) => !!log);
+                  const hrHitters = gameEntries
+                    .filter(({ log }) => (log?.hr ?? 0) > 0)
+                    .sort((a, b) => (b.log?.hr ?? 0) - (a.log?.hr ?? 0))
+                    .slice(0, 3);
+                  const rbiLeader = gameEntries
+                    .filter(({ log }) => (log?.rbi ?? 0) > 0)
+                    .sort((a, b) => (b.log?.rbi ?? 0) - (a.log?.rbi ?? 0))[0];
+                  const winPitcher = gameEntries
+                    .filter(({ log }) => log?.ip && parseFloat(log.ip) > 0 && log.decision === 'W')
+                    .sort((a, b) => parseFloat(b.log?.ip ?? '0') - parseFloat(a.log?.ip ?? '0'))[0];
+
+                  return (
+                    <div className="px-4 pb-3 pt-1 border-t border-navy-lighter/30 bg-navy-lighter/5">
+                      <div className="grid grid-cols-2 gap-4 mb-3">
+                        {[
+                          { id: g.awayId, score: g.awayScore ?? 0, label: 'Away' },
+                          { id: g.homeId, score: g.homeScore ?? 0, label: 'Home' },
+                        ].map(({ id, score, label }) => (
+                          <div key={id} className="font-mono">
+                            <p className="text-xs text-cream-dim">{label}</p>
+                            <p className={cn('text-sm font-bold', id === userTeamId ? 'text-gold' : 'text-cream')}>
+                              {getTeamName(id)}
+                            </p>
+                            <p className="text-2xl font-bold text-cream">{score}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Highlights */}
+                      {(hrHitters.length > 0 || winPitcher || rbiLeader) && (
+                        <div className="mb-3 space-y-0.5">
+                          {hrHitters.map(({ ps, log }) => (
+                            <p key={ps.playerId} className="font-mono text-xs text-gold/80">
+                              ⚡ {ps.playerName.split(' ').pop()} — {log!.hr}HR{log!.rbi ? `, ${log!.rbi}RBI` : ''}
+                            </p>
+                          ))}
+                          {rbiLeader && !hrHitters.some(h => h.ps.playerId === rbiLeader.ps.playerId) && rbiLeader.log!.rbi >= 2 && (
+                            <p className="font-mono text-xs text-cream-dim/70">
+                              ⚡ {rbiLeader.ps.playerName.split(' ').pop()} — {rbiLeader.log!.rbi}RBI
+                            </p>
+                          )}
+                          {winPitcher && (
+                            <p className="font-mono text-xs text-blue-400/80">
+                              ⚾ W: {winPitcher.ps.playerName.split(' ').pop()} {winPitcher.log!.ip}IP {winPitcher.log!.er}ER {winPitcher.log!.kPitching}K
+                            </p>
+                          )}
                         </div>
-                      ))}
+                      )}
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/box-score/${g.id}`)}>
+                          Full Box Score
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => navigate(`/franchise/box-score/${g.id}`)}
-                      >
-                        Full Box Score
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             );
           })}

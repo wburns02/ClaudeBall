@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -241,6 +241,7 @@ export function NewsPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, lastDayEvents, injuryLog, tradeLog, callupLog } = useFranchiseStore();
   const { playerStats } = useStatsStore();
+  const [categoryFilter, setCategoryFilter] = useState<NewsCategory | null>(null);
 
   const currentDay = season?.currentDay ?? 0;
   const recentDays = 7; // news window
@@ -462,9 +463,10 @@ export function NewsPage() {
   const userTeam = engine.getTeam(userTeamId);
   const userRecord = season.standings.getRecord(userTeamId);
 
-  // Group news by category
-  const userItems = newsItems.filter(i => i.isUserTeam);
-  const leagueItems = newsItems.filter(i => !i.isUserTeam);
+  // Group news by category (apply active filter)
+  const filteredItems = categoryFilter ? newsItems.filter(i => i.category === categoryFilter) : newsItems;
+  const userItems = filteredItems.filter(i => i.isUserTeam);
+  const leagueItems = filteredItems.filter(i => !i.isUserTeam);
 
   // Count by category for the filter
   const categoryCounts = newsItems.reduce((acc, i) => {
@@ -497,17 +499,32 @@ export function NewsPage() {
           )}
         </div>
 
-        {/* Category count pills */}
+        {/* Category filter pills */}
         {Object.entries(categoryCounts).length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
+            {categoryFilter && (
+              <button
+                onClick={() => setCategoryFilter(null)}
+                className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border border-cream-dim/30 text-cream-dim hover:text-cream transition-colors cursor-pointer"
+              >
+                ✕ All
+              </button>
+            )}
             {(Object.entries(categoryCounts) as [NewsCategory, number][]).map(([cat, count]) => (
-              <span key={cat} className={cn(
-                'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border',
-                CATEGORY_BG[cat],
-                CATEGORY_COLORS[cat],
-              )}>
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(categoryFilter === cat ? null : cat)}
+                className={cn(
+                  'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border transition-all cursor-pointer',
+                  categoryFilter === cat
+                    ? cn(CATEGORY_BG[cat], CATEGORY_COLORS[cat], 'ring-1 ring-current/40')
+                    : categoryFilter
+                      ? 'border-navy-lighter/30 text-cream-dim/50 hover:text-cream-dim'
+                      : cn(CATEGORY_BG[cat], CATEGORY_COLORS[cat]),
+                )}
+              >
                 {CATEGORY_LABELS[cat]} ({count})
-              </span>
+              </button>
             ))}
           </div>
         )}

@@ -73,7 +73,7 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
       const leagueStats = Object.values(playerStats).filter(ps => leagueTeamIds.has(ps.teamId));
 
       // MVP: non-pitchers with most PA, highest composite batting/value
-      const batters = leagueStats.filter(ps => ps.position !== 'P' && ps.batting.pa >= 50);
+      const batters = leagueStats.filter(ps => ps.position !== 'P' && ps.batting.pa >= 10);
       if (batters.length > 0) {
         const mvp = batters.reduce((best, ps) => {
           const score = (ps.batting.h / Math.max(1, ps.batting.ab)) * 100 +
@@ -95,7 +95,7 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
       }
 
       // Cy Young: pitchers with most IP, lowest ERA
-      const pitchers = leagueStats.filter(ps => ps.position === 'P' && ps.pitching.ip >= 15);
+      const pitchers = leagueStats.filter(ps => ps.position === 'P' && ps.pitching.ip >= 3);
       if (pitchers.length > 0) {
         const cy = pitchers.reduce((best, ps) => {
           const era = ps.pitching.ip === 0 ? 99 : (ps.pitching.er / (ps.pitching.ip / 3)) * 9;
@@ -120,7 +120,7 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
         const player = allTeams
           .flatMap(t => t.roster.players)
           .find(p => p.id === ps.playerId);
-        return player && player.age <= 26 && ps.batting.pa >= 20;
+        return player && player.age <= 26 && ps.batting.pa >= 5;
       });
       if (rookies.length > 0) {
         const roy = rookies.reduce((best, ps) => {

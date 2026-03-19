@@ -202,7 +202,7 @@ export function SaveLoadPage() {
   const navigate = useNavigate();
   const saveStore = useSaveStore();
   const franchise = useFranchiseStore();
-  const [tab, setTab] = useState<Tab>('load');
+  const [tab, setTab] = useState<Tab>(franchise.isInitialized ? 'save' : 'load');
   const [pendingSaveSlotId, setPendingSaveSlotId] = useState<string | undefined | null>(null); // null = closed, undefined = new slot
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
