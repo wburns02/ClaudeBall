@@ -142,7 +142,11 @@ function FACard({
 }
 
 export function FreeAgencyPage() {
-  const { freeAgentPool, initFreeAgency, signFreeAgent, season } = useFranchiseStore();
+  const { freeAgentPool, initFreeAgency, signFreeAgent, season, teamBudgets, getTeamPayroll, userTeamId } = useFranchiseStore();
+  const teamBudget = (userTeamId && teamBudgets[userTeamId]) ? teamBudgets[userTeamId] : null;
+  const currentPayrollRaw = userTeamId ? getTeamPayroll(userTeamId) : 0;
+  const currentPayroll = isNaN(currentPayrollRaw) ? 0 : (currentPayrollRaw || 0);
+  const budgetRoom = teamBudget !== null ? teamBudget - currentPayroll : null;
 
   const [posFilter, setPosFilter] = useState<FilterPos>('ALL');
   const [sortMode, setSortMode] = useState<SortMode>('ovr');
@@ -180,11 +184,27 @@ export function FreeAgencyPage() {
   return (
     <div className="min-h-screen p-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Free Agency</h1>
-        <p className="font-mono text-cream-dim text-sm mt-1">
-          {agents.length} players available
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Free Agency</h1>
+          <p className="font-mono text-cream-dim text-sm mt-1">
+            {agents.length} players available
+          </p>
+        </div>
+        {budgetRoom !== null && (
+          <div className="shrink-0 text-right">
+            <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-wider">Budget Room</p>
+            <p className={cn(
+              'font-display text-xl font-bold',
+              budgetRoom < 0 ? 'text-red-400' : budgetRoom < 10_000 ? 'text-gold' : 'text-green-light',
+            )}>
+              {budgetRoom >= 0 ? `$${(budgetRoom / 1000).toFixed(1)}M` : `-$${(-budgetRoom / 1000).toFixed(1)}M`}
+            </p>
+            {budgetRoom < 0 && (
+              <p className="font-mono text-[10px] text-red-400/70">Over budget — no signings</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* In-season notice */}

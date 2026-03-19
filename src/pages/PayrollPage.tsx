@@ -260,12 +260,16 @@ export function PayrollPage() {
   const {
     season, engine, userTeamId,
     getAllTeamContracts, getTeamPayroll, signExtension,
+    teamBudgets, requestBudgetIncrease,
   } = useFranchiseStore();
 
   const [extendPlayer, setExtendPlayer] = useState<{ player: Player; contract: PlayerContract } | null>(null);
   const [sortMode, setSortMode] = useState<'salary' | 'ovr' | 'years' | 'name'>('salary');
   const [viewMode, setViewMode] = useState<'roster' | 'league'>('roster');
   const [signResult, setSignResult] = useState<string | null>(null);
+  const [budgetModal, setBudgetModal] = useState(false);
+  const [budgetRequestAmt, setBudgetRequestAmt] = useState(10_000);
+  const [budgetResult, setBudgetResult] = useState<{ approved: boolean; reason: string } | null>(null);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -277,7 +281,12 @@ export function PayrollPage() {
 
   const userTeam = engine.getTeam(userTeamId);
   const userContracts = getAllTeamContracts(userTeamId);
-  const totalPayroll = getTeamPayroll(userTeamId);
+  const totalPayrollRaw = getTeamPayroll(userTeamId);
+  const totalPayroll = isNaN(totalPayrollRaw) ? 0 : (totalPayrollRaw || 0);
+  const teamBudget = teamBudgets[userTeamId] ?? 150_000;
+  const budgetRoom = teamBudget - totalPayroll;
+  const budgetPct = Math.min(100, (totalPayroll / teamBudget) * 100);
+  const overBudget = totalPayroll > teamBudget;
 
   // Sorted contracts
   const sortedContracts = useMemo(() => {
@@ -339,6 +348,12 @@ export function PayrollPage() {
     setExtendPlayer(null);
   };
 
+  const handleBudgetRequest = () => {
+    const result = requestBudgetIncrease(budgetRequestAmt);
+    setBudgetResult({ approved: result.approved, reason: result.reason });
+    setBudgetModal(false);
+  };
+
   const SortBtn = ({ mode, label }: { mode: typeof sortMode; label: string }) => (
     <button
       onClick={() => setSortMode(mode)}
@@ -360,6 +375,122 @@ export function PayrollPage() {
           {userTeam?.city} {userTeam?.name} · {season.year} Season
         </p>
       </div>
+
+      {/* Owner Budget Panel */}
+      <Panel className="mb-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="font-display text-lg text-cream uppercase tracking-wide">Owner Budget</h2>
+            <p className="font-mono text-xs text-cream-dim/50 mt-0.5">
+              Ownership-approved annual spending limit
+            </p>
+          </div>
+          <button
+            onClick={() => { setBudgetResult(null); setBudgetModal(true); }}
+            className="shrink-0 px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer border-gold/30 bg-gold/5 text-gold hover:bg-gold/15 hover:border-gold/50"
+          >
+            Request Increase
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-wider mb-1">Annual Budget</p>
+            <p className="font-display text-2xl text-gold font-bold">{fmt(teamBudget)}</p>
+          </div>
+          <div>
+            <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-wider mb-1">Current Payroll</p>
+            <p className={cn('font-display text-2xl font-bold', overBudget ? 'text-red-400' : 'text-cream')}>{fmt(totalPayroll)}</p>
+          </div>
+          <div>
+            <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-wider mb-1">
+              {budgetRoom >= 0 ? 'Budget Room' : 'Over Budget'}
+            </p>
+            <p className={cn('font-display text-2xl font-bold', budgetRoom >= 0 ? 'text-green-light' : 'text-red-400')}>
+              {budgetRoom >= 0 ? fmt(budgetRoom) : `+${fmt(-budgetRoom)}`}
+            </p>
+          </div>
+        </div>
+
+        {/* Budget bar */}
+        <div>
+          <div className="w-full h-3 bg-navy-lighter rounded-full overflow-hidden relative">
+            <div
+              className={cn(
+                'h-full rounded-full transition-all duration-500',
+                overBudget ? 'bg-red-500' : budgetPct > 85 ? 'bg-gold' : 'bg-green-light/70',
+              )}
+              style={{ width: `${budgetPct}%` }}
+            />
+            {/* Budget line */}
+            <div className="absolute inset-y-0 right-0 w-0.5 bg-white/20" />
+          </div>
+          <div className="flex justify-between font-mono text-[10px] text-cream-dim/40 mt-1">
+            <span>$0</span>
+            <span className={cn('font-bold', overBudget ? 'text-red-400' : 'text-cream-dim/60')}>
+              {budgetPct.toFixed(0)}% used
+            </span>
+            <span>{fmt(teamBudget)}</span>
+          </div>
+        </div>
+
+        {overBudget && (
+          <div className="mt-3 px-3 py-2 rounded-lg bg-red-900/20 border border-red-500/30">
+            <p className="font-mono text-xs text-red-400">
+              ⚠ You are ${((totalPayroll - teamBudget) / 1000).toFixed(1)}M over your owner-approved budget. You cannot sign free agents until you are back under budget.
+            </p>
+          </div>
+        )}
+      </Panel>
+
+      {/* Budget request modal */}
+      {budgetModal && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4" onClick={() => setBudgetModal(false)}>
+          <div className="bg-navy-light border border-navy-lighter rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="font-display text-xl text-gold mb-1">Request Budget Increase</h2>
+            <p className="font-mono text-xs text-cream-dim/50 mb-4">
+              Your current budget: {fmt(teamBudget)}. Ownership approves based on team performance.
+            </p>
+            <p className="font-mono text-xs text-cream-dim/50 uppercase tracking-wider mb-2">How much to request?</p>
+            <div className="flex gap-2 mb-4 flex-wrap">
+              {[5_000, 10_000, 15_000, 20_000, 30_000].map(amt => (
+                <button
+                  key={amt}
+                  onClick={() => setBudgetRequestAmt(amt)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer',
+                    budgetRequestAmt === amt
+                      ? 'bg-gold/15 border-gold/50 text-gold'
+                      : 'border-navy-lighter/50 text-cream-dim hover:border-navy-lighter',
+                  )}
+                >
+                  +{fmt(amt)}
+                </button>
+              ))}
+            </div>
+            <p className="font-mono text-xs text-cream-dim/40 mb-4">
+              New budget if approved: <span className="text-cream">{fmt(teamBudget + budgetRequestAmt)}</span>
+            </p>
+            <div className="flex gap-2">
+              <Button variant="ghost" className="flex-1" onClick={() => setBudgetModal(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleBudgetRequest}>Submit Request</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Budget result notification */}
+      {budgetResult && (
+        <div className={cn(
+          'mb-4 px-4 py-3 rounded-lg border font-mono text-sm flex items-center justify-between',
+          budgetResult.approved
+            ? 'bg-green-900/20 border-green-light/30 text-green-light'
+            : 'bg-red-900/10 border-red-500/30 text-red-400',
+        )}>
+          <span>{budgetResult.reason}</span>
+          <button onClick={() => setBudgetResult(null)} className="text-cream-dim/40 hover:text-cream-dim ml-3">✕</button>
+        </div>
+      )}
 
       {/* Sign result toast */}
       {signResult && (

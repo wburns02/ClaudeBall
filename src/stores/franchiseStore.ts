@@ -70,6 +70,11 @@ interface FranchiseState {
   setTrainingAssignment: (playerId: string, assignment: TrainingAssignment) => void;
   clearTrainingAssignments: () => void;
 
+  // Team budgets — teamId → annual budget in thousands (e.g. 150000 = $150M)
+  teamBudgets: Record<string, number>;
+  setTeamBudget: (teamId: string, budget: number) => void;
+  requestBudgetIncrease: (increaseAmount: number) => { approved: boolean; newBudget: number; reason: string };
+
   // Internal: used only during persist/rehydrate cycle
   _seasonSnapshot?: unknown;
 
@@ -155,6 +160,31 @@ export const useFranchiseStore = create<FranchiseState>()(
   setTrainingAssignment: (playerId, assignment) =>
     set(s => ({ trainingAssignments: { ...s.trainingAssignments, [playerId]: assignment } })),
   clearTrainingAssignments: () => set({ trainingAssignments: {} }),
+  teamBudgets: {},
+  setTeamBudget: (teamId, budget) =>
+    set(s => ({ teamBudgets: { ...s.teamBudgets, [teamId]: budget } })),
+  requestBudgetIncrease: (increaseAmount) => {
+    const { teamBudgets, userTeamId, season } = get();
+    if (!userTeamId) return { approved: false, newBudget: 0, reason: 'No franchise loaded' };
+    const currentBudget = teamBudgets[userTeamId] ?? 150_000;
+    const record = season?.standings.getRecord(userTeamId);
+    const games = (record?.wins ?? 0) + (record?.losses ?? 0);
+    const winPct = games > 0 ? (record?.wins ?? 0) / games : 0.5;
+    // Better record = better odds; 35% base + up to 50% from performance
+    const approvalChance = 0.35 + winPct * 0.50;
+    const approved = Math.random() < approvalChance;
+    if (approved) {
+      const newBudget = currentBudget + increaseAmount;
+      set(s => ({ teamBudgets: { ...s.teamBudgets, [userTeamId]: newBudget } }));
+      return { approved: true, newBudget, reason: 'Ownership approved the budget increase!' };
+    }
+    const msg = winPct < 0.4
+      ? 'Ownership denied — improve the team\'s record before requesting more funds.'
+      : winPct < 0.5
+      ? 'Ownership denied — a stronger winning record would help your case.'
+      : 'Ownership denied — they\'re not ready to commit more resources right now.';
+    return { approved: false, newBudget: currentBudget, reason: msg };
+  },
 
   startFranchise: (teams, leagueStructure, userTeamId) => {
     // Deep-clone teams and randomize player ages + mental ratings for realism
@@ -188,6 +218,13 @@ export const useFranchiseStore = create<FranchiseState>()(
       },
     }));
     const engine = new SeasonEngine(initializedTeams, leagueStructure, userTeamId);
+    // Initialize team budgets: payroll + 15% headroom, floor $100M, cap $220M
+    const teamBudgets: Record<string, number> = {};
+    for (const team of initializedTeams) {
+      const payroll = engine.contractEngine.getTeamPayroll(team.id);
+      const budget = Math.min(220_000, Math.max(100_000, Math.round(payroll * 1.15 / 1000) * 1000));
+      teamBudgets[team.id] = budget;
+    }
     set({
       engine,
       season: engine.getState(),
@@ -207,6 +244,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       waiverLog: [],
       callupLog: [],
       lastDevelopmentChanges: null,
+      teamBudgets,
     });
   },
 
@@ -554,13 +592,22 @@ export const useFranchiseStore = create<FranchiseState>()(
   },
 
   signFreeAgent: (playerId, years, salaryPerYear) => {
-    const { engine, freeAgentPool, teams, userTeamId } = get();
+    const { engine, freeAgentPool, teams, userTeamId, teamBudgets } = get();
     if (!engine || !freeAgentPool || !userTeamId) return { success: false, reason: 'Not initialized' };
     const fa = freeAgentPool.get(playerId);
     if (!fa) return { success: false, reason: 'Player not in free agent pool' };
     // Salary check: must be within 20% of asking
     if (salaryPerYear < fa.askingSalary * 0.8) {
       return { success: false, reason: `${fa.player.firstName} ${fa.player.lastName} wants at least $${(fa.askingSalary * 0.8 / 1000).toFixed(1)}M/yr` };
+    }
+    // Budget check: don't exceed team's ownership-approved budget
+    const teamBudget = teamBudgets[userTeamId];
+    if (teamBudget !== undefined) {
+      const currentPayroll = engine.contractEngine.getTeamPayroll(userTeamId);
+      if (currentPayroll + salaryPerYear > teamBudget) {
+        const over = currentPayroll + salaryPerYear - teamBudget;
+        return { success: false, reason: `This signing would exceed your $${(teamBudget / 1000).toFixed(0)}M budget by $${(over / 1000).toFixed(1)}M. Request a budget increase from ownership.` };
+      }
     }
     // Add player to engine's live team
     const engineTeam = engine.getTeam(userTeamId);
@@ -885,6 +932,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         tradeProposals: state.tradeProposals,
         trainingAssignments: state.trainingAssignments,
         lastDevelopmentChanges: state.lastDevelopmentChanges,
+        teamBudgets: state.teamBudgets,
         // Serialize the season without the StandingsTracker class instance
         _seasonSnapshot: state.season
           ? {
