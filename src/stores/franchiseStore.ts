@@ -10,8 +10,8 @@ import type { SeriesMatchup } from '@/engine/season/index.ts';
 import { generateDraftClass } from '@/engine/gm/DraftEngine.ts';
 import { makePick } from '@/engine/gm/DraftEngine.ts';
 import type { DraftClass } from '@/engine/gm/DraftEngine.ts';
-import { generateFreeAgents } from '@/engine/gm/FreeAgency.ts';
-import type { FreeAgentPool } from '@/engine/gm/FreeAgency.ts';
+import { generateFreeAgents, FreeAgentPool } from '@/engine/gm/FreeAgency.ts';
+import { estimateMarketSalary } from '@/engine/gm/ContractEngine.ts';
 import type { InjuryRecord } from '@/engine/season/InjuryEngine.ts';
 import type { AITradeRecord } from '@/engine/season/AITradeManager.ts';
 import type { MinorLeagueRoster, CallupEvent } from '@/engine/season/MinorLeagues.ts';
@@ -667,14 +667,17 @@ export const useFranchiseStore = create<FranchiseState>()(
     engineTeam.roster.players.push(signedPlayer);
     // Sign contract via engine
     engine.contractEngine.signContract(signedPlayer, userTeamId, { years, salaryPerYear });
-    // Remove from pool and update React state
+    // Remove from pool and update React state — create a new FreeAgentPool instance so
+    // the reference changes and useMemo dependencies in React components re-run correctly.
     freeAgentPool.remove(playerId);
+    const newPool = new FreeAgentPool();
+    for (const agent of freeAgentPool.getAll()) newPool.add(agent);
     const newTeams = teams.map(t =>
       t.id === userTeamId
         ? { ...t, roster: { ...t.roster, players: [...t.roster.players, signedPlayer] } }
         : t
     );
-    set({ freeAgentPool, teams: newTeams });
+    set({ freeAgentPool: newPool, teams: newTeams });
     return { success: true };
   },
 
@@ -876,8 +879,11 @@ export const useFranchiseStore = create<FranchiseState>()(
 
   releasePlayer: (playerId, teamId) => {
     const { teams } = get();
+    // Capture the player before removing them so we can add them to the FA pool
+    let releasedPlayer: import('@/engine/types/player.ts').Player | null = null;
     const newTeams = teams.map(team => {
       if (team.id !== teamId) return team;
+      releasedPlayer = team.roster.players.find(p => p.id === playerId) ?? null;
       const newPlayers = team.roster.players.filter(p => p.id !== playerId);
       const newLineup = team.lineup.filter(s => s.playerId !== playerId);
       const newBullpen = team.bullpen.filter(id => id !== playerId);
@@ -887,7 +893,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       return { ...team, roster: { ...team.roster, players: newPlayers }, lineup: newLineup, bullpen: newBullpen, pitcherId: newPitcherId };
     });
     set({ teams: newTeams });
-    const { engine } = get();
+    const { engine, freeAgentPool } = get();
     if (engine) {
       const engineTeam = engine.getTeam(teamId);
       if (engineTeam) {
@@ -897,16 +903,36 @@ export const useFranchiseStore = create<FranchiseState>()(
         engineTeam.bullpen = updated.bullpen;
         engineTeam.pitcherId = updated.pitcherId;
       }
+      engine.contractEngine.releasePlayer(playerId);
+    }
+    // Add the released player to the free agent pool if it's initialized.
+    // Create a new FreeAgentPool instance so the reference changes and useMemo
+    // dependencies in React components (e.g. FreeAgencyPage) re-run correctly.
+    if (releasedPlayer && freeAgentPool) {
+      const p = releasedPlayer as import('@/engine/types/player.ts').Player;
+      const askingSalary = estimateMarketSalary(p) * 0.85; // slight discount for released player
+      const newPool = new FreeAgentPool();
+      for (const agent of freeAgentPool.getAll()) newPool.add(agent);
+      newPool.add({ player: p, askingSalary, yearsDesired: Math.min(3, Math.max(1, Math.round((100 - p.age) / 15))) });
+      set({ freeAgentPool: newPool });
     }
   },
 
   movePlayer: (playerId, fromTeamId, toTeamId) => {
     const { teams } = get();
+    // Pass 1: find the player — must happen before the map so order in the array doesn't matter
     let playerToMove: import('@/engine/types/player.ts').Player | null = null;
+    for (const team of teams) {
+      if (team.id === fromTeamId) {
+        playerToMove = team.roster.players.find(p => p.id === playerId) ?? null;
+        break;
+      }
+    }
+    if (!playerToMove) return; // player not found on source team
+    const movedPlayer = playerToMove;
+    // Pass 2: build updated teams array with player removed from source and added to dest
     const newTeams = teams.map(team => {
       if (team.id === fromTeamId) {
-        const player = team.roster.players.find(p => p.id === playerId);
-        if (player) playerToMove = player;
         const newPlayers = team.roster.players.filter(p => p.id !== playerId);
         const newLineup = team.lineup.filter(s => s.playerId !== playerId);
         const newBullpen = team.bullpen.filter(id => id !== playerId);
@@ -915,13 +941,11 @@ export const useFranchiseStore = create<FranchiseState>()(
           : team.pitcherId;
         return { ...team, roster: { ...team.roster, players: newPlayers }, lineup: newLineup, bullpen: newBullpen, pitcherId: newPitcherId };
       }
-      if (team.id === toTeamId && playerToMove) {
-        return { ...team, roster: { ...team.roster, players: [...team.roster.players, playerToMove!] } };
+      if (team.id === toTeamId) {
+        return { ...team, roster: { ...team.roster, players: [...team.roster.players, movedPlayer] } };
       }
       return team;
     });
-    // If playerToMove wasn't found yet (order issue), do a second pass
-    if (!playerToMove) return;
     set({ teams: newTeams });
     const { engine } = get();
     if (engine) {
@@ -935,10 +959,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         }
       }
       // Transfer the player's contract to the new team so payroll stays accurate
-      const movedPlayer = playerToMove as import('@/engine/types/player.ts').Player | null;
-      if (movedPlayer) {
-        engine.contractEngine.transferContract(movedPlayer.id, toTeamId);
-      }
+      engine.contractEngine.transferContract(movedPlayer.id, toTeamId);
     }
   },
 

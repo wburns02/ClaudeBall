@@ -105,9 +105,19 @@ export class PitchEngine {
     return rng.weightedPick(rep, weights);
   }
 
+  /**
+   * Morale modifier: hot pitchers (morale > 60) gain up to +2 mph velocity and
+   * tighter control; cold pitchers (morale < 60) lose velocity and command.
+   * Neutral morale (60) = no effect. Range: ±1.6 mph / ±3 control points.
+   */
+  static getMoraleMod(pitcher: Player): number {
+    return (pitcher.state.morale - 60) / 100; // -0.60 to +0.40
+  }
+
   private static calculateVelocity(pitcher: Player, pitchType: PitchType, rng: RandomProvider): number {
     const base = pitcher.pitching.velocity;
     const fatiguePenalty = (pitcher.state.fatigue / 100) * 4;
+    const moraleMod = this.getMoraleMod(pitcher) * 2; // ±2 mph at extremes
     const variance = rng.nextGaussian(0, 1.2);
 
     const typeAdjust: Record<PitchType, number> = {
@@ -115,15 +125,16 @@ export class PitchEngine {
       curveball: -12, changeup: -10, splitter: -6, knuckleball: -18,
     };
 
-    return Math.round(clamp(base + (typeAdjust[pitchType] || 0) - fatiguePenalty + variance, 60, 105));
+    return Math.round(clamp(base + (typeAdjust[pitchType] || 0) - fatiguePenalty + moraleMod + variance, 60, 105));
   }
 
   private static determineLocation(pitcher: Player, balls: number, strikes: number, rng: RandomProvider): boolean {
     const control = ratingToProb(pitcher.pitching.control);
     const fatiguePenalty = (pitcher.state.fatigue / 100) * 0.10;
+    const moraleMod = this.getMoraleMod(pitcher) * 0.04; // ±2.4% zone rate at extremes
 
     // Tuned for ~8% BB rate (slightly above MLB zone rate)
-    let zoneRate = 0.46 + control * 0.12 - fatiguePenalty;
+    let zoneRate = 0.46 + control * 0.12 - fatiguePenalty + moraleMod;
 
     // Count adjustments
     if (balls >= 3 && strikes < 2) zoneRate += 0.14;

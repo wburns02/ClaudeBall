@@ -92,9 +92,11 @@ export function SchedulePage() {
     navigate(`/game/live?gameId=${(userGame ?? game).id}`);
   };
 
-  const handleSimGame = (_game: ScheduledGame) => {
-    // Advance the day (sims ALL games for that day, keeping currentDay in sync)
-    simDays(1);
+  const handleSimGame = (game: ScheduledGame) => {
+    // Sim all days up to and including the selected game's day
+    const daysToSim = game.date - currentDay;
+    if (daysToSim > 0) simDays(daysToSim);
+    else simDays(1); // fallback: sim at least one day
   };
 
   const maxWeekOffset = Math.ceil(totalDays / DAYS_PER_WEEK) - WEEKS_PER_VIEW;
@@ -278,19 +280,26 @@ export function SchedulePage() {
                             {g.awayScore}-{g.homeScore}
                           </div>
                         )}
-                        {!g.played && isFuture && day === currentDay + 1 && (
+                        {!g.played && isFuture && (
                           <div className="flex gap-1 mt-0.5">
+                            {day === currentDay + 1 && (
+                              <button
+                                className="font-mono text-[9px] text-gold bg-gold/10 rounded px-1 hover:bg-gold/20 cursor-pointer"
+                                onClick={e => { e.stopPropagation(); handlePlayGame(g); }}
+                              >
+                                Play
+                              </button>
+                            )}
                             <button
-                              className="font-mono text-[9px] text-gold bg-gold/10 rounded px-1 hover:bg-gold/20 cursor-pointer"
-                              onClick={e => { e.stopPropagation(); handlePlayGame(g); }}
-                            >
-                              Play
-                            </button>
-                            <button
-                              className="font-mono text-[9px] text-cream-dim bg-navy-lighter/30 rounded px-1 hover:bg-navy-lighter/60 cursor-pointer"
+                              className={cn(
+                                'font-mono text-[9px] rounded px-1 cursor-pointer',
+                                day === currentDay + 1
+                                  ? 'text-cream-dim bg-navy-lighter/30 hover:bg-navy-lighter/60'
+                                  : 'text-blue bg-blue/10 hover:bg-blue/20',
+                              )}
                               onClick={e => { e.stopPropagation(); handleSimGame(g); }}
                             >
-                              Sim
+                              {day === currentDay + 1 ? 'Sim' : `Sim→${day}`}
                             </button>
                           </div>
                         )}

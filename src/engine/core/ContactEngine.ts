@@ -31,7 +31,9 @@ export class ContactEngine {
     const platoonPenalty = sameSide ? 5 : 0; // subtract from effective power
 
     const powerVsHand = pitcher.throws === 'L' ? batter.batting.power_L : batter.batting.power_R;
-    const effectivePower = Math.max(1, powerVsHand - platoonPenalty);
+    // Morale modifier: hot batters (morale > 60) gain up to +4 effective power/contact
+    const moraleMod = Math.round((batter.state.morale - 60) / 100 * 8); // ±4.8 at extremes
+    const effectivePower = Math.max(1, powerVsHand - platoonPenalty + moraleMod);
 
     // Exit velocity: MLB average ~87 mph, leaders ~93-95
     const basePower = ratingToRange(effectivePower, 74, 100);

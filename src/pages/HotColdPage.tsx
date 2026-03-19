@@ -23,7 +23,7 @@ function StatusBadge({ status }: { status: FormStatus }) {
 function FormBar({ score }: { score: number }) {
   // -20..+20 → 0..100%
   const pct = Math.round(((score + 20) / 40) * 100);
-  const color = score >= 12 ? 'bg-orange-500' : score >= 4 ? 'bg-yellow-400' : score <= -12 ? 'bg-blue-400' : score <= -4 ? 'bg-blue' : 'bg-cream-dim';
+  const color = score >= 12 ? 'bg-orange-500' : score >= 4 ? 'bg-yellow-400' : score <= -12 ? 'bg-blue' : score <= -4 ? 'bg-blue/60' : 'bg-cream-dim';
   return (
     <div className="flex items-center gap-2">
       <div className="relative w-20 h-2 bg-navy-lighter rounded-full overflow-hidden">
