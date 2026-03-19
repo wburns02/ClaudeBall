@@ -106,7 +106,7 @@ export function PlayerStatsPage() {
                 <span className="text-cream font-bold">OVR {ovrRatings}</span>
               </div>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => navigate(-1)}>← Back</Button>
+            <Button size="sm" variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/franchise/roster')}>← Back</Button>
           </div>
           <Panel title="Player Ratings">
             <p className="font-mono text-xs text-cream-dim/60 mb-4">No in-game stats yet — ratings shown below.</p>

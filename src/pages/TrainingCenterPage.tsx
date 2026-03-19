@@ -256,6 +256,16 @@ export function TrainingCenterPage() {
         </div>
       </div>
 
+      {/* Completion banner */}
+      {summary.general === 0 && summary.focused + summary.resting === roster.length && roster.length > 0 && (
+        <div className="mb-4 px-4 py-2.5 rounded-lg border border-green-light/30 bg-green-900/15 flex items-center gap-2">
+          <span className="text-green-light text-base">✓</span>
+          <p className="font-mono text-sm text-green-light">
+            All {roster.length} players assigned — training plan complete for next offseason.
+          </p>
+        </div>
+      )}
+
       {/* Summary bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="rounded-lg border border-green-light/20 bg-green-900/10 px-4 py-3 text-center">

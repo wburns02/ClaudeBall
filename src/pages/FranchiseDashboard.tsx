@@ -20,8 +20,8 @@ function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; tota
   return (
     <div>
       <div className="flex justify-between font-mono text-xs text-cream-dim mb-1">
-        <span>Day {currentDay}</span>
-        <span className="text-cream-dim/60">Season Progress</span>
+        <span>{currentDay === 0 ? 'Opening Day' : `Day ${currentDay}`}</span>
+        <span className="text-cream-dim/60">{currentDay === 0 ? 'Season not started' : 'Season Progress'}</span>
         <span>Day {totalDays}</span>
       </div>
       <div className="relative h-5 bg-navy-lighter rounded-full overflow-hidden">
@@ -121,7 +121,7 @@ export function FranchiseDashboard() {
           {userTeam?.city} {userTeam?.name}
         </h1>
         <p className="font-mono text-cream-dim text-sm mt-1">
-          Day {season.currentDay} of {season.totalDays} — {season.year} Season
+          {season.currentDay === 0 ? 'Opening Day' : `Day ${season.currentDay}`} of {season.totalDays} — {season.year} Season
           {' '}
           <span className={cn(
             'uppercase text-xs font-bold ml-1 px-1.5 py-0.5 rounded',
