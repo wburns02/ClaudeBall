@@ -86,11 +86,10 @@ export function SchedulePage() {
   };
 
   const handlePlayGame = async (game: ScheduledGame) => {
-    // Advance to get userGame then navigate to live game
+    // Advance the day — advanceDay returns the user's game for that day
     const userGame = advanceDay();
-    if (userGame) {
-      navigate(`/game/live?gameId=${userGame.id}`);
-    }
+    // Use the returned game id, falling back to the clicked game if day was already advanced
+    navigate(`/game/live?gameId=${(userGame ?? game).id}`);
   };
 
   const handleSimGame = (_game: ScheduledGame) => {

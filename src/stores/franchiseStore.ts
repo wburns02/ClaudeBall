@@ -78,6 +78,7 @@ interface FranchiseState {
 
   // Internal: used only during persist/rehydrate cycle
   _seasonSnapshot?: unknown;
+  _contractsSnapshot?: import('@/engine/gm/ContractEngine.ts').PlayerContract[];
 
   // Actions
   startFranchise: (teams: Team[], leagueStructure: Record<string, Record<string, string[]>>, userTeamId: string) => void;
@@ -901,6 +902,11 @@ export const useFranchiseStore = create<FranchiseState>()(
           et.pitcherId = t.pitcherId;
         }
       }
+      // Transfer the player's contract to the new team so payroll stays accurate
+      const movedPlayer = playerToMove as import('@/engine/types/player.ts').Player | null;
+      if (movedPlayer) {
+        engine.contractEngine.transferContract(movedPlayer.id, toTeamId);
+      }
     }
   },
 
@@ -976,6 +982,8 @@ export const useFranchiseStore = create<FranchiseState>()(
         trainingAssignments: state.trainingAssignments,
         lastDevelopmentChanges: state.lastDevelopmentChanges,
         teamBudgets: state.teamBudgets,
+        // Serialize contracts so trades survive page reload
+        _contractsSnapshot: state.engine?.contractEngine.getAllContracts() ?? [],
         // Serialize the season without the StandingsTracker class instance
         _seasonSnapshot: state.season
           ? {
@@ -1001,12 +1009,18 @@ export const useFranchiseStore = create<FranchiseState>()(
         if (state._seasonSnapshot) {
           engine.restoreState(state._seasonSnapshot as Parameters<SeasonEngine['restoreState']>[0]);
         }
+        // Restore contracts from snapshot so trade history isn't lost on reload
+        if (state._contractsSnapshot?.length) {
+          engine.contractEngine.restoreContracts(state._contractsSnapshot);
+        }
         // @ts-ignore — inject engine into the rehydrated state
         state.engine = engine;
         // @ts-ignore — set season from the restored engine state
         state.season = engine.getState();
-        // @ts-ignore — clean up the temporary snapshot field
+        // @ts-ignore — clean up the temporary snapshot fields
         delete state._seasonSnapshot;
+        // @ts-ignore
+        delete state._contractsSnapshot;
         // FreeAgentPool uses a Map internally which loses its prototype after JSON serialization.
         // Null it out so the page's useEffect will call initFreeAgency() to generate a proper instance.
         // @ts-ignore

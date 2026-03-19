@@ -106,7 +106,7 @@ function FairnessMeter({ score }: { score: number }) {
 export function TradePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { engine, userTeamId, teams, movePlayer, addUserTradeLog } = useFranchiseStore();
+  const { engine, userTeamId, teams, movePlayer, addUserTradeLog, isTradeDeadlinePassed } = useFranchiseStore();
   const { evaluateTradePackages, checkAIAccepts } = useGMStore();
 
   // Get user team
@@ -164,8 +164,14 @@ export function TradePage() {
     setResult(null);
   };
 
+  const deadlinePassed = isTradeDeadlinePassed();
+
   const handlePropose = () => {
     if (!partnerTeam || userBlock.length === 0 || theirBlock.length === 0) return;
+    if (deadlinePassed) {
+      setResult('Trade deadline has passed. No trades allowed until next season.');
+      return;
+    }
     // offering = what AI receives (user's players going to AI)
     // receiving = what AI gives up (AI's players going to user)
     const offering: import('@/engine/gm/TradeEngine.ts').TradePackage = { teamId: userTeam.id, playerIds: userBlock };
@@ -203,6 +209,14 @@ export function TradePage() {
         <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Trade Center</h1>
         <p className="font-mono text-cream-dim text-sm mt-1">Select players from each team to build a trade</p>
       </div>
+
+      {/* Trade Deadline Banner */}
+      {deadlinePassed && (
+        <div className="mb-4 px-4 py-3 rounded-md bg-red-900/30 border border-red/50 font-mono text-sm text-red flex items-center gap-2">
+          <span>⚠</span>
+          <span>The trade deadline has passed. No trades can be made until next season.</span>
+        </div>
+      )}
 
       {/* Team Selector */}
       <div className="mb-4 flex items-center gap-3">
@@ -333,7 +347,7 @@ export function TradePage() {
             </Button>
             <Button
               onClick={handlePropose}
-              disabled={userBlock.length === 0 || theirBlock.length === 0}
+              disabled={userBlock.length === 0 || theirBlock.length === 0 || deadlinePassed}
             >
               Propose Trade
             </Button>

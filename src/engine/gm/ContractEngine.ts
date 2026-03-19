@@ -158,6 +158,26 @@ export class ContractEngine {
   }
 
   /**
+   * Transfer a player's contract to a new team (used when trading a player).
+   */
+  transferContract(playerId: string, newTeamId: string): void {
+    const contract = this.contracts.get(playerId);
+    if (contract) {
+      contract.teamId = newTeamId;
+    }
+  }
+
+  /**
+   * Restore all contracts from a serialized snapshot.
+   */
+  restoreContracts(contracts: PlayerContract[]): void {
+    this.contracts.clear();
+    for (const c of contracts) {
+      this.contracts.set(c.playerId, c);
+    }
+  }
+
+  /**
    * Release a player (clears contract, marks as FA).
    */
   releasePlayer(playerId: string): void {

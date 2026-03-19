@@ -57,6 +57,7 @@ const Icons = {
   development: 'M22 12h-4l-3 9L9 3l-3 9H2',
   training: 'M6.5 6.5a5.5 5.5 0 0111 0c0 4-5.5 8-5.5 8S6.5 10.5 6.5 6.5z M12 6.5h.01',
   news: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z M9 10h6 M9 14h4',
+  teamStats: 'M3 3h18v18H3z M7 7h4v4H7z M13 7h4v4h-4z M7 13h4v4H7z M13 13h4v4h-4z',
 };
 
 interface NavItem {
@@ -103,6 +104,12 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Standings', path: '/franchise/standings', icon: 'standings' },
       { label: 'Leaders', path: '/franchise/leaders', icon: 'leaders' },
       { label: 'Records', path: '/franchise/records', icon: 'records' },
+      {
+        label: 'Team Stats',
+        path: (id) => id ? `/franchise/team-stats/${id}` : '/franchise/standings',
+        icon: 'teamStats',
+        activePrefixes: ['/franchise/team-stats/'],
+      },
     ],
   },
   {
