@@ -1,58 +1,417 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
-import { StatsTable } from '@/components/ui/StatsTable.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { cn } from '@/lib/cn.ts';
-import type { DraftProspect } from '@/engine/gm/DraftEngine.ts';
+import type { DraftProspect, DraftClass, ProspectRisk, ScoutGrade } from '@/engine/gm/DraftEngine.ts';
+
+// ── Tool grade helpers ────────────────────────────────────────────────────────
+
+function gradeColor(g: number): string {
+  if (g >= 70) return 'text-gold font-bold';
+  if (g >= 60) return 'text-green-light font-semibold';
+  if (g >= 50) return 'text-cream';
+  if (g >= 40) return 'text-cream-dim';
+  return 'text-red-400';
+}
+
+function gradeLabel(g: number): string {
+  if (g >= 80) return 'Elite';
+  if (g >= 70) return 'Plus+';
+  if (g >= 60) return 'Plus';
+  if (g >= 55) return 'Avg+';
+  if (g >= 50) return 'Avg';
+  if (g >= 45) return 'Avg-';
+  if (g >= 40) return 'Fringe';
+  if (g >= 30) return 'Poor';
+  return 'Very Poor';
+}
+
+function riskColor(r: ProspectRisk): string {
+  return r === 'SAFE' ? 'text-green-light bg-green-900/20 border-green-light/30'
+       : r === 'MEDIUM' ? 'text-gold bg-gold/10 border-gold/30'
+       : 'text-red-400 bg-red-900/20 border-red-500/30';
+}
+
+function gradeLetterColor(g: ScoutGrade): string {
+  if (g === 'A+' || g === 'A') return 'text-gold';
+  if (g === 'A-' || g === 'B+') return 'text-green-light';
+  if (g === 'B' || g === 'B-') return 'text-cream';
+  return 'text-cream-dim';
+}
 
 const POSITION_COLORS: Record<string, string> = {
-  P: 'text-blue-400',
-  C: 'text-purple-400',
-  '1B': 'text-green-light',
-  '2B': 'text-green-light',
-  '3B': 'text-green-light',
-  SS: 'text-gold',
-  LF: 'text-cream',
-  CF: 'text-cream',
-  RF: 'text-cream',
-  DH: 'text-red',
+  P: 'text-blue-400', C: 'text-purple-400',
+  '1B': 'text-green-light', '2B': 'text-green-light', '3B': 'text-green-light',
+  SS: 'text-gold', LF: 'text-cream', CF: 'text-cream', RF: 'text-cream', DH: 'text-red',
 };
 
-function ratingBar(value: number) {
-  const pct = Math.round(value);
-  const color =
-    value >= 80 ? 'bg-gold' :
-    value >= 70 ? 'bg-green-light' :
-    value >= 55 ? 'bg-cream-dim' :
-    'bg-navy-lighter';
+// ── ToolBar component ─────────────────────────────────────────────────────────
+
+function ToolBar({ label, value, compact = false }: { label: string; value: number; compact?: boolean }) {
+  const pct = Math.round(((value - 20) / 60) * 100);
+  const color = value >= 70 ? 'bg-gold' : value >= 60 ? 'bg-green-light' : value >= 50 ? 'bg-cream-dim/80' : value >= 40 ? 'bg-navy-lighter' : 'bg-red-400/60';
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-16 h-1.5 bg-navy-lighter/40 rounded-full overflow-hidden">
-        <div className={cn('h-full rounded-full', color)} style={{ width: `${pct}%` }} />
+    <div className={cn('flex items-center gap-2', compact ? 'gap-1.5' : 'gap-2')}>
+      <span className={cn('font-mono text-right shrink-0', compact ? 'text-[10px] text-cream-dim/60 w-14' : 'text-xs text-cream-dim/70 w-16')}>{label}</span>
+      <div className={cn('bg-navy-lighter/40 rounded-full overflow-hidden shrink-0', compact ? 'w-16 h-1' : 'w-24 h-1.5')}>
+        <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="font-mono text-xs">{value}</span>
+      <span className={cn('font-mono font-bold shrink-0', compact ? 'text-[11px] w-5' : 'text-xs w-6', gradeColor(value))}>{value}</span>
+      {!compact && <span className="font-mono text-[10px] text-cream-dim/40 hidden sm:inline">{gradeLabel(value)}</span>}
     </div>
   );
 }
+
+// ── ScoutCard (compact board row) ────────────────────────────────────────────
+
+function ProspectCard({
+  prospect,
+  rank,
+  isSelected,
+  isFavorite,
+  onSelect,
+  onToggleFavorite,
+}: {
+  prospect: DraftProspect;
+  rank: number;
+  isSelected: boolean;
+  isFavorite: boolean;
+  onSelect: () => void;
+  onToggleFavorite: (e: React.MouseEvent) => void;
+}) {
+  const isPitcher = prospect.position === 'P';
+  const t = prospect.tools;
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={e => e.key === 'Enter' && onSelect()}
+      className={cn(
+        'w-full text-left p-3 rounded-lg border transition-all cursor-pointer',
+        isSelected
+          ? 'border-gold bg-gold/8 shadow-[0_0_12px_rgba(212,168,67,0.15)]'
+          : 'border-navy-lighter/40 hover:border-navy-lighter/80 bg-navy-light/20 hover:bg-navy-light/40',
+      )}
+    >
+      <div className="flex items-start gap-2">
+        {/* Rank */}
+        <span className="font-mono text-xs text-cream-dim/40 w-5 pt-0.5 shrink-0">{rank}</span>
+
+        {/* Main info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-body text-cream text-sm font-semibold truncate">{prospect.firstName} {prospect.lastName}</span>
+            <span className={cn('font-mono text-xs font-bold', POSITION_COLORS[prospect.position] ?? 'text-cream')}>{prospect.position}</span>
+            <span className="font-mono text-[10px] text-cream-dim/50">{prospect.bats}/{prospect.throws}</span>
+            <span className="font-mono text-[10px] text-cream-dim/40">Age {prospect.age}</span>
+          </div>
+          <div className="font-mono text-[10px] text-cream-dim/40 truncate mt-0.5">{prospect.school}</div>
+
+          {/* Mini tool bars */}
+          <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5">
+            {isPitcher ? (
+              <>
+                <ToolBar label="FB" value={t.fastball} compact />
+                <ToolBar label="BRK" value={t.breaker} compact />
+                <ToolBar label="CMD" value={t.command} compact />
+                <ToolBar label="CHG" value={t.changeup} compact />
+              </>
+            ) : (
+              <>
+                <ToolBar label="HIT" value={t.hit} compact />
+                <ToolBar label="PWR" value={t.power} compact />
+                <ToolBar label="RUN" value={t.run} compact />
+                <ToolBar label="FLD" value={t.field} compact />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Right side: grade + risk + favorite */}
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={onToggleFavorite}
+              className={cn('text-sm transition-colors', isFavorite ? 'text-gold' : 'text-cream-dim/20 hover:text-cream-dim/60')}
+            >
+              ★
+            </button>
+            <span className={cn('font-mono text-lg font-bold', gradeLetterColor(prospect.scoutGrade))}>
+              {prospect.scoutGrade}
+            </span>
+          </div>
+          <span className={cn('font-mono text-[10px] px-1.5 py-0.5 rounded border', riskColor(prospect.risk))}>
+            {prospect.risk}
+          </span>
+          <div className="text-right">
+            <p className="font-mono text-[10px] text-cream-dim/40">POT</p>
+            <p className={cn(
+              'font-mono text-sm font-bold',
+              prospect.potentialRating >= 80 ? 'text-gold' : prospect.potentialRating >= 70 ? 'text-green-light' : 'text-cream',
+            )}>{prospect.potentialRating}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ScoutReport (right panel detail view) ────────────────────────────────────
+
+function ScoutReport({
+  prospect,
+  isUserTurn,
+  draftComplete,
+  onDraft,
+}: {
+  prospect: DraftProspect;
+  isUserTurn: boolean;
+  draftComplete: boolean;
+  onDraft: () => void;
+}) {
+  const isPitcher = prospect.position === 'P';
+  const t = prospect.tools;
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="font-display text-gold text-xl leading-tight">{prospect.firstName} {prospect.lastName}</p>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className={cn('font-mono text-sm font-bold', POSITION_COLORS[prospect.position] ?? 'text-cream')}>{prospect.position}</span>
+            <span className="font-mono text-xs text-cream-dim">Age {prospect.age}</span>
+            <span className="font-mono text-xs text-cream-dim/50">{prospect.bats}ats · {prospect.throws}hrows</span>
+          </div>
+          <p className="font-mono text-[10px] text-cream-dim/50 mt-1">{prospect.school}</p>
+        </div>
+        <div className="text-right shrink-0">
+          <p className={cn('font-display text-3xl font-bold', gradeLetterColor(prospect.scoutGrade))}>{prospect.scoutGrade}</p>
+          <p className="font-mono text-[10px] text-cream-dim/50">Scout Grade</p>
+        </div>
+      </div>
+
+      {/* Risk + Ceiling */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="p-2 rounded border border-navy-lighter/40 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest">Risk</p>
+          <p className={cn('font-mono text-sm font-bold mt-0.5', riskColor(prospect.risk).split(' ')[0])}>{prospect.risk}</p>
+        </div>
+        <div className="p-2 rounded border border-navy-lighter/40 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest">Ceiling</p>
+          <p className={cn(
+            'font-mono text-sm font-bold mt-0.5',
+            prospect.potentialRating >= 80 ? 'text-gold' : prospect.potentialRating >= 70 ? 'text-green-light' : 'text-cream',
+          )}>{prospect.potentialRating}</p>
+        </div>
+      </div>
+
+      {/* Tool Grades */}
+      <div>
+        <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest mb-2">20-80 Tool Grades</p>
+        <div className="space-y-1">
+          {isPitcher ? (
+            <>
+              <ToolBar label="Fastball" value={t.fastball} />
+              <ToolBar label="Breaking Ball" value={t.breaker} />
+              <ToolBar label="Changeup" value={t.changeup} />
+              <ToolBar label="Command" value={t.command} />
+              <ToolBar label="Arm Str." value={t.arm} />
+            </>
+          ) : (
+            <>
+              <ToolBar label="Hit Tool" value={t.hit} />
+              <ToolBar label="Raw Power" value={t.power} />
+              <ToolBar label="Run" value={t.run} />
+              <ToolBar label="Arm" value={t.arm} />
+              <ToolBar label="Fielding" value={t.field} />
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Scout Report */}
+      <div className="p-3 rounded-lg border border-navy-lighter/40 bg-navy-light/30">
+        <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest mb-1.5">Scout Report</p>
+        <p className="font-mono text-xs text-cream leading-relaxed">{prospect.scoutReport}</p>
+      </div>
+
+      {/* Current vs Potential */}
+      <div className="grid grid-cols-2 gap-2 text-center">
+        <div className="p-2 rounded border border-navy-lighter/40">
+          <p className="font-mono text-[10px] text-cream-dim/50">Now</p>
+          <p className="font-mono text-lg font-bold text-cream">{prospect.currentRating}</p>
+        </div>
+        <div className="p-2 rounded border border-gold/20 bg-gold/5">
+          <p className="font-mono text-[10px] text-gold/60">Ceiling</p>
+          <p className="font-mono text-lg font-bold text-gold">{prospect.potentialRating}</p>
+        </div>
+      </div>
+
+      {isUserTurn && !draftComplete && (
+        <Button className="w-full" onClick={onDraft} data-testid="draft-player-btn">
+          Draft {prospect.firstName} {prospect.lastName}
+        </Button>
+      )}
+      {!isUserTurn && !draftComplete && (
+        <p className="text-center font-mono text-xs text-cream-dim/40 py-1">Waiting for your pick...</p>
+      )}
+      {draftComplete && (
+        <p className="text-center font-mono text-xs text-cream-dim/40 py-1">Draft is complete</p>
+      )}
+    </div>
+  );
+}
+
+// ── Pre-Draft Scouting (regular season) ──────────────────────────────────────
+
+function PreDraftScouting({
+  draftClass,
+}: {
+  draftClass: DraftClass;
+}) {
+  const [posFilter, setPosFilter] = useState('ALL');
+  const [sortBy, setSortBy] = useState<'pot' | 'grade' | 'risk'>('pot');
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showFavOnly, setShowFavOnly] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const positions = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+
+  const filtered = useMemo(() => {
+    let list = [...draftClass.prospects];
+    if (posFilter !== 'ALL') list = list.filter(p => p.position === posFilter);
+    if (showFavOnly) list = list.filter(p => favorites.has(p.id));
+    switch (sortBy) {
+      case 'pot': list.sort((a, b) => b.potentialRating - a.potentialRating); break;
+      case 'grade': {
+        const gradeOrder = ['A+','A','A-','B+','B','B-','C+','C','C-','D'];
+        list.sort((a, b) => gradeOrder.indexOf(a.scoutGrade) - gradeOrder.indexOf(b.scoutGrade));
+        break;
+      }
+      case 'risk': {
+        const riskOrder: ProspectRisk[] = ['SAFE', 'MEDIUM', 'HIGH'];
+        list.sort((a, b) => riskOrder.indexOf(a.risk) - riskOrder.indexOf(b.risk));
+        break;
+      }
+    }
+    return list;
+  }, [draftClass.prospects, posFilter, showFavOnly, favorites, sortBy]);
+
+  const selected = draftClass.prospects.find(p => p.id === selectedId);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Board */}
+      <div className="lg:col-span-2 space-y-3">
+        {/* Filters */}
+        <Panel>
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1">
+              {positions.map(pos => (
+                <button key={pos} onClick={() => setPosFilter(pos)}
+                  className={cn('px-2 py-0.5 rounded text-xs font-mono border transition-colors',
+                    posFilter === pos ? 'border-gold bg-gold/10 text-gold' : 'border-navy-lighter text-cream-dim hover:border-navy-lighter/80'
+                  )}
+                >{pos}</button>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-mono text-xs text-cream-dim">Sort:</span>
+              {(['pot', 'grade', 'risk'] as const).map(s => (
+                <button key={s} onClick={() => setSortBy(s)}
+                  className={cn('px-2 py-0.5 rounded text-xs font-mono border transition-colors',
+                    sortBy === s ? 'border-gold bg-gold/10 text-gold' : 'border-navy-lighter text-cream-dim hover:border-navy-lighter/80'
+                  )}
+                >{s === 'pot' ? 'Ceiling' : s === 'grade' ? 'Grade' : 'Risk'}</button>
+              ))}
+              <button onClick={() => setShowFavOnly(x => !x)}
+                className={cn('px-2 py-0.5 rounded text-xs font-mono border transition-colors flex items-center gap-1',
+                  showFavOnly ? 'border-gold bg-gold/10 text-gold' : 'border-navy-lighter text-cream-dim hover:border-navy-lighter/80'
+                )}
+              >
+                ★ Watchlist {favorites.size > 0 && `(${favorites.size})`}
+              </button>
+            </div>
+          </div>
+        </Panel>
+
+        <Panel title={`${filtered.length} Prospects`}>
+          {filtered.length === 0 ? (
+            <p className="text-cream-dim font-mono text-sm text-center py-6">No prospects match your filter</p>
+          ) : (
+            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+              {filtered.map((p, i) => (
+                <ProspectCard
+                  key={p.id}
+                  prospect={p}
+                  rank={i + 1}
+                  isSelected={selectedId === p.id}
+                  isFavorite={favorites.has(p.id)}
+                  onSelect={() => setSelectedId(selectedId === p.id ? null : p.id)}
+                  onToggleFavorite={(e) => {
+                    e.stopPropagation();
+                    setFavorites(prev => {
+                      const next = new Set(prev);
+                      if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
+                      return next;
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* Scout Report */}
+      <div>
+        <Panel title="Scout Report">
+          {selected ? (
+            <ScoutReport
+              prospect={selected}
+              isUserTurn={false}
+              draftComplete={false}
+              onDraft={() => {}}
+            />
+          ) : (
+            <div className="py-12 text-center">
+              <p className="font-mono text-cream-dim/40 text-sm">Select a prospect</p>
+              <p className="font-mono text-cream-dim/20 text-xs mt-1">to view their scout report</p>
+            </div>
+          )}
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+// ── Main DraftPage ────────────────────────────────────────────────────────────
 
 export function DraftPage() {
   const navigate = useNavigate();
   const {
     season, engine, userTeamId, isInitialized,
-    draftClass, draftPickOrder, currentDraftPick, draftComplete,
-    initDraft, draftPlayer,
+    draftClass, previewDraftClass, draftPickOrder, currentDraftPick, draftComplete,
+    initDraft, draftPlayer, generatePreviewDraft,
   } = useFranchiseStore();
 
   const [selectedProspect, setSelectedProspect] = useState<DraftProspect | null>(null);
   const [posFilter, setPosFilter] = useState<string>('ALL');
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [justDrafted, setJustDrafted] = useState<DraftProspect | null>(null);
+  const [scoutingTab, setScoutingTab] = useState<'board' | 'scouting'>('board');
 
   useEffect(() => {
     if (!isInitialized) navigate('/franchise/new');
   }, [isInitialized, navigate]);
 
   const isOffseason = season?.phase === 'offseason';
+  const isRegularSeason = season?.phase === 'regular' || season?.phase === 'preseason';
 
   // Auto-init draft only during offseason
   useEffect(() => {
@@ -61,26 +420,76 @@ export function DraftPage() {
     }
   }, [draftClass, season, engine, isOffseason, initDraft]);
 
-  // Gate: show friendly message during regular season
-  if (season && season.phase === 'regular') {
-    const daysLeft = season.totalDays - season.currentDay;
+  // Generate preview draft class for regular-season scouting
+  useEffect(() => {
+    if (!previewDraftClass && season && engine && isRegularSeason) {
+      generatePreviewDraft();
+    }
+  }, [previewDraftClass, season, engine, isRegularSeason, generatePreviewDraft]);
+
+  // Pre-draft scouting view during regular season
+  if (isRegularSeason) {
+    const daysLeft = (season?.totalDays ?? 183) - (season?.currentDay ?? 0);
     return (
-      <div className="min-h-screen p-6 max-w-3xl mx-auto">
+      <div className="min-h-screen p-6 max-w-6xl mx-auto">
         <div className="mb-6">
-          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Draft Room</h1>
-        </div>
-        <Panel>
-          <div className="py-12 text-center">
-            <div className="text-5xl mb-4">📋</div>
-            <p className="font-display text-xl text-gold mb-2">Season in Progress</p>
-            <p className="font-mono text-cream-dim text-sm mb-4">
-              The {season.year} amateur draft takes place during the offseason.
-            </p>
-            <p className="font-mono text-xs text-cream-dim/50">
-              {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining in the regular season
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Draft Room</h1>
+              <p className="font-mono text-cream-dim text-sm mt-1">
+                {season?.year ? `${season.year + 1} Amateur Draft` : 'Amateur Draft'} — Pre-Draft Scouting
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest">Draft In</p>
+              <p className="font-display text-xl font-bold text-gold">{daysLeft}d</p>
+            </div>
           </div>
-        </Panel>
+
+          {/* Tab bar */}
+          <div className="flex gap-2 mt-4 border-b border-navy-lighter pb-0">
+            <button
+              onClick={() => setScoutingTab('board')}
+              className={cn(
+                'px-4 py-2 font-mono text-sm border-b-2 -mb-px transition-colors',
+                scoutingTab === 'board' ? 'border-gold text-gold' : 'border-transparent text-cream-dim hover:text-cream',
+              )}
+            >
+              Big Board
+            </button>
+            <button
+              onClick={() => setScoutingTab('scouting')}
+              className={cn(
+                'px-4 py-2 font-mono text-sm border-b-2 -mb-px transition-colors',
+                scoutingTab === 'scouting' ? 'border-gold text-gold' : 'border-transparent text-cream-dim hover:text-cream',
+              )}
+            >
+              ★ Watchlist {favorites.size > 0 && `(${favorites.size})`}
+            </button>
+          </div>
+        </div>
+
+        <div className={cn(
+          'p-3 rounded-lg border mb-4 font-mono text-xs',
+          'border-gold/20 bg-gold/5 text-gold/80',
+        )}>
+          📋 Regular season is underway. Scout the upcoming draft class and add prospects to your watchlist.
+          The draft begins during the offseason — {daysLeft} days remaining.
+        </div>
+
+        {previewDraftClass ? (
+          <PreDraftScouting draftClass={previewDraftClass} />
+        ) : (
+          <Panel>
+            <div className="py-12 text-center">
+              <div className="text-5xl mb-4">📋</div>
+              <p className="font-display text-xl text-gold mb-2">Generating Scout Reports</p>
+              <p className="font-mono text-cream-dim text-sm">
+                Building the {season?.year ? season.year + 1 : ''} draft class...
+              </p>
+            </div>
+          </Panel>
+        )}
       </div>
     );
   }
@@ -101,32 +510,32 @@ export function DraftPage() {
   const currentPickTeamId = currentPickEntry?.teamId ?? '';
   const isUserTurn = currentPickTeamId === userTeamId && !draftComplete;
 
-  // Current round/pick
   const currentRound = draftComplete ? '—' : `${Math.floor(currentDraftPick / teamsCount) + 1}`;
   const currentPickNum = draftComplete ? '—' : `${(currentDraftPick % teamsCount) + 1}`;
 
-  // Available prospects (not yet drafted)
   const draftedIds = new Set(draftClass.picks.filter(p => p.prospectId).map(p => p.prospectId!));
   const available = draftClass.prospects
     .filter(p => !draftedIds.has(p.id))
     .filter(p => posFilter === 'ALL' || p.position === posFilter)
     .sort((a, b) => b.potentialRating - a.potentialRating);
 
-  // Drafted players (recent picks first)
   const recentPicks = draftClass.picks
     .filter(p => p.prospectId)
-    .slice(-10)
+    .slice(-8)
     .reverse();
 
   const positions = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 
   const handleDraft = () => {
     if (!selectedProspect || !isUserTurn) return;
-    const success = draftPlayer(selectedProspect.id);
-    if (success) setSelectedProspect(null);
+    const drafted = selectedProspect;
+    const success = draftPlayer(drafted.id);
+    if (success) {
+      setJustDrafted(drafted);
+      setSelectedProspect(null);
+      setTimeout(() => setJustDrafted(null), 3000);
+    }
   };
-
-  const handleBack = () => navigate('/franchise/offseason');
 
   const teamName = (id: string) => {
     const t = engine.getTeam(id);
@@ -136,118 +545,96 @@ export function DraftPage() {
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto" data-testid="draft-page">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
             {season.year + 1} Draft Room
           </h1>
-          <p className="font-mono text-cream-dim text-sm mt-1">
+          <p className={cn('font-mono text-sm mt-0.5', isUserTurn ? 'text-gold' : 'text-cream-dim')}>
             {draftComplete
               ? 'Draft Complete'
               : isUserTurn
-                ? `Your Pick — Round ${currentRound}, Pick ${currentPickNum}`
-                : `Round ${currentRound}, Pick ${currentPickNum} — ${teamName(currentPickTeamId)} on the clock`
+                ? `⚡ YOUR PICK — Round ${currentRound}, Pick ${currentPickNum}`
+                : `Round ${currentRound}, Pick ${currentPickNum} — ${teamName(currentPickTeamId)} selecting`
             }
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={handleBack}>
-            Back to Offseason
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate('/')}>Menu</Button>
-        </div>
+        <Button size="sm" variant="ghost" onClick={() => navigate('/franchise/offseason')}>
+          ← Offseason
+        </Button>
       </div>
 
-      {/* Draft status bar */}
+      {/* "On the clock" banner */}
+      {isUserTurn && !draftComplete && (
+        <div className="mb-4 px-4 py-3 rounded-lg border-2 border-gold bg-gold/10 flex items-center justify-between animate-pulse">
+          <p className="font-display text-gold text-lg uppercase tracking-wide">You're on the clock</p>
+          <p className="font-mono text-gold/80 text-sm">Round {currentRound} · Pick {currentPickNum}</p>
+        </div>
+      )}
+
+      {/* Just drafted notification */}
+      {justDrafted && (
+        <div className="mb-4 px-4 py-3 rounded-lg border border-green-light/30 bg-green-900/20 flex items-center gap-3">
+          <span className="text-green-light text-xl">✓</span>
+          <div>
+            <p className="font-display text-green-light">Drafted: {justDrafted.firstName} {justDrafted.lastName}</p>
+            <p className="font-mono text-cream-dim/60 text-xs">{justDrafted.position} · {justDrafted.school}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Progress bar */}
       <div className="mb-4 p-3 rounded-lg border border-navy-lighter bg-navy-light">
-        <div className="flex items-center justify-between font-mono text-sm">
-          <span className="text-cream-dim">
-            Pick <span className="text-cream font-bold">{Math.min(currentDraftPick + 1, totalPicks)}</span> of{' '}
-            <span className="text-cream">{totalPicks}</span>
-          </span>
-          <span className={cn(
-            'px-2 py-0.5 rounded text-xs font-bold uppercase tracking-widest',
+        <div className="flex items-center justify-between font-mono text-xs mb-1.5">
+          <span className="text-cream-dim">Pick {Math.min(currentDraftPick + 1, totalPicks)} of {totalPicks}</span>
+          <span className={cn('px-2 py-0.5 rounded font-bold uppercase tracking-widest text-[10px]',
             isUserTurn ? 'bg-gold text-navy' : draftComplete ? 'bg-navy-lighter text-cream-dim' : 'bg-navy-lighter text-cream'
           )}>
-            {draftComplete ? 'Complete' : isUserTurn ? 'Your Pick' : 'CPU Picking...'}
+            {draftComplete ? 'Complete' : isUserTurn ? 'Your Pick' : 'CPU Picking'}
           </span>
-          <span className="text-cream-dim">
-            Available: <span className="text-cream font-bold">{available.length + (posFilter === 'ALL' ? 0 : 0)}</span>
-          </span>
+          <span className="text-cream-dim">{available.length} available</span>
         </div>
-        {/* Progress bar */}
-        <div className="mt-2 h-1.5 bg-navy-lighter/40 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gold/60 rounded-full transition-all"
-            style={{ width: `${(currentDraftPick / totalPicks) * 100}%` }}
-          />
+        <div className="h-1.5 bg-navy-lighter/40 rounded-full overflow-hidden">
+          <div className="h-full bg-gold/60 rounded-full transition-all" style={{ width: `${(currentDraftPick / totalPicks) * 100}%` }} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Prospect Board (main) */}
+        {/* Prospect Board */}
         <div className="lg:col-span-2 space-y-3">
           <Panel title="Available Prospects">
-            {/* Position filter */}
+            {/* Filters */}
             <div className="flex flex-wrap gap-1 mb-3">
               {positions.map(pos => (
-                <button
-                  key={pos}
-                  onClick={() => setPosFilter(pos)}
-                  className={cn(
-                    'px-2 py-0.5 rounded text-xs font-mono border transition-colors',
-                    posFilter === pos
-                      ? 'border-gold bg-gold/10 text-gold'
-                      : 'border-navy-lighter text-cream-dim hover:border-navy-lighter/80'
+                <button key={pos} onClick={() => setPosFilter(pos)}
+                  className={cn('px-2 py-0.5 rounded text-xs font-mono border transition-colors',
+                    posFilter === pos ? 'border-gold bg-gold/10 text-gold' : 'border-navy-lighter text-cream-dim hover:border-navy-lighter/80'
                   )}
-                >
-                  {pos}
-                </button>
+                >{pos}</button>
               ))}
             </div>
 
-            <div className="space-y-1 max-h-96 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
               {available.length === 0 ? (
                 <p className="text-cream-dim font-mono text-sm py-4 text-center">No prospects available</p>
               ) : (
                 available.map((p, i) => (
-                  <button
+                  <ProspectCard
                     key={p.id}
-                    onClick={() => setSelectedProspect(p)}
-                    className={cn(
-                      'w-full text-left p-2 rounded border transition-colors',
-                      selectedProspect?.id === p.id
-                        ? 'border-gold bg-gold/10'
-                        : 'border-navy-lighter/40 hover:border-navy-lighter bg-navy-light/30'
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-cream-dim/60 text-xs w-5">{i + 1}</span>
-                        <span className={cn('font-mono text-xs font-bold w-6', POSITION_COLORS[p.position] ?? 'text-cream')}>
-                          {p.position}
-                        </span>
-                        <span className="font-body text-cream text-sm">
-                          {p.firstName} {p.lastName}
-                        </span>
-                        <span className="font-mono text-cream-dim/60 text-xs">age {p.age}</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="font-mono text-xs text-cream-dim">OVR</p>
-                          <p className="font-mono text-sm text-cream font-bold">{p.currentRating}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-mono text-xs text-cream-dim">POT</p>
-                          <p className={cn(
-                            'font-mono text-sm font-bold',
-                            p.potentialRating >= 85 ? 'text-gold' :
-                            p.potentialRating >= 75 ? 'text-green-light' : 'text-cream'
-                          )}>{p.potentialRating}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
+                    prospect={p}
+                    rank={i + 1}
+                    isSelected={selectedProspect?.id === p.id}
+                    isFavorite={favorites.has(p.id)}
+                    onSelect={() => setSelectedProspect(selectedProspect?.id === p.id ? null : p)}
+                    onToggleFavorite={(e) => {
+                      e.stopPropagation();
+                      setFavorites(prev => {
+                        const next = new Set(prev);
+                        if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
+                        return next;
+                      });
+                    }}
+                  />
                 ))
               )}
             </div>
@@ -255,102 +642,63 @@ export function DraftPage() {
 
           {/* Recent Picks */}
           <Panel title="Recent Picks">
-            <StatsTable
-              columns={[
-                { key: 'pick', label: '#', align: 'right' },
-                { key: 'team', label: 'Team', align: 'left' },
-                { key: 'player', label: 'Player', align: 'left' },
-                { key: 'pos', label: 'POS', align: 'center' },
-                { key: 'ovr', label: 'OVR', align: 'right' },
-                { key: 'pot', label: 'POT', align: 'right' },
-              ]}
-              rows={recentPicks.map(pk => {
-                const prospect = draftClass.prospects.find(p => p.id === pk.prospectId);
-                return {
-                  pick: pk.overallPick,
-                  team: teamName(pk.teamId),
-                  player: prospect ? `${prospect.firstName} ${prospect.lastName}` : '—',
-                  pos: prospect?.position ?? '—',
-                  ovr: prospect?.currentRating ?? '—',
-                  pot: prospect?.potentialRating ?? '—',
-                };
-              })}
-              compact
-            />
+            {recentPicks.length === 0 ? (
+              <p className="font-mono text-cream-dim/50 text-xs text-center py-3">No picks made yet</p>
+            ) : (
+              <div className="space-y-1">
+                {recentPicks.map(pk => {
+                  const prospect = draftClass.prospects.find(p => p.id === pk.prospectId);
+                  if (!prospect) return null;
+                  return (
+                    <div key={pk.overallPick} className={cn(
+                      'flex items-center justify-between px-2 py-1.5 rounded font-mono text-sm',
+                      pk.teamId === userTeamId ? 'bg-gold/8 border border-gold/20' : 'border border-transparent',
+                    )}>
+                      <span className="text-cream-dim/50 text-xs w-6">#{pk.overallPick}</span>
+                      <span className={cn('font-bold text-xs w-10', pk.teamId === userTeamId ? 'text-gold' : 'text-cream')}>
+                        {teamName(pk.teamId)}
+                      </span>
+                      <span className="text-cream flex-1 text-xs truncate px-2">{prospect.firstName} {prospect.lastName}</span>
+                      <span className={cn('font-bold text-xs w-6', POSITION_COLORS[prospect.position] ?? 'text-cream')}>{prospect.position}</span>
+                      <span className={cn('text-xs w-6 text-right', gradeLetterColor(prospect.scoutGrade))}>{prospect.scoutGrade}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </Panel>
         </div>
 
-        {/* Right sidebar: selected prospect + pick action */}
+        {/* Right: Scout Report + Pick Order */}
         <div className="space-y-3">
-          {/* Selected prospect detail */}
           <Panel title="Scout Report">
             {selectedProspect ? (
-              <div className="space-y-3">
-                <div>
-                  <p className="font-display text-gold text-xl">
-                    {selectedProspect.firstName} {selectedProspect.lastName}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={cn('font-mono text-sm font-bold', POSITION_COLORS[selectedProspect.position] ?? 'text-cream')}>
-                      {selectedProspect.position}
-                    </span>
-                    <span className="text-cream-dim font-mono text-sm">Age {selectedProspect.age}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div>
-                    <p className="font-mono text-xs text-cream-dim uppercase tracking-widest mb-1">Current</p>
-                    {ratingBar(selectedProspect.currentRating)}
-                  </div>
-                  <div>
-                    <p className="font-mono text-xs text-cream-dim uppercase tracking-widest mb-1">Potential</p>
-                    {ratingBar(selectedProspect.potentialRating)}
-                  </div>
-                </div>
-
-                <div className="p-2 rounded bg-navy-lighter/20 border border-navy-lighter/40">
-                  <p className="font-mono text-xs text-cream-dim italic">{selectedProspect.summary}</p>
-                </div>
-
-                {isUserTurn && !draftComplete ? (
-                  <Button
-                    className="w-full"
-                    onClick={handleDraft}
-                    data-testid="draft-player-btn"
-                  >
-                    Draft {selectedProspect.lastName}
-                  </Button>
-                ) : (
-                  <p className="text-center font-mono text-xs text-cream-dim/50">
-                    {draftComplete ? 'Draft is complete' : 'Wait for your turn'}
-                  </p>
-                )}
-              </div>
+              <ScoutReport
+                prospect={selectedProspect}
+                isUserTurn={isUserTurn}
+                draftComplete={draftComplete ?? false}
+                onDraft={handleDraft}
+              />
             ) : (
-              <p className="text-cream-dim font-mono text-sm text-center py-4">
-                Select a prospect to view report
-              </p>
+              <div className="py-10 text-center">
+                <p className="font-mono text-cream-dim/40 text-sm">Select a prospect</p>
+                <p className="font-mono text-cream-dim/20 text-xs mt-1">to view their scout report</p>
+              </div>
             )}
           </Panel>
 
-          {/* Draft order preview */}
-          <Panel title="Pick Order (Next 5)">
+          {/* Pick Order */}
+          <Panel title="On The Clock (Next 5)">
             <div className="space-y-1">
               {draftClass.picks.slice(currentDraftPick, currentDraftPick + 5).map((pk, i) => (
-                <div
-                  key={pk.overallPick}
-                  className={cn(
-                    'flex items-center justify-between p-1.5 rounded font-mono text-sm',
-                    i === 0 && !draftComplete ? 'bg-gold/10 border border-gold/30' : 'border border-transparent'
-                  )}
-                >
+                <div key={pk.overallPick} className={cn(
+                  'flex items-center justify-between p-1.5 rounded font-mono text-sm',
+                  i === 0 && !draftComplete ? 'bg-gold/10 border border-gold/30' : 'border border-transparent',
+                )}>
                   <span className="text-cream-dim text-xs">#{pk.overallPick}</span>
-                  <span className={cn(
-                    'font-bold',
-                    pk.teamId === userTeamId ? 'text-gold' : 'text-cream'
-                  )}>
+                  <span className={cn('font-bold text-sm', pk.teamId === userTeamId ? 'text-gold' : 'text-cream')}>
                     {teamName(pk.teamId)}
+                    {pk.teamId === userTeamId && ' ◀'}
                   </span>
                   <span className="text-cream-dim text-xs">R{pk.round}</span>
                 </div>
@@ -362,11 +710,7 @@ export function DraftPage() {
           </Panel>
 
           {draftComplete && (
-            <Button
-              className="w-full"
-              onClick={() => navigate('/franchise/offseason')}
-              data-testid="draft-complete-btn"
-            >
+            <Button className="w-full" onClick={() => navigate('/franchise/offseason')} data-testid="draft-complete-btn">
               Return to Offseason
             </Button>
           )}

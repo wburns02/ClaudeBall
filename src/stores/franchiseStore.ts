@@ -43,6 +43,7 @@ interface FranchiseState {
 
   // Draft state
   draftClass: DraftClass | null;
+  previewDraftClass: DraftClass | null; // prospects only, for regular-season scouting
   draftPickOrder: string[]; // team IDs in pick order
   currentDraftPick: number; // 0-based index into draftPickOrder × rounds
   draftComplete: boolean;
@@ -91,6 +92,7 @@ interface FranchiseState {
   simPlayoffRound: () => SeriesMatchup[];
   startOffseason: () => void;
   initDraft: () => void;
+  generatePreviewDraft: () => void;
   draftPlayer: (prospectId: string) => boolean;
   advanceSeason: () => void;
   initFreeAgency: () => void;
@@ -143,6 +145,7 @@ export const useFranchiseStore = create<FranchiseState>()(
   leagueStructure: {},
   isInitialized: false,
   draftClass: null,
+  previewDraftClass: null,
   draftPickOrder: [],
   currentDraftPick: 0,
   draftComplete: false,
@@ -233,6 +236,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       leagueStructure,
       isInitialized: true,
       draftClass: null,
+      previewDraftClass: null,
       draftPickOrder: [],
       currentDraftPick: 0,
       draftComplete: false,
@@ -437,8 +441,22 @@ export const useFranchiseStore = create<FranchiseState>()(
     });
   },
 
+  generatePreviewDraft: () => {
+    const { engine, season, previewDraftClass } = get();
+    if (!engine || !season) return;
+    // Only generate once per season year
+    const targetYear = season.year + 1;
+    if (previewDraftClass && (previewDraftClass as DraftClass & { year?: number }).year === targetYear) return;
+    const rng = engine.getRng();
+    const allTeams = engine.getAllTeams();
+    const dc = generateDraftClass(5, allTeams.length, rng, targetYear);
+    // Store year on the object for cache-busting
+    (dc as DraftClass & { year?: number }).year = targetYear;
+    set({ previewDraftClass: dc });
+  },
+
   initDraft: () => {
-    const { engine, season } = get();
+    const { engine, season, previewDraftClass } = get();
     if (!engine || !season) return;
 
     const rng = engine.getRng();
@@ -453,7 +471,13 @@ export const useFranchiseStore = create<FranchiseState>()(
     });
 
     const pickOrder = sortedTeams.map(r => r.teamId);
-    const draftClass = generateDraftClass(5, allTeams.length, rng, season.year + 1);
+    // Reuse preview draft class prospects if they exist (maintains continuity from scouting)
+    const targetYear = season.year + 1;
+    const hasPreview = previewDraftClass &&
+      (previewDraftClass as DraftClass & { year?: number }).year === targetYear;
+    const draftClass = hasPreview
+      ? { ...previewDraftClass! }
+      : generateDraftClass(5, allTeams.length, rng, targetYear);
 
     // Assign picks to teams
     let overall = 0;
@@ -571,6 +595,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       season: { ...engine.getState() },
       teams: engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } })),
       draftClass: null,
+      previewDraftClass: null,
       draftPickOrder: [],
       currentDraftPick: 0,
       draftComplete: false,
