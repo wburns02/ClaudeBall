@@ -259,7 +259,7 @@ export function HotColdPage() {
                       </td>
                       <td className="px-3 py-2.5 font-mono text-xs">
                         {form.recentGames === 0 ? (
-                          <span className="text-cream-dim/40">No data</span>
+                          <span className="text-cream-dim/30">—</span>
                         ) : form.isPitcher ? (
                           <span className={form.recentERA !== undefined && form.recentERA < 3 ? 'text-green-light' : form.recentERA !== undefined && form.recentERA > 6 ? 'text-red' : 'text-cream'}>
                             {form.recentERA?.toFixed(2) ?? '—'} ERA / {form.recentK ?? 0}K

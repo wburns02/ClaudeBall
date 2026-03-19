@@ -383,14 +383,25 @@ export function FranchiseDashboard() {
             </p>
           ) : (
             <div className="space-y-1 font-mono text-sm">
-              {upcoming.map(g => {
+              {upcoming.map((g, idx) => {
                 const isHome = g.homeId === userTeamId;
                 const opp = isHome ? g.awayId : g.homeId;
                 const oppTeam = engine.getTeam(opp);
+                const isNext = idx === 0;
                 return (
                   <div key={g.id} className="flex justify-between items-center py-1 border-b border-navy-lighter/30">
                     <span className="text-cream-dim">Day {g.date}</span>
                     <span className="text-cream">{isHome ? 'vs' : '@'} {oppTeam?.abbreviation ?? opp}</span>
+                    {isNext && isRegularSeason ? (
+                      <button
+                        onClick={handleAdvance}
+                        className="text-xs font-mono px-2 py-0.5 rounded bg-green-light/10 text-green-light border border-green-light/20 hover:bg-green-light/20 transition-colors cursor-pointer"
+                      >
+                        ▶ Play
+                      </button>
+                    ) : (
+                      <span className="w-14" />
+                    )}
                   </div>
                 );
               })}

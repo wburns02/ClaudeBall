@@ -13,7 +13,7 @@ const AWARD_META: Record<string, { label: string; color: string }> = {
 
 export function FranchiseHistoryPage() {
   const navigate = useNavigate();
-  const { engine, userTeamId } = useFranchiseStore();
+  const { engine, userTeamId, season } = useFranchiseStore();
   const { seasonRecords, champions, awardHistory, allStarResults, tradeHistory, clearHistory } = useHistoryStore();
 
   if (!engine) {
@@ -68,6 +68,57 @@ export function FranchiseHistoryPage() {
           Clear History
         </Button>
       </div>
+
+      {/* Current Season In Progress */}
+      {season && userTeamId && (() => {
+        const rec = season.standings.getRecord(userTeamId);
+        if (!rec) return null;
+        const gamesPlayed = rec.wins + rec.losses;
+        const pct = gamesPlayed > 0
+          ? (rec.wins / gamesPlayed).toFixed(3).replace(/^0/, '')
+          : '.000';
+        const divs = season.standings.getDivisionStandings();
+        const userDiv = divs.find(d => d.teams.some(t => t.teamId === userTeamId));
+        const divRank = userDiv
+          ? userDiv.teams.findIndex(t => t.teamId === userTeamId) + 1
+          : null;
+        const rankLabel = divRank === 1 ? '1st' : divRank === 2 ? '2nd' : divRank === 3 ? '3rd' : `${divRank}th`;
+        return (
+          <div key="in-progress" className="mb-6 p-4 rounded-xl border border-green-light/30 bg-green-light/5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2 h-2 rounded-full bg-green-light animate-pulse shrink-0" />
+              <h2 className="font-display text-lg text-green-light tracking-wide uppercase">
+                {season.year} Season — In Progress
+              </h2>
+              <span className="font-mono text-xs text-cream-dim/50 ml-1">
+                Day {season.currentDay}/{season.totalDays}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-6 font-mono">
+              <div>
+                <p className="text-xs text-cream-dim/50 uppercase tracking-wider mb-0.5">Record</p>
+                <p className="text-xl text-cream font-bold">
+                  {rec.wins}–{rec.losses}{' '}
+                  <span className="text-sm text-cream-dim font-normal">{pct}</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-cream-dim/50 uppercase tracking-wider mb-0.5">Progress</p>
+                <p className="text-sm text-cream">{gamesPlayed} GP · {Math.round((season.currentDay / season.totalDays) * 100)}% done</p>
+              </div>
+              {divRank && userDiv && (
+                <div>
+                  <p className="text-xs text-cream-dim/50 uppercase tracking-wider mb-0.5">Standing</p>
+                  <p className="text-sm text-cream">
+                    {rankLabel} <span className="text-cream-dim">in {userDiv.division}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-cream-dim/40 mt-3 font-mono">Full history is saved at season end.</p>
+          </div>
+        );
+      })()}
 
       {/* Champions Banner */}
       {champions.length > 0 && (
@@ -234,8 +285,8 @@ export function FranchiseHistoryPage() {
         </Panel>
       )}
 
-      {/* Empty state */}
-      {champions.length === 0 && seasonRecords.length === 0 && awardHistory.length === 0 && (
+      {/* Empty state — only when there's no in-progress season and no past data */}
+      {champions.length === 0 && seasonRecords.length === 0 && awardHistory.length === 0 && !season && (
         <Panel>
           <p className="font-mono text-cream-dim text-sm text-center py-8">
             No franchise history yet. History is recorded at season end.
