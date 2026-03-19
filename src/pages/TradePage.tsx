@@ -358,6 +358,11 @@ export function TradePage() {
               Clear
             </Button>
           </div>
+          {userBlock.length === 0 && theirBlock.length === 0 && (
+            <p className="font-mono text-xs text-gold/60">
+              ← Select players from both panels above to begin building a trade
+            </p>
+          )}
           <p className="font-mono text-xs text-cream-dim">
             * AI will accept if the trade is reasonably fair for them. Heavily lopsided offers will be rejected.
           </p>

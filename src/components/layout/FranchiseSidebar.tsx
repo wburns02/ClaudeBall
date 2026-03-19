@@ -171,7 +171,8 @@ export function FranchiseSidebar() {
   const location = useLocation();
   const { season, engine, userTeamId } = useFranchiseStore();
 
-  const [collapsed, setCollapsed] = useState(false);
+  // Auto-collapse on small screens
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth < 640);
 
   const userTeam = userTeamId ? engine?.getTeam(userTeamId) ?? null : null;
   const userRecord = userTeamId ? season?.standings.getRecord(userTeamId) ?? null : null;

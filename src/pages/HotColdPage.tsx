@@ -197,6 +197,14 @@ export function HotColdPage() {
         </div>
       </div>
 
+      {/* Preseason hint — all players start neutral, so the table shows but trends are flat */}
+      {summaries.length > 0 && summaries.every(s => s.recentGames === 0) && (
+        <div className="mb-4 px-4 py-3 rounded-md bg-gold/5 border border-gold/20 font-mono text-sm text-gold/80 flex items-start gap-2">
+          <span>ℹ</span>
+          <span>All players are at baseline — advance days or simulate games to see hot &amp; cold trends develop.</span>
+        </div>
+      )}
+
       {rows.length === 0 ? (
         <Panel title="No Data">
           <div className="py-12 text-center">
@@ -233,7 +241,7 @@ export function HotColdPage() {
                       className={cn(
                         'border-b border-navy-lighter/30 cursor-pointer transition-colors',
                         i % 2 === 0 ? 'bg-navy-lighter/5' : 'bg-transparent',
-                        'hover:bg-navy-lighter/20',
+                        'hover:bg-navy-lighter/40',
                       )}
                     >
                       <td className="px-3 py-2.5">
