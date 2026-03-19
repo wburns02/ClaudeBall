@@ -38,13 +38,13 @@ export function MainLayout({ children }: MainLayoutProps) {
           </button>
 
           {/* Nav links */}
-          <nav className="flex items-center gap-1 flex-1">
+          <nav className="flex items-center gap-1 flex-1 overflow-x-auto scrollbar-none">
             {NAV_LINKS.map(link => (
               <button
                 key={link.path}
                 onClick={() => navigate(link.path)}
                 className={cn(
-                  'px-3 py-1.5 rounded font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer',
+                  'px-2.5 py-1.5 rounded font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap shrink-0',
                   isActive(link.path)
                     ? 'text-gold bg-gold/10'
                     : 'text-cream-dim hover:text-cream hover:bg-navy-lighter/30',

@@ -94,6 +94,7 @@ interface FranchiseState {
   initDraft: () => void;
   generatePreviewDraft: () => void;
   draftPlayer: (prospectId: string) => boolean;
+  cpuDraftSinglePick: () => import('@/engine/gm/DraftEngine.ts').DraftProspect | null;
   advanceSeason: () => void;
   initFreeAgency: () => void;
   signFreeAgent: (playerId: string, years: number, salaryPerYear: number) => { success: boolean; reason?: string };
@@ -525,7 +526,6 @@ export const useFranchiseStore = create<FranchiseState>()(
     const { draftClass, draftPickOrder, currentDraftPick, engine } = get();
     if (!draftClass || !engine) return false;
 
-    const teamsCount = draftPickOrder.length;
     const totalPicks = draftClass.picks.length;
 
     if (currentDraftPick >= totalPicks) {
@@ -543,39 +543,12 @@ export const useFranchiseStore = create<FranchiseState>()(
     const player = makePick(draftClass, teamId, prospectId);
     if (!player) return false;
 
-    // Mark prospect as drafted
+    // Mark prospect as drafted — do NOT auto-advance CPU picks
+    // CPU picks are animated one-at-a-time in DraftPage via cpuDraftSinglePick
     currentPickEntry.prospectId = prospectId;
     team.roster.players.push(player);
 
-    let nextPick = currentDraftPick + 1;
-    const isComplete = nextPick >= totalPicks;
-
-    // Auto-pick for CPU teams until it's the user's turn again
-    const { userTeamId } = get();
-    while (!isComplete && nextPick < totalPicks) {
-      const nextEntry = draftClass.picks[nextPick];
-      if (!nextEntry) break;
-      if (nextEntry.teamId === userTeamId) break;
-
-      // CPU pick: pick best available prospect
-      const available = draftClass.prospects.filter(
-        p => !draftClass.picks.some(pk => pk.prospectId === p.id)
-      );
-      if (available.length === 0) break;
-
-      // CPU picks by potential rating
-      available.sort((a, b) => b.potentialRating - a.potentialRating);
-      const cpuPick = available[0];
-      const cpuTeam = engine.getTeam(nextEntry.teamId);
-
-      if (cpuPick && cpuTeam) {
-        const cpuPlayer = makePick(draftClass, nextEntry.teamId, cpuPick.id);
-        nextEntry.prospectId = cpuPick.id;
-        if (cpuPlayer) cpuTeam.roster.players.push(cpuPlayer);
-      }
-
-      nextPick++;
-    }
+    const nextPick = currentDraftPick + 1;
 
     set({
       draftClass: { ...draftClass },
@@ -583,8 +556,53 @@ export const useFranchiseStore = create<FranchiseState>()(
       draftComplete: nextPick >= totalPicks,
     });
 
-    void teamsCount;
     return true;
+  },
+
+  /**
+   * Make exactly ONE CPU pick for the current pick slot.
+   * Returns the prospect selected (for animation display), or null if done/user's turn.
+   * Called repeatedly with a delay by DraftPage to animate CPU picks one-at-a-time.
+   */
+  cpuDraftSinglePick: () => {
+    const { draftClass, currentDraftPick, userTeamId, engine } = get();
+    if (!draftClass || !engine) return null;
+
+    const totalPicks = draftClass.picks.length;
+    if (currentDraftPick >= totalPicks) {
+      set({ draftComplete: true });
+      return null;
+    }
+
+    const pickEntry = draftClass.picks[currentDraftPick];
+    if (!pickEntry) return null;
+    // Stop if it's the user's turn
+    if (pickEntry.teamId === userTeamId) return null;
+
+    const cpuTeam = engine.getTeam(pickEntry.teamId);
+    if (!cpuTeam) return null;
+
+    const available = draftClass.prospects.filter(
+      p => !draftClass.picks.some(pk => pk.prospectId === p.id)
+    );
+    if (available.length === 0) return null;
+
+    available.sort((a, b) => b.potentialRating - a.potentialRating);
+    const picked = available[0];
+    if (!picked) return null;
+
+    const cpuPlayer = makePick(draftClass, pickEntry.teamId, picked.id);
+    pickEntry.prospectId = picked.id;
+    if (cpuPlayer) cpuTeam.roster.players.push(cpuPlayer);
+
+    const nextPick = currentDraftPick + 1;
+    set({
+      draftClass: { ...draftClass },
+      currentDraftPick: nextPick,
+      draftComplete: nextPick >= totalPicks,
+    });
+
+    return picked;
   },
 
   advanceSeason: () => {

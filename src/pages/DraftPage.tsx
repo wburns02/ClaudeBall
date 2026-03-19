@@ -390,6 +390,76 @@ function PreDraftScouting({
   );
 }
 
+// ── Pick Reveal Announcement ──────────────────────────────────────────────────
+
+interface PickReveal {
+  teamId: string;
+  teamAbbr: string;
+  prospect: DraftProspect;
+  round: number;
+  overall: number;
+  isUser: boolean;
+}
+
+function PickAnnouncement({ reveal, onDismiss }: { reveal: PickReveal; onDismiss: () => void }) {
+  const isPitcher = reveal.prospect.position === 'P';
+  const t = reveal.prospect.tools;
+  const topToolLabel = isPitcher ? 'FB' : 'HIT';
+  const topToolVal = isPitcher ? t.fastball : t.hit;
+
+  return (
+    <div
+      className={cn(
+        'mb-4 p-4 rounded-xl border-2',
+        reveal.isUser
+          ? 'border-gold bg-gold/10 shadow-[0_0_24px_rgba(212,168,67,0.2)]'
+          : 'border-navy-lighter bg-navy-light/60',
+      )}
+      style={{ animation: 'fadeInDown 0.35s ease-out' }}
+    >
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className={cn(
+          'font-mono text-[10px] px-2 py-0.5 rounded uppercase tracking-widest font-bold shrink-0',
+          reveal.isUser ? 'bg-gold text-navy' : 'bg-navy-lighter text-cream-dim',
+        )}>
+          {reveal.isUser ? 'YOU SELECT' : 'CPU PICK'}
+        </span>
+        <span className={cn('font-mono text-xs shrink-0', reveal.isUser ? 'text-gold' : 'text-cream-dim')}>
+          Round {reveal.round} · #{reveal.overall}
+        </span>
+        {!reveal.isUser && (
+          <span className={cn(
+            'font-display text-base font-bold shrink-0',
+            reveal.isUser ? 'text-gold' : 'text-cream',
+          )}>
+            {reveal.teamAbbr}
+          </span>
+        )}
+        <span className="font-mono text-xs text-cream-dim/50 shrink-0">selects</span>
+        <span className={cn(
+          'font-display text-lg font-bold',
+          reveal.isUser ? 'text-gold' : 'text-cream',
+        )}>
+          {reveal.prospect.firstName} {reveal.prospect.lastName}
+        </span>
+        <span className={cn('font-mono text-sm font-bold shrink-0', POSITION_COLORS[reveal.prospect.position] ?? 'text-cream')}>
+          {reveal.prospect.position}
+        </span>
+        <span className={cn('font-mono text-sm shrink-0', gradeLetterColor(reveal.prospect.scoutGrade))}>
+          {reveal.prospect.scoutGrade}
+        </span>
+        <span className="font-mono text-xs text-cream-dim/50 shrink-0">{reveal.prospect.school}</span>
+        <span className="font-mono text-xs text-cream-dim/30 shrink-0">
+          {topToolLabel} {topToolVal}
+        </span>
+        {!reveal.isUser && (
+          <button onClick={onDismiss} className="ml-auto text-cream-dim/30 hover:text-cream-dim text-xs font-mono">✕</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main DraftPage ────────────────────────────────────────────────────────────
 
 export function DraftPage() {
@@ -397,7 +467,7 @@ export function DraftPage() {
   const {
     season, engine, userTeamId, isInitialized,
     draftClass, previewDraftClass, draftPickOrder, currentDraftPick, draftComplete,
-    initDraft, draftPlayer, generatePreviewDraft,
+    initDraft, draftPlayer, cpuDraftSinglePick, generatePreviewDraft,
   } = useFranchiseStore();
 
   const [selectedProspect, setSelectedProspect] = useState<DraftProspect | null>(null);
@@ -405,6 +475,8 @@ export function DraftPage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [justDrafted, setJustDrafted] = useState<DraftProspect | null>(null);
   const [scoutingTab, setScoutingTab] = useState<'board' | 'scouting'>('board');
+  const [pickReveal, setPickReveal] = useState<PickReveal | null>(null);
+  const [autoPicking, setAutoPicking] = useState(false);
 
   useEffect(() => {
     if (!isInitialized) navigate('/franchise/new');
@@ -526,21 +598,73 @@ export function DraftPage() {
 
   const positions = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 
-  const handleDraft = () => {
-    if (!selectedProspect || !isUserTurn) return;
-    const drafted = selectedProspect;
-    const success = draftPlayer(drafted.id);
-    if (success) {
-      setJustDrafted(drafted);
-      setSelectedProspect(null);
-      setTimeout(() => setJustDrafted(null), 3000);
-    }
-  };
-
   const teamName = (id: string) => {
     const t = engine.getTeam(id);
     return t?.abbreviation ?? id.slice(0, 3).toUpperCase();
   };
+
+  const handleDraft = () => {
+    if (!selectedProspect || !isUserTurn) return;
+    const drafted = selectedProspect;
+    const pickEntry = draftClass.picks[currentDraftPick];
+    const round = Math.floor(currentDraftPick / teamsCount) + 1;
+    const success = draftPlayer(drafted.id);
+    if (success) {
+      // Show user's pick announcement
+      setPickReveal({
+        teamId: userTeamId ?? '',
+        teamAbbr: teamName(userTeamId ?? ''),
+        prospect: drafted,
+        round,
+        overall: pickEntry?.overallPick ?? (currentDraftPick + 1),
+        isUser: true,
+      });
+      setJustDrafted(drafted);
+      setSelectedProspect(null);
+      setTimeout(() => {
+        setJustDrafted(null);
+        setPickReveal(null);
+        // Start CPU animation after user pick announcement clears
+        setAutoPicking(true);
+      }, 1800);
+    }
+  };
+
+  // CPU pick animation loop — fires after user's pick, reveals CPU picks one at a time
+  useEffect(() => {
+    if (!autoPicking || draftComplete || !draftClass) return;
+
+    const nextEntry = draftClass.picks[currentDraftPick];
+    if (!nextEntry) { setAutoPicking(false); return; }
+    if (nextEntry.teamId === userTeamId) {
+      setAutoPicking(false); // user's next turn — stop animating
+      return;
+    }
+
+    const round = Math.floor(currentDraftPick / teamsCount) + 1;
+
+    const timer = setTimeout(() => {
+      const picked = cpuDraftSinglePick();
+      if (picked) {
+        setPickReveal({
+          teamId: nextEntry.teamId,
+          teamAbbr: teamName(nextEntry.teamId),
+          prospect: picked,
+          round,
+          overall: (nextEntry.overallPick ?? currentDraftPick) + 1,
+          isUser: false,
+        });
+        // Hold the reveal briefly, then loop
+        setTimeout(() => {
+          setPickReveal(null);
+        }, 900);
+      } else {
+        setAutoPicking(false);
+      }
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [autoPicking, currentDraftPick, draftComplete]);
 
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto" data-testid="draft-page">
@@ -565,22 +689,45 @@ export function DraftPage() {
       </div>
 
       {/* "On the clock" banner */}
-      {isUserTurn && !draftComplete && (
-        <div className="mb-4 px-4 py-3 rounded-lg border-2 border-gold bg-gold/10 flex items-center justify-between animate-pulse">
+      {isUserTurn && !draftComplete && !autoPicking && !pickReveal && (
+        <div className="mb-4 px-4 py-3 rounded-xl border-2 border-gold bg-gold/10 flex items-center justify-between"
+          style={{ animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' }}>
           <p className="font-display text-gold text-lg uppercase tracking-wide">You're on the clock</p>
           <p className="font-mono text-gold/80 text-sm">Round {currentRound} · Pick {currentPickNum}</p>
         </div>
       )}
 
-      {/* Just drafted notification */}
-      {justDrafted && (
-        <div className="mb-4 px-4 py-3 rounded-lg border border-green-light/30 bg-green-900/20 flex items-center gap-3">
-          <span className="text-green-light text-xl">✓</span>
-          <div>
-            <p className="font-display text-green-light">Drafted: {justDrafted.firstName} {justDrafted.lastName}</p>
-            <p className="font-mono text-cream-dim/60 text-xs">{justDrafted.position} · {justDrafted.school}</p>
+      {/* CPU animating banner */}
+      {autoPicking && !pickReveal && !draftComplete && (
+        <div className="mb-4 px-4 py-3 rounded-xl border border-navy-lighter bg-navy-light/50 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs text-cream-dim animate-pulse">⚙ CPU selecting...</span>
+            <span className="font-mono text-xs text-cream-dim/40">Round {currentRound}, Pick {currentPickNum}</span>
           </div>
+          <button
+            onClick={() => {
+              // Fast-forward: execute all remaining CPU picks instantly until user's turn
+              setAutoPicking(false);
+              setPickReveal(null);
+              // Keep calling cpuDraftSinglePick until it returns null (user's turn or done)
+              let picked = cpuDraftSinglePick();
+              while (picked !== null) {
+                picked = cpuDraftSinglePick();
+              }
+            }}
+            className="font-mono text-[10px] text-cream-dim/40 hover:text-cream-dim border border-navy-lighter/40 px-2 py-1 rounded transition-colors shrink-0"
+          >
+            Skip ⏩
+          </button>
         </div>
+      )}
+
+      {/* Pick announcement (user or CPU) */}
+      {pickReveal && (
+        <PickAnnouncement
+          reveal={pickReveal}
+          onDismiss={() => setPickReveal(null)}
+        />
       )}
 
       {/* Progress bar */}
