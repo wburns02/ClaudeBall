@@ -56,6 +56,7 @@ const Icons = {
   lineup: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01',
   development: 'M22 12h-4l-3 9L9 3l-3 9H2',
   training: 'M6.5 6.5a5.5 5.5 0 0111 0c0 4-5.5 8-5.5 8S6.5 10.5 6.5 6.5z M12 6.5h.01',
+  news: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z M9 10h6 M9 14h4',
 };
 
 interface NavItem {
@@ -77,6 +78,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'HOME',
     items: [
       { label: 'Dashboard', path: '/franchise', icon: 'home' },
+      { label: 'League News', path: '/franchise/news', icon: 'news' },
     ],
   },
   {

@@ -315,6 +315,14 @@ export function TradePage() {
             </div>
           )}
 
+          {(userBlock.length > 0 || theirBlock.length > 0) && (userBlock.length === 0 || theirBlock.length === 0) && (
+            <p className="font-mono text-xs text-gold/70 bg-gold/5 border border-gold/20 rounded-md px-3 py-2">
+              {userBlock.length === 0
+                ? '← Select players from your team to offer in the trade'
+                : '→ Select players from the other team to request in the trade'}
+            </p>
+          )}
+
           <div className="flex gap-3">
             <Button
               variant="secondary"

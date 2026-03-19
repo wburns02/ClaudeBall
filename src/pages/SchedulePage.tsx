@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -16,18 +16,20 @@ const MILESTONES = [
 const DAYS_PER_WEEK = 7;
 const WEEKS_PER_VIEW = 4; // 4 weeks = 28 days per "month" view
 
-interface BoxScoreModal {
-  game: ScheduledGame;
-  awayName: string;
-  homeName: string;
-}
 
 export function SchedulePage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, advanceDay, simDays } = useFranchiseStore();
 
   const [weekOffset, setWeekOffset] = useState(0); // in weeks from week 1
-  const [modal, setModal] = useState<BoxScoreModal | null>(null);
+  // Auto-scroll to current week on mount
+  useEffect(() => {
+    if (season) {
+      const weekIdx = Math.max(0, Math.floor((season.currentDay - 1) / DAYS_PER_WEEK) - 1);
+      setWeekOffset(weekIdx);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -77,13 +79,8 @@ export function SchedulePage() {
     if (!userGame) return;
 
     if (userGame.played) {
-      const away = engine.getTeam(userGame.awayId);
-      const home = engine.getTeam(userGame.homeId);
-      setModal({
-        game: userGame,
-        awayName: away ? `${away.city} ${away.name}` : userGame.awayId,
-        homeName: home ? `${home.city} ${home.name}` : userGame.homeId,
-      });
+      // Navigate directly to box score for played games
+      navigate(`/franchise/box-score/${userGame.id}`);
     }
     // Upcoming games handled by action buttons
   };
@@ -312,58 +309,6 @@ export function SchedulePage() {
         ))}
       </div>
 
-      {/* Box Score Modal */}
-      {modal && (
-        <div
-          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
-          onClick={() => setModal(null)}
-        >
-          <div
-            className="bg-navy-light border border-navy-lighter rounded-xl p-6 w-full max-w-md shadow-2xl"
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 className="font-display text-gold text-xl tracking-wide uppercase mb-4">
-              Game Result — Day {modal.game.date}
-            </h2>
-
-            {/* Line score */}
-            <div className="bg-navy-lighter/30 rounded-lg p-4 mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className={cn(
-                  'font-mono text-sm',
-                  modal.game.awayId === userTeamId ? 'text-gold font-bold' : 'text-cream',
-                )}>
-                  {modal.awayName}
-                </span>
-                <span className="font-mono text-2xl font-bold text-cream">{modal.game.awayScore}</span>
-              </div>
-              <div className="w-full h-px bg-navy-lighter/60 mb-2" />
-              <div className="flex justify-between items-center">
-                <span className={cn(
-                  'font-mono text-sm',
-                  modal.game.homeId === userTeamId ? 'text-gold font-bold' : 'text-cream',
-                )}>
-                  {modal.homeName}
-                </span>
-                <span className="font-mono text-2xl font-bold text-cream">{modal.game.homeScore}</span>
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate(`/franchise/box-score/${modal.game.id}`)}
-              >
-                Full Box Score
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setModal(null)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

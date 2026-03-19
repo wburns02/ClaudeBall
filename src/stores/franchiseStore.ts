@@ -882,6 +882,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         userTradeLog: state.userTradeLog,
         waiverLog: state.waiverLog,
         callupLog: state.callupLog,
+        tradeProposals: state.tradeProposals,
         // Serialize the season without the StandingsTracker class instance
         _seasonSnapshot: state.season
           ? {

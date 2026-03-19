@@ -63,6 +63,7 @@ const PayrollPage = lazy(() => import('@/pages/PayrollPage.tsx').then(m => ({ de
 const LineupEditorPage = lazy(() => import('@/pages/LineupEditorPage.tsx').then(m => ({ default: m.LineupEditorPage })));
 const DevelopmentHubPage = lazy(() => import('@/pages/DevelopmentHubPage.tsx').then(m => ({ default: m.DevelopmentHubPage })));
 const TrainingCenterPage = lazy(() => import('@/pages/TrainingCenterPage.tsx').then(m => ({ default: m.TrainingCenterPage })));
+const NewsPage = lazy(() => import('@/pages/NewsPage.tsx').then(m => ({ default: m.NewsPage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -175,6 +176,7 @@ function AppRoutes() {
           <Route path="/franchise/lineup-editor" element={<FranchiseLayout><LineupEditorPage /></FranchiseLayout>} />
           <Route path="/franchise/development" element={<FranchiseLayout><DevelopmentHubPage /></FranchiseLayout>} />
           <Route path="/franchise/training" element={<FranchiseLayout><TrainingCenterPage /></FranchiseLayout>} />
+          <Route path="/franchise/news" element={<FranchiseLayout><NewsPage /></FranchiseLayout>} />
         </Routes>
       </Suspense>
     </FadeWrapper>
