@@ -19,7 +19,7 @@ const SEVERITY_BG: Record<string, string> = {
   'season-ending': 'bg-red-950/30 border-red-700/40',
 };
 
-function InjuryRow({ record, currentDay, showTeam }: { record: InjuryRecord; currentDay: number; showTeam?: boolean }) {
+function InjuryRow({ record, currentDay, showTeam, teamName }: { record: InjuryRecord; currentDay: number; showTeam?: boolean; teamName?: string }) {
   const daysRemaining = Math.max(0, record.injuredUntilDay - currentDay);
   const isSeasonEnding = record.severity === 'season-ending';
   const hasReturned = record.returned;
@@ -38,8 +38,8 @@ function InjuryRow({ record, currentDay, showTeam }: { record: InjuryRecord; cur
           {hasReturned && <span className="font-mono text-xs text-green-light">RETURNED</span>}
         </div>
         <p className="font-mono text-xs text-cream-dim mt-0.5">{record.description}</p>
-        {showTeam && (
-          <p className="font-mono text-xs text-cream-dim/60 mt-0.5">Team ID: {record.teamId.slice(0, 8)}…</p>
+        {showTeam && teamName && (
+          <p className="font-mono text-xs text-cream-dim/60 mt-0.5">{teamName}</p>
         )}
       </div>
       <div className="text-right shrink-0">
@@ -140,9 +140,11 @@ export function InjuryReportPage() {
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
               {leagueInjuries
                 .sort((a, b) => b.injuredUntilDay - a.injuredUntilDay)
-                .map(r => (
-                  <InjuryRow key={r.playerId + r.dayOccurred} record={r} currentDay={currentDay} showTeam />
-                ))}
+                .map(r => {
+                  const t = engine.getTeam(r.teamId);
+                  const teamName = t ? `${t.city} ${t.name}` : r.teamId;
+                  return <InjuryRow key={r.playerId + r.dayOccurred} record={r} currentDay={currentDay} showTeam teamName={teamName} />;
+                })}
             </div>
           )}
         </Panel>
@@ -155,9 +157,11 @@ export function InjuryReportPage() {
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
               {[...injuryLog]
                 .reverse()
-                .map((r, i) => (
-                  <InjuryRow key={i} record={r} currentDay={currentDay} showTeam />
-                ))}
+                .map((r, i) => {
+                  const t = engine.getTeam(r.teamId);
+                  const teamName = t ? `${t.city} ${t.name}` : r.teamId;
+                  return <InjuryRow key={i} record={r} currentDay={currentDay} showTeam teamName={teamName} />;
+                })}
             </div>
           )}
         </Panel>

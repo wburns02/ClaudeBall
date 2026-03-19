@@ -19,11 +19,15 @@ function PlayerCard({
   selected,
   onClick,
   dimmed,
+  salary,
+  contractYrs,
 }: {
   player: Player;
   selected: boolean;
   onClick: () => void;
   dimmed?: boolean;
+  salary?: string;
+  contractYrs?: string;
 }) {
   const ovr = Math.round(evaluatePlayer(player));
   return (
@@ -41,6 +45,11 @@ function PlayerCard({
         <div className="min-w-0">
           <p className="text-cream text-sm font-body truncate">{getPlayerName(player)}</p>
           <p className="font-mono text-xs text-cream-dim">{player.position} · Age {player.age}</p>
+          {salary && (
+            <p className="font-mono text-[10px] text-gold/70 mt-0.5">
+              {salary}{contractYrs ? ` · ${contractYrs}` : ''}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {selected && <span className="text-gold text-xs">✓</span>}
@@ -211,14 +220,19 @@ export function TradePage() {
         <Panel title={`${userTeam.city} ${userTeam.name} (You)`}>
           <p className="font-mono text-xs text-cream-dim mb-3">Click players to add to trade block</p>
           <div className="space-y-1 max-h-96 overflow-y-auto pr-1">
-            {userTeam.roster.players.map(p => (
-              <PlayerCard
-                key={p.id}
-                player={p}
-                selected={userBlock.includes(p.id)}
-                onClick={() => toggleUserPlayer(p.id)}
-              />
-            ))}
+            {userTeam.roster.players.map(p => {
+              const c = engine?.contractEngine.getContract(p.id);
+              return (
+                <PlayerCard
+                  key={p.id}
+                  player={p}
+                  selected={userBlock.includes(p.id)}
+                  onClick={() => toggleUserPlayer(p.id)}
+                  salary={c ? `$${(c.salaryPerYear / 1000).toFixed(1)}M/yr` : undefined}
+                  contractYrs={c && !c.isFreeAgent ? `${c.yearsRemaining}yr` : c?.isFreeAgent ? 'FA' : undefined}
+                />
+              );
+            })}
           </div>
           {userBlock.length > 0 && (
             <div className="mt-3 pt-3 border-t border-navy-lighter">
@@ -244,14 +258,19 @@ export function TradePage() {
         <Panel title={partnerTeam ? `${partnerTeam.city} ${partnerTeam.name}` : 'Select Partner'}>
           <p className="font-mono text-xs text-cream-dim mb-3">Click players to request in trade</p>
           <div className="space-y-1 max-h-96 overflow-y-auto pr-1">
-            {partnerTeam?.roster.players.map(p => (
-              <PlayerCard
-                key={p.id}
-                player={p}
-                selected={theirBlock.includes(p.id)}
-                onClick={() => toggleTheirPlayer(p.id)}
-              />
-            ))}
+            {partnerTeam?.roster.players.map(p => {
+              const c = engine?.contractEngine.getContract(p.id);
+              return (
+                <PlayerCard
+                  key={p.id}
+                  player={p}
+                  selected={theirBlock.includes(p.id)}
+                  onClick={() => toggleTheirPlayer(p.id)}
+                  salary={c ? `$${(c.salaryPerYear / 1000).toFixed(1)}M/yr` : undefined}
+                  contractYrs={c && !c.isFreeAgent ? `${c.yearsRemaining}yr` : c?.isFreeAgent ? 'FA' : undefined}
+                />
+              );
+            })}
           </div>
           {theirBlock.length > 0 && (
             <div className="mt-3 pt-3 border-t border-navy-lighter">

@@ -109,7 +109,7 @@ export function RosterPage() {
     return (
       <tr
         className="border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors cursor-pointer"
-        onClick={() => navigate(`/franchise/player/${p.id}`)}
+        onClick={() => navigate(`/franchise/player-stats/${p.id}`)}
       >
         <td className="px-3 py-2 text-cream font-body text-sm">{getPlayerName(p)}</td>
         <td className="px-3 py-2 font-mono text-xs text-gold text-center">{p.position}</td>

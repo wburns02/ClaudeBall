@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Team } from '@/engine/types/index.ts';
+import { RandomProvider } from '@/engine/core/RandomProvider.ts';
 import type { SeasonState, DayEvents } from '@/engine/season/index.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
 import { generateBatterLines, generatePitcherLine } from '@/engine/stats/QuickSimStatGenerator.ts';
@@ -122,12 +123,42 @@ export const useFranchiseStore = create<FranchiseState>()(
   callupLog: [],
 
   startFranchise: (teams, leagueStructure, userTeamId) => {
-    const engine = new SeasonEngine(teams, leagueStructure, userTeamId);
+    // Deep-clone teams and randomize player ages + mental ratings for realism
+    const rng = new RandomProvider(Date.now() ^ (Math.random() * 0x7fffffff | 0));
+    // MLB-realistic age buckets: young (22-25) ~25%, prime (26-31) ~50%, vet (32-38) ~25%
+    function randomAge(rng: RandomProvider): number {
+      const roll = rng.next();
+      if (roll < 0.25) return rng.nextInt(22, 25);
+      if (roll < 0.75) return rng.nextInt(26, 31);
+      return rng.nextInt(32, 38);
+    }
+    function randMental(rng: RandomProvider): number {
+      return Math.round(30 + rng.next() * 55); // 30-85 range
+    }
+    const initializedTeams: Team[] = teams.map(team => ({
+      ...team,
+      roster: {
+        ...team.roster,
+        players: team.roster.players.map(player => ({
+          ...player,
+          age: player.age === 28 ? randomAge(rng) : player.age, // only randomize default-age players
+          mental: {
+            intelligence: randMental(rng),
+            work_ethic: randMental(rng),
+            durability: randMental(rng),
+            consistency: randMental(rng),
+            composure: randMental(rng),
+            leadership: randMental(rng),
+          },
+        })),
+      },
+    }));
+    const engine = new SeasonEngine(initializedTeams, leagueStructure, userTeamId);
     set({
       engine,
       season: engine.getState(),
       userTeamId,
-      teams,
+      teams: initializedTeams,
       leagueStructure,
       isInitialized: true,
       draftClass: null,
