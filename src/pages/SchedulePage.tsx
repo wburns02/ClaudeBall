@@ -24,7 +24,7 @@ interface BoxScoreModal {
 
 export function SchedulePage() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, advanceDay, simGame } = useFranchiseStore();
+  const { season, engine, userTeamId, advanceDay, simDays } = useFranchiseStore();
 
   const [weekOffset, setWeekOffset] = useState(0); // in weeks from week 1
   const [modal, setModal] = useState<BoxScoreModal | null>(null);
@@ -96,8 +96,9 @@ export function SchedulePage() {
     }
   };
 
-  const handleSimGame = (game: ScheduledGame) => {
-    simGame(game.id);
+  const handleSimGame = (_game: ScheduledGame) => {
+    // Advance the day (sims ALL games for that day, keeping currentDay in sync)
+    simDays(1);
   };
 
   const maxWeekOffset = Math.ceil(totalDays / DAYS_PER_WEEK) - WEEKS_PER_VIEW;
@@ -281,16 +282,14 @@ export function SchedulePage() {
                             {g.awayScore}-{g.homeScore}
                           </div>
                         )}
-                        {!g.played && isFuture && (
+                        {!g.played && isFuture && day === currentDay + 1 && (
                           <div className="flex gap-1 mt-0.5">
-                            {day === currentDay + 1 && (
-                              <button
-                                className="font-mono text-[9px] text-gold bg-gold/10 rounded px-1 hover:bg-gold/20 cursor-pointer"
-                                onClick={e => { e.stopPropagation(); handlePlayGame(g); }}
-                              >
-                                Play
-                              </button>
-                            )}
+                            <button
+                              className="font-mono text-[9px] text-gold bg-gold/10 rounded px-1 hover:bg-gold/20 cursor-pointer"
+                              onClick={e => { e.stopPropagation(); handlePlayGame(g); }}
+                            >
+                              Play
+                            </button>
                             <button
                               className="font-mono text-[9px] text-cream-dim bg-navy-lighter/30 rounded px-1 hover:bg-navy-lighter/60 cursor-pointer"
                               onClick={e => { e.stopPropagation(); handleSimGame(g); }}

@@ -73,11 +73,8 @@ function FACard({
         <OvrBadge val={ovr} />
 
         <div className="flex gap-1.5">
-          <Button size="sm" variant="ghost" onClick={() => setExpanded(e => !e)}>
-            {expanded ? 'Less' : 'More'}
-          </Button>
-          <Button size="sm" onClick={() => onSign(fa, offerYears, offerSalary)}>
-            Sign
+          <Button size="sm" onClick={() => setExpanded(true)} title="Open offer form to set terms">
+            {expanded ? 'Offer Terms ▼' : 'Sign…'}
           </Button>
         </div>
       </div>

@@ -3,21 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import type { StoredTradeProposal } from '@/stores/franchiseStore.ts';
 import { evaluatePlayer, generateTradeOffer } from '@/engine/gm/TradeEngine.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { cn } from '@/lib/cn.ts';
-import type { TradeProposal } from '@/engine/gm/TradeEngine.ts';
 import type { Player } from '@/engine/types/player.ts';
 
-interface IncomingProposal {
-  id: string;
-  aiTeamId: string;
-  aiTeamName: string;
-  proposal: TradeProposal;
-  day: number;
-  status: 'pending' | 'accepted' | 'rejected' | 'countered';
-  counterOffering?: string[]; // player IDs the user counter-offers
-}
+// Alias for local use
+type IncomingProposal = StoredTradeProposal;
 
 function OVR({ v }: { v: number }) {
   const color = v >= 75 ? 'text-gold' : v >= 60 ? 'text-green-light' : v >= 45 ? 'text-cream' : 'text-red';
@@ -56,9 +49,11 @@ function generateProposalId(): string {
 
 export function TradeProposalPage() {
   const navigate = useNavigate();
-  const { engine, season, userTeamId, teams, movePlayer, addUserTradeLog } = useFranchiseStore();
+  const { engine, season, userTeamId, teams, movePlayer, addUserTradeLog, tradeProposals, setTradeProposals } = useFranchiseStore();
 
-  const [proposals, setProposals] = useState<IncomingProposal[]>([]);
+  // proposals now lives in the store so it persists across navigation
+  const proposals = tradeProposals;
+  const setProposals = setTradeProposals;
   const [counterTarget, setCounterTarget] = useState<string | null>(null); // proposal id
   const [counterOfferIds, setCounterOfferIds] = useState<string[]>([]);
   const [result, setResult] = useState<{ proposalId: string; msg: string; ok: boolean } | null>(null);
@@ -122,7 +117,7 @@ export function TradeProposalPage() {
     }
 
     if (newProposals.length > 0) {
-      setProposals(prev => [...prev, ...newProposals]);
+      setProposals([...proposals, ...newProposals]);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [season?.currentDay]);
@@ -156,13 +151,13 @@ export function TradeProposalPage() {
     const desc = `Accepted trade with ${prop.aiTeamName}: gave ${giving}; received ${getting}`;
     addUserTradeLog(desc);
 
-    setProposals(prev => prev.map(p => p.id === prop.id ? { ...p, status: 'accepted' } : p));
+    setProposals(proposals.map(p => p.id === prop.id ? { ...p, status: 'accepted' as const } : p));
     setResult({ proposalId: prop.id, msg: 'Trade accepted! Rosters updated.', ok: true });
     setCounterTarget(null);
   };
 
   const handleReject = (propId: string) => {
-    setProposals(prev => prev.map(p => p.id === propId ? { ...p, status: 'rejected' } : p));
+    setProposals(proposals.map(p => p.id === propId ? { ...p, status: 'rejected' as const } : p));
     setResult({ proposalId: propId, msg: 'Trade rejected.', ok: false });
     setCounterTarget(null);
   };
@@ -198,10 +193,10 @@ export function TradeProposalPage() {
       const desc = `Counter-offer accepted with ${prop.aiTeamName}`;
       addUserTradeLog(desc);
 
-      setProposals(prev => prev.map(p => p.id === prop.id ? { ...p, status: 'accepted', counterOffering: counterOfferIds } : p));
+      setProposals(proposals.map(p => p.id === prop.id ? { ...p, status: 'accepted' as const, counterOffering: counterOfferIds } : p));
       setResult({ proposalId: prop.id, msg: 'Counter-offer accepted! Trade complete.', ok: true });
     } else {
-      setProposals(prev => prev.map(p => p.id === prop.id ? { ...p, status: 'rejected' } : p));
+      setProposals(proposals.map(p => p.id === prop.id ? { ...p, status: 'rejected' as const } : p));
       setResult({ proposalId: prop.id, msg: 'Counter-offer rejected. The AI team walked away.', ok: false });
     }
     setCounterTarget(null);

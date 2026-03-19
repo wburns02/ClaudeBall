@@ -18,6 +18,18 @@ import type { MinorLeagueRoster, CallupEvent } from '@/engine/season/MinorLeague
 import type { WaiverPlayer, WaiverEvent } from '@/engine/gm/WaiverWire.ts';
 import type { PlayerContract } from '@/engine/gm/ContractEngine.ts';
 import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
+import type { TradeProposal } from '@/engine/gm/TradeEngine.ts';
+
+/** Serializable trade proposal stored in the franchise store so it persists across navigation */
+export interface StoredTradeProposal {
+  id: string;
+  aiTeamId: string;
+  aiTeamName: string;
+  proposal: TradeProposal;
+  day: number;
+  status: 'pending' | 'accepted' | 'rejected' | 'countered';
+  counterOffering?: string[];
+}
 
 interface FranchiseState {
   // State
@@ -47,6 +59,10 @@ interface FranchiseState {
   waiverLog: WaiverEvent[];
   callupLog: CallupEvent[];
   lastDevelopmentChanges: DevelopmentChange[] | null;
+
+  // Trade proposals (persisted across navigation)
+  tradeProposals: StoredTradeProposal[];
+  setTradeProposals: (proposals: StoredTradeProposal[]) => void;
 
   // Internal: used only during persist/rehydrate cycle
   _seasonSnapshot?: unknown;
@@ -127,6 +143,8 @@ export const useFranchiseStore = create<FranchiseState>()(
   waiverLog: [],
   callupLog: [],
   lastDevelopmentChanges: null,
+  tradeProposals: [],
+  setTradeProposals: (proposals) => set({ tradeProposals: proposals }),
 
   startFranchise: (teams, leagueStructure, userTeamId) => {
     // Deep-clone teams and randomize player ages + mental ratings for realism

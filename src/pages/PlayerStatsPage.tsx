@@ -88,10 +88,64 @@ export function PlayerStatsPage() {
   const ovr = player ? Math.round(evaluatePlayer(player)) : null;
 
   if (!ps) {
+    // No in-game stats yet — show ratings if we have the player from the engine
+    if (player) {
+      const isPitcherRatings = player.position === 'P';
+      const ovrRatings = Math.round(evaluatePlayer(player));
+      return (
+        <div className="min-h-screen p-6 max-w-4xl mx-auto">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
+                {player.firstName} {player.lastName}
+              </h1>
+              <div className="flex items-center gap-3 mt-1 font-mono text-sm">
+                <span className="text-gold px-1.5 py-0.5 bg-gold/10 rounded text-xs">{player.position}</span>
+                <span className="text-cream-dim">Age {player.age}</span>
+                <span className="text-cream-dim">{player.bats}/{player.throws}</span>
+                <span className="text-cream font-bold">OVR {ovrRatings}</span>
+              </div>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => navigate(-1)}>← Back</Button>
+          </div>
+          <Panel title="Player Ratings">
+            <p className="font-mono text-xs text-cream-dim/60 mb-4">No in-game stats yet — ratings shown below.</p>
+            <div className="space-y-2">
+              {isPitcherRatings ? (
+                <>
+                  <RatingBar label="Stuff" value={player.pitching.stuff} />
+                  <RatingBar label="Movement" value={player.pitching.movement} />
+                  <RatingBar label="Control" value={player.pitching.control} />
+                  <RatingBar label="Stamina" value={player.pitching.stamina} />
+                  <RatingBar label="Velocity" value={player.pitching.velocity} />
+                </>
+              ) : (
+                <>
+                  <RatingBar label="Contact L" value={player.batting.contact_L} />
+                  <RatingBar label="Contact R" value={player.batting.contact_R} />
+                  <RatingBar label="Power L" value={player.batting.power_L} />
+                  <RatingBar label="Power R" value={player.batting.power_R} />
+                  <RatingBar label="Eye" value={player.batting.eye} />
+                  <RatingBar label="Speed" value={player.batting.speed} />
+                  <RatingBar label="Gap Power" value={player.batting.gap_power} />
+                  <RatingBar label="Avoid K" value={player.batting.avoid_k} />
+                </>
+              )}
+              <div className="pt-2 border-t border-navy-lighter mt-3">
+                <p className="font-mono text-xs text-cream-dim/50 mb-2">Mental</p>
+                <RatingBar label="Work Ethic" value={player.mental.work_ethic} />
+                <RatingBar label="Durability" value={player.mental.durability} />
+                <RatingBar label="Consistency" value={player.mental.consistency} />
+              </div>
+            </div>
+          </Panel>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="font-mono text-cream-dim text-lg">Player not found or no stats recorded.</p>
+          <p className="font-mono text-cream-dim text-lg">Player not found.</p>
           <Button className="mt-4" variant="secondary" onClick={() => navigate(-1)}>Go Back</Button>
         </div>
       </div>

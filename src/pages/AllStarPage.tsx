@@ -120,12 +120,15 @@ export function AllStarPage() {
     const rng = engine.getRng();
     const [awayScore, homeScore] = simulateASGScore(() => rng.next());
 
-    // MVP: best player on winning side
+    // MVP: weighted random pick from winning roster (higher OVR = more likely, but not guaranteed)
     const winnerRoster = awayScore > homeScore ? asgRoster1 : asgRoster2;
-    const mvpEntry = winnerRoster.reduce(
-      (best, e) => e.value > best.value ? e : best,
-      winnerRoster[0]!
-    );
+    const totalWeight = winnerRoster.reduce((sum, e) => sum + e.value, 0);
+    let pick = rng.next() * totalWeight;
+    let mvpEntry = winnerRoster[0]!;
+    for (const e of winnerRoster) {
+      pick -= e.value;
+      if (pick <= 0) { mvpEntry = e; break; }
+    }
     const mvpName = mvpEntry ? getPlayerName(mvpEntry.player) : 'Unknown';
     const mvpId = mvpEntry?.player.id ?? '';
 
