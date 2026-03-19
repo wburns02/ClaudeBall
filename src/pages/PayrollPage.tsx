@@ -417,10 +417,10 @@ export function PayrollPage() {
           <div className="w-full h-3 bg-navy-lighter rounded-full overflow-hidden relative">
             <div
               className={cn(
-                'h-full rounded-full transition-all duration-500',
+                'h-full rounded-full transition-all duration-700',
                 overBudget ? 'bg-red-500' : budgetPct > 85 ? 'bg-gold' : 'bg-green-light/70',
               )}
-              style={{ width: `${budgetPct}%` }}
+              style={{ width: `${Math.max(0.5, budgetPct)}%` }}
             />
             {/* Budget line */}
             <div className="absolute inset-y-0 right-0 w-0.5 bg-white/20" />

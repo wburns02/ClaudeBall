@@ -36,10 +36,12 @@ function FACard({
   fa,
   onSign,
   signing,
+  budgetRoom,
 }: {
   fa: FreeAgent;
   onSign: (fa: FreeAgent, years: number, salary: number) => void;
   signing: boolean;
+  budgetRoom: number | null;
 }) {
   const [offerYears, setOfferYears] = useState(fa.yearsDesired);
   const [offerSalary, setOfferSalary] = useState(fa.askingSalary);
@@ -132,6 +134,11 @@ function FACard({
               />
             </div>
           </div>
+          {budgetRoom !== null && offerSalary > budgetRoom && (
+            <p className="font-mono text-[10px] text-red-400 flex items-center gap-1">
+              ⚠ This offer exceeds your budget room by ${((offerSalary - budgetRoom) / 1000).toFixed(1)}M
+            </p>
+          )}
           <Button onClick={() => onSign(fa, offerYears, offerSalary)}>
             Sign {getPlayerName(p)} — {offerYears}yr / ${(offerSalary / 1000).toFixed(1)}M
           </Button>
@@ -285,6 +292,7 @@ export function FreeAgencyPage() {
               fa={fa}
               onSign={handleSign}
               signing={signing === fa.player.id}
+              budgetRoom={budgetRoom}
             />
           ))}
         </div>
