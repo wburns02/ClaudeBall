@@ -16,6 +16,22 @@ export interface CallupEvent {
   message: string;
 }
 
+export interface ProspectDevelopmentEvent {
+  type: 'breakout' | 'improvement' | 'regression' | 'bust';
+  teamId: string;
+  playerId: string;
+  playerName: string;
+  position: string;
+  age: number;
+  ovrBefore: number;
+  ovrAfter: number;
+  ovrDelta: number;
+  day: number;
+  /** Which attribute gained/lost the most */
+  keyAttribute: string;
+  keyDelta: number;
+}
+
 const SEPTEMBER_CALLUP_DAY = 150;
 const MAX_AAA_ROSTER = 25;
 const MAX_EXPANDED_ROSTER = 40;
@@ -221,6 +237,131 @@ export class MinorLeagues {
       player,
       message: `${getPlayerName(player)} optioned to AAA.`,
     };
+  }
+
+  /**
+   * Run weekly prospect development for all affiliates.
+   * Called every 7 simmed days. Young players with high work ethic
+   * improve; older ones may plateau or regress slightly.
+   */
+  weeklyProspectDevelopment(
+    currentDay: number,
+    rng: RandomProvider,
+  ): ProspectDevelopmentEvent[] {
+    const events: ProspectDevelopmentEvent[] = [];
+
+    for (const [teamId, roster] of this.affiliates) {
+      for (const player of roster.players) {
+        const age = player.age;
+        const workEthic = player.mental.work_ethic;
+        const ovrBefore = Math.round(evaluatePlayer(player));
+
+        // Age-based development window: peak at 19-22, tapering to 26
+        const ageFactor = age <= 19 ? 1.0
+          : age <= 22 ? 0.85
+          : age <= 24 ? 0.6
+          : age <= 26 ? 0.3
+          : -0.1; // 27+ start to plateau/regress
+
+        // Work ethic bonus (0-80 scale → 0–0.4 bonus multiplier)
+        const ethicBonus = (workEthic / 80) * 0.4;
+
+        // Base development chance per week: ~25% for top prospects, ~8% for older ones
+        const devChance = Math.max(0, (ageFactor + ethicBonus) * 0.35);
+
+        // Regression chance for old prospects
+        const regChance = age > 26 ? 0.08 : age > 24 ? 0.03 : 0;
+
+        // Breakout chance (rare big jump): ~4% for young with high work ethic
+        const breakoutChance = age <= 22 && workEthic >= 65 ? 0.04 : 0;
+
+        const roll = rng.next();
+
+        let ovrDelta = 0;
+        let eventType: ProspectDevelopmentEvent['type'] = 'improvement';
+        let keyAttribute = '';
+        let keyDelta = 0;
+
+        if (roll < breakoutChance) {
+          // Breakout: big multi-attribute jump (+3 to +6 OVR)
+          eventType = 'breakout';
+          if (player.position === 'P') {
+            const gain = rng.nextInt(2, 4);
+            player.pitching.stuff = clamp(player.pitching.stuff + gain, 20, 85);
+            player.pitching.control = clamp(player.pitching.control + rng.nextInt(1, 3), 20, 85);
+            keyAttribute = 'Stuff'; keyDelta = gain;
+          } else {
+            const gain = rng.nextInt(2, 4);
+            player.batting.contact_R = clamp(player.batting.contact_R + gain, 20, 85);
+            player.batting.contact_L = clamp(player.batting.contact_L + gain, 20, 85);
+            player.batting.power_R = clamp(player.batting.power_R + rng.nextInt(1, 3), 20, 85);
+            keyAttribute = 'Contact'; keyDelta = gain;
+          }
+          ovrDelta = Math.round(evaluatePlayer(player)) - ovrBefore;
+        } else if (roll < breakoutChance + devChance) {
+          // Normal improvement: +1 to +2 OVR
+          eventType = 'improvement';
+          if (player.position === 'P') {
+            const keys: (keyof Player['pitching'])[] = ['stuff', 'movement', 'control', 'stamina'];
+            const k = rng.pick(keys) as keyof Player['pitching'];
+            const gain = rng.nextInt(1, 3);
+            (player.pitching as unknown as Record<string, number>)[k as string] = clamp(
+              (player.pitching as unknown as Record<string, number>)[k as string] + gain, 20, 85
+            );
+            keyAttribute = String(k).charAt(0).toUpperCase() + String(k).slice(1);
+            keyDelta = gain;
+          } else {
+            const keys: (keyof Player['batting'])[] = ['contact_R', 'contact_L', 'power_R', 'eye', 'speed'];
+            const k = rng.pick(keys) as keyof Player['batting'];
+            const gain = rng.nextInt(1, 3);
+            (player.batting as unknown as Record<string, number>)[k as string] = clamp(
+              (player.batting as unknown as Record<string, number>)[k as string] + gain, 20, 85
+            );
+            const labels: Record<string, string> = { contact_R: 'Contact', contact_L: 'Contact', power_R: 'Power', eye: 'Eye', speed: 'Speed' };
+            keyAttribute = labels[k as string] ?? String(k);
+            keyDelta = gain;
+          }
+          ovrDelta = Math.round(evaluatePlayer(player)) - ovrBefore;
+          // Only emit event if OVR actually changed
+          if (ovrDelta === 0) continue;
+        } else if (roll < breakoutChance + devChance + regChance) {
+          // Regression
+          eventType = ovrBefore <= 40 ? 'bust' : 'regression';
+          if (player.position === 'P') {
+            const loss = rng.nextInt(1, 2);
+            player.pitching.control = clamp(player.pitching.control - loss, 20, 85);
+            keyAttribute = 'Control'; keyDelta = -loss;
+          } else {
+            const loss = rng.nextInt(1, 2);
+            player.batting.contact_R = clamp(player.batting.contact_R - loss, 20, 85);
+            keyAttribute = 'Contact'; keyDelta = -loss;
+          }
+          ovrDelta = Math.round(evaluatePlayer(player)) - ovrBefore;
+          if (ovrDelta === 0) continue;
+        } else {
+          continue; // No change this week
+        }
+
+        if (ovrDelta === 0 && eventType !== 'breakout') continue;
+
+        events.push({
+          type: eventType,
+          teamId,
+          playerId: player.id,
+          playerName: getPlayerName(player),
+          position: player.position,
+          age,
+          ovrBefore,
+          ovrAfter: ovrBefore + ovrDelta,
+          ovrDelta,
+          day: currentDay,
+          keyAttribute,
+          keyDelta,
+        });
+      }
+    }
+
+    return events;
   }
 
   /**

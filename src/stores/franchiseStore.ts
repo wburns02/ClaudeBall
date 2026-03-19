@@ -14,7 +14,7 @@ import { generateFreeAgents, FreeAgentPool } from '@/engine/gm/FreeAgency.ts';
 import { estimateMarketSalary } from '@/engine/gm/ContractEngine.ts';
 import type { InjuryRecord } from '@/engine/season/InjuryEngine.ts';
 import type { AITradeRecord } from '@/engine/season/AITradeManager.ts';
-import type { MinorLeagueRoster, CallupEvent } from '@/engine/season/MinorLeagues.ts';
+import type { MinorLeagueRoster, CallupEvent, ProspectDevelopmentEvent } from '@/engine/season/MinorLeagues.ts';
 import type { WaiverPlayer, WaiverEvent } from '@/engine/gm/WaiverWire.ts';
 import type { PlayerContract } from '@/engine/gm/ContractEngine.ts';
 import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
@@ -62,6 +62,8 @@ interface FranchiseState {
   waiverLog: WaiverEvent[];
   callupLog: CallupEvent[];
   lastDevelopmentChanges: DevelopmentChange[] | null;
+  prospectDevelopmentLog: ProspectDevelopmentEvent[];
+  lastProspectDevelopment: ProspectDevelopmentEvent[];
 
   // Trade proposals (persisted across navigation)
   tradeProposals: StoredTradeProposal[];
@@ -163,6 +165,8 @@ export const useFranchiseStore = create<FranchiseState>()(
   waiverLog: [],
   callupLog: [],
   lastDevelopmentChanges: null,
+  prospectDevelopmentLog: [],
+  lastProspectDevelopment: [],
   tradeProposals: [],
   setTradeProposals: (proposals) => set({ tradeProposals: proposals }),
   trainingAssignments: {},
@@ -254,6 +258,8 @@ export const useFranchiseStore = create<FranchiseState>()(
       waiverLog: [],
       callupLog: [],
       lastDevelopmentChanges: null,
+      prospectDevelopmentLog: [],
+      lastProspectDevelopment: [],
       teamBudgets,
     });
   },
@@ -299,6 +305,15 @@ export const useFranchiseStore = create<FranchiseState>()(
       }
     } catch { /* non-critical */ }
 
+    // Run weekly prospect development every 7 days
+    const newDay = engine.getState().currentDay;
+    let prospectEvents: ProspectDevelopmentEvent[] = [];
+    if (newDay > 0 && newDay % 7 === 0) {
+      try {
+        prospectEvents = engine.minorLeagues.weeklyProspectDevelopment(newDay, engine.getRng());
+      } catch { /* non-critical */ }
+    }
+
     set(s => ({
       season: { ...engine.getState() },
       lastDayEvents: events,
@@ -306,6 +321,10 @@ export const useFranchiseStore = create<FranchiseState>()(
       tradeLog: [...s.tradeLog, ...events.aiTrades],
       waiverLog: [...s.waiverLog, ...events.waivers],
       callupLog: [...s.callupLog, ...events.callups],
+      prospectDevelopmentLog: prospectEvents.length > 0
+        ? [...s.prospectDevelopmentLog, ...prospectEvents]
+        : s.prospectDevelopmentLog,
+      lastProspectDevelopment: prospectEvents,
     }));
     // Update player morale based on recent performance (non-blocking, best-effort)
     try { get().refreshHotCold(); } catch { /* non-critical */ }
@@ -353,6 +372,19 @@ export const useFranchiseStore = create<FranchiseState>()(
     } catch { /* non-critical */ }
 
     const events = engine.getLastDayEvents();
+    // Run prospect development for every 7-day boundary crossed during the sim
+    const dayAfter = engine.getState().currentDay;
+    const dayBefore = dayAfter - count;
+    let allProspectEvents: ProspectDevelopmentEvent[] = [];
+    try {
+      for (let d = dayBefore + 1; d <= dayAfter; d++) {
+        if (d > 0 && d % 7 === 0) {
+          const devEvents = engine.minorLeagues.weeklyProspectDevelopment(d, engine.getRng());
+          allProspectEvents = allProspectEvents.concat(devEvents);
+        }
+      }
+    } catch { /* non-critical */ }
+
     set(s => ({
       season: { ...engine.getState() },
       injuryLog: engine.injuryEngine.getAllInjuries(),
@@ -360,6 +392,10 @@ export const useFranchiseStore = create<FranchiseState>()(
       lastDayEvents: events,
       waiverLog: [...s.waiverLog, ...events.waivers],
       callupLog: [...s.callupLog, ...events.callups],
+      prospectDevelopmentLog: allProspectEvents.length > 0
+        ? [...s.prospectDevelopmentLog, ...allProspectEvents]
+        : s.prospectDevelopmentLog,
+      lastProspectDevelopment: allProspectEvents.length > 0 ? allProspectEvents : s.lastProspectDevelopment,
     }));
     try { get().refreshHotCold(); } catch { /* non-critical */ }
   },
@@ -631,6 +667,8 @@ export const useFranchiseStore = create<FranchiseState>()(
       tradeLog: [],
       waiverLog: [],
       callupLog: [],
+      prospectDevelopmentLog: [],
+      lastProspectDevelopment: [],
     });
   },
 
@@ -1031,6 +1069,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         userTradeLog: state.userTradeLog,
         waiverLog: state.waiverLog,
         callupLog: state.callupLog,
+        prospectDevelopmentLog: state.prospectDevelopmentLog,
         tradeProposals: state.tradeProposals,
         trainingAssignments: state.trainingAssignments,
         lastDevelopmentChanges: state.lastDevelopmentChanges,

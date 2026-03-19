@@ -7,6 +7,8 @@ import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Player } from '@/engine/types/player.ts';
+import type { Team } from '@/engine/types/team.ts';
+import type { ProspectDevelopmentEvent } from '@/engine/season/MinorLeagues.ts';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -236,16 +238,34 @@ function ProspectDetailPanel({
   );
 }
 
+function DevEventBadge({ delta, type }: { delta: number; type: ProspectDevelopmentEvent['type'] }) {
+  if (delta === 0 && type !== 'breakout') return null;
+  const isPositive = delta > 0;
+  const isBreakout = type === 'breakout';
+  return (
+    <span className={cn(
+      'font-mono text-[9px] font-bold px-1 rounded shrink-0',
+      isBreakout ? 'bg-gold/20 text-gold animate-pulse' :
+      isPositive ? 'bg-green-900/30 text-green-light' :
+      'bg-red-900/30 text-red-400',
+    )}>
+      {isBreakout ? '⚡' : isPositive ? `▲${delta}` : `▼${Math.abs(delta)}`}
+    </span>
+  );
+}
+
 function ProspectRow({
   player,
   rank,
   isSelected,
   onClick,
+  recentDev,
 }: {
   player: Player;
   rank: number;
   isSelected: boolean;
   onClick: () => void;
+  recentDev?: ProspectDevelopmentEvent;
 }) {
   const ovr = Math.round(evaluatePlayer(player));
   const pot = prospectPotential(ovr, player.age);
@@ -311,10 +331,13 @@ function ProspectRow({
         ))}
       </div>
 
-      {/* ETA */}
-      <span className={cn('font-mono text-[10px] whitespace-nowrap hidden sm:block', eta.color)}>
-        {eta.label}
-      </span>
+      {/* ETA + recent dev badge */}
+      <div className="flex items-center gap-1 hidden sm:flex">
+        <span className={cn('font-mono text-[10px] whitespace-nowrap', eta.color)}>
+          {eta.label}
+        </span>
+        {recentDev && <DevEventBadge delta={recentDev.ovrDelta} type={recentDev.type} />}
+      </div>
     </div>
   );
 }
@@ -356,6 +379,209 @@ function MLBPlayerRow({
   );
 }
 
+// ─── Development Tab ──────────────────────────────────────────────────────────
+
+function DevEventRow({ event, isUser }: { event: ProspectDevelopmentEvent; isUser: boolean }) {
+  const isBreakout = event.type === 'breakout';
+  const isBust = event.type === 'bust';
+  const isRegression = event.type === 'regression';
+  const isPositive = event.type === 'breakout' || event.type === 'improvement';
+
+  return (
+    <div className={cn(
+      'flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors',
+      isBreakout ? 'border-gold/40 bg-gold/8' :
+      isBust ? 'border-red-500/30 bg-red-900/10' :
+      isRegression ? 'border-red-900/30 bg-red-900/8' :
+      isUser ? 'border-green-light/20 bg-green-900/8' :
+      'border-navy-lighter/30 bg-navy-lighter/8',
+    )}>
+      {/* Event icon */}
+      <div className={cn(
+        'w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-mono text-base',
+        isBreakout ? 'bg-gold/20 text-gold' :
+        isBust ? 'bg-red-900/40 text-red-400' :
+        isRegression ? 'bg-red-900/30 text-red-400' :
+        'bg-green-900/30 text-green-light',
+      )}>
+        {isBreakout ? '⚡' : isBust ? '💀' : isPositive ? '▲' : '▼'}
+      </div>
+
+      {/* Player info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={cn('font-body text-sm font-semibold', isUser ? 'text-gold' : 'text-cream')}>
+            {event.playerName}
+          </span>
+          <span className="font-mono text-[10px] text-cream-dim/50">
+            {event.position} · Age {event.age}
+          </span>
+          {isUser && (
+            <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/20">
+              YOUR TEAM
+            </span>
+          )}
+        </div>
+        <p className="font-mono text-xs text-cream-dim/60 mt-0.5">
+          {event.keyAttribute} {event.keyDelta > 0 ? `+${event.keyDelta}` : event.keyDelta}
+          {' · '}Day {event.day}
+        </p>
+      </div>
+
+      {/* OVR change */}
+      <div className="text-right shrink-0">
+        <div className="flex items-center gap-1.5 justify-end">
+          <span className={cn('font-mono text-xs text-cream-dim/50')}>{event.ovrBefore}</span>
+          <span className="font-mono text-[10px] text-cream-dim/30">→</span>
+          <span className={cn(
+            'font-mono text-sm font-bold',
+            isPositive ? 'text-green-light' : 'text-red-400',
+          )}>
+            {event.ovrAfter}
+          </span>
+        </div>
+        <span className={cn(
+          'font-mono text-[10px] font-bold',
+          isPositive ? 'text-green-light' : 'text-red-400',
+        )}>
+          {isPositive ? '+' : ''}{event.ovrDelta} OVR
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function DevelopmentTab({
+  prospectDevelopmentLog,
+  userTeamId,
+  currentDay,
+  allTeams,
+}: {
+  prospectDevelopmentLog: ProspectDevelopmentEvent[];
+  userTeamId: string;
+  currentDay: number;
+  allTeams: Team[];
+}) {
+  const [devScope, setDevScope] = useState<'mine' | 'league'>('mine');
+  const [devTypeFilter, setDevTypeFilter] = useState<'all' | 'breakout' | 'regression'>('all');
+
+  const teamMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const t of allTeams) m.set(t.id, `${t.city} ${t.name}`);
+    return m;
+  }, [allTeams]);
+
+  const cutoff = currentDay - 28;
+
+  const filtered = useMemo(() => {
+    return prospectDevelopmentLog
+      .filter(e => {
+        if (e.day < cutoff) return false;
+        if (devScope === 'mine' && e.teamId !== userTeamId) return false;
+        if (devTypeFilter === 'breakout' && e.type !== 'breakout') return false;
+        if (devTypeFilter === 'regression' && e.type !== 'regression' && e.type !== 'bust') return false;
+        return true;
+      })
+      .slice()
+      .sort((a, b) => b.day - a.day);
+  }, [prospectDevelopmentLog, devScope, devTypeFilter, cutoff, userTeamId]);
+
+  const breakoutCount = prospectDevelopmentLog.filter(e => e.day >= cutoff && e.type === 'breakout' && (devScope === 'league' || e.teamId === userTeamId)).length;
+  const improvCount = prospectDevelopmentLog.filter(e => e.day >= cutoff && e.type === 'improvement' && (devScope === 'league' || e.teamId === userTeamId)).length;
+  const regCount = prospectDevelopmentLog.filter(e => e.day >= cutoff && (e.type === 'regression' || e.type === 'bust') && (devScope === 'league' || e.teamId === userTeamId)).length;
+
+  return (
+    <div>
+      {/* Summary cards */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="bg-gold/8 border border-gold/20 rounded-lg px-4 py-3 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase mb-1">Breakouts</p>
+          <p className="font-mono text-2xl font-bold text-gold">{breakoutCount}</p>
+          <p className="font-mono text-[10px] text-cream-dim/40">last 28 days</p>
+        </div>
+        <div className="bg-green-900/10 border border-green-light/15 rounded-lg px-4 py-3 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase mb-1">Improvements</p>
+          <p className="font-mono text-2xl font-bold text-green-light">{improvCount}</p>
+          <p className="font-mono text-[10px] text-cream-dim/40">last 28 days</p>
+        </div>
+        <div className="bg-red-900/10 border border-red-900/20 rounded-lg px-4 py-3 text-center">
+          <p className="font-mono text-[10px] text-cream-dim/50 uppercase mb-1">Regressions</p>
+          <p className="font-mono text-2xl font-bold text-red-400">{regCount}</p>
+          <p className="font-mono text-[10px] text-cream-dim/40">last 28 days</p>
+        </div>
+      </div>
+
+      {/* Scope + type filters */}
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <div className="flex gap-1 bg-navy-lighter/20 rounded-lg p-0.5">
+          {(['mine', 'league'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setDevScope(s)}
+              className={cn(
+                'font-mono text-xs px-3 py-1.5 rounded-md transition-colors',
+                devScope === s ? 'bg-gold/15 text-gold' : 'text-cream-dim/60 hover:text-cream-dim',
+              )}
+            >
+              {s === 'mine' ? 'My Team' : 'League-Wide'}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1">
+          {(['all', 'breakout', 'regression'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setDevTypeFilter(f)}
+              className={cn(
+                'font-mono text-[10px] px-2.5 py-1 rounded-full border transition-colors',
+                devTypeFilter === f
+                  ? 'border-gold/40 text-gold bg-gold/10'
+                  : 'border-navy-lighter/50 text-cream-dim/50 hover:text-cream-dim',
+              )}
+            >
+              {f === 'all' ? 'All Events' : f === 'breakout' ? '⚡ Breakouts' : '▼ Regressions'}
+            </button>
+          ))}
+        </div>
+        <span className="font-mono text-[10px] text-cream-dim/30 ml-auto">
+          {filtered.length} event{filtered.length !== 1 ? 's' : ''} · last 28 days
+        </span>
+      </div>
+
+      {/* Event feed */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="font-mono text-4xl mb-3">📊</p>
+          <p className="font-mono text-cream-dim/50 text-sm">
+            {currentDay === 0
+              ? 'Season hasn\'t started yet — advance the season to see prospect development.'
+              : devScope === 'mine'
+                ? 'No development events for your prospects in the last 28 days.'
+                : 'No league-wide development events in the last 28 days.'}
+          </p>
+          <p className="font-mono text-cream-dim/30 text-xs mt-2">
+            Development fires every 7 simulated days.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-[calc(100vh-380px)] overflow-y-auto pr-1">
+          {filtered.map((e, i) => (
+            <div key={i}>
+              {/* Team header when viewing league-wide */}
+              {devScope === 'league' && (i === 0 || filtered[i - 1].teamId !== e.teamId) && (
+                <p className="font-mono text-[9px] text-cream-dim/30 uppercase px-1 mt-3 mb-1 first:mt-0">
+                  {teamMap.get(e.teamId) ?? e.teamId}
+                </p>
+              )}
+              <DevEventRow event={e} isUser={e.teamId === userTeamId} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function MinorLeaguePage() {
@@ -363,9 +589,10 @@ export function MinorLeaguePage() {
   const {
     engine, season, userTeamId,
     getAAATeam, callUpSpecificPlayer, sendDownPlayer, callupLog,
+    prospectDevelopmentLog, lastProspectDevelopment,
   } = useFranchiseStore();
 
-  const [tab, setTab] = useState<'prospects' | 'mlb' | 'log'>('prospects');
+  const [tab, setTab] = useState<'prospects' | 'mlb' | 'log' | 'dev'>('prospects');
   const [posFilter, setPosFilter] = useState<PosFilter>('All');
   const [sortKey, setSortKey] = useState<SortKey>('ovr');
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
@@ -408,6 +635,20 @@ export function MinorLeaguePage() {
     () => prospects.find(x => x.p.id === selectedProspectId)?.p ?? null,
     [prospects, selectedProspectId],
   );
+
+  // Recent dev events (last 14 days) for the user's team, keyed by playerId
+  const recentDevByPlayer = useMemo(() => {
+    const cutoff = (season?.currentDay ?? 0) - 14;
+    const map = new Map<string, ProspectDevelopmentEvent>();
+    for (const e of prospectDevelopmentLog) {
+      if (e.teamId === userTeamId && e.day >= cutoff) {
+        // Keep the most recent event per player
+        const existing = map.get(e.playerId);
+        if (!existing || e.day > existing.day) map.set(e.playerId, e);
+      }
+    }
+    return map;
+  }, [prospectDevelopmentLog, userTeamId, season?.currentDay]);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -532,8 +773,8 @@ export function MinorLeaguePage() {
       )}
 
       {/* ── Tabs ── */}
-      <div className="flex gap-1 mb-4 border-b border-navy-lighter/40 pb-0">
-        {(['prospects', 'mlb', 'log'] as const).map(t => (
+      <div className="flex gap-1 mb-4 border-b border-navy-lighter/40 pb-0 flex-wrap">
+        {(['prospects', 'dev', 'mlb', 'log'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -545,6 +786,14 @@ export function MinorLeaguePage() {
             )}
           >
             {t === 'prospects' && `Prospects (${aaaCount})`}
+            {t === 'dev' && (
+              <span className="flex items-center gap-1">
+                Development
+                {lastProspectDevelopment.filter(e => e.teamId === userTeamId).length > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-green-light animate-pulse" />
+                )}
+              </span>
+            )}
             {t === 'mlb' && `MLB Roster (${mlbCount})`}
             {t === 'log' && `Log (${callupLog.length})`}
           </button>
@@ -618,6 +867,7 @@ export function MinorLeaguePage() {
                     rank={i + 1}
                     isSelected={selectedProspectId === p.id}
                     onClick={() => setSelectedProspectId(prev => prev === p.id ? null : p.id)}
+                    recentDev={recentDevByPlayer.get(p.id)}
                   />
                 ))}
               </div>
@@ -721,6 +971,14 @@ export function MinorLeaguePage() {
           </Panel>
         </div>
       )}
+
+      {/* ══ TAB: DEVELOPMENT ══ */}
+      {tab === 'dev' && <DevelopmentTab
+        prospectDevelopmentLog={prospectDevelopmentLog}
+        userTeamId={userTeamId}
+        currentDay={currentDay}
+        allTeams={allTeams}
+      />}
 
       {/* ══ TAB: LOG ══ */}
       {tab === 'log' && (
