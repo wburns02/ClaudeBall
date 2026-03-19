@@ -34,7 +34,6 @@ const Icons = {
   freeAgency: 'M20 12V22H4V12 M22 7H2v5h20V7z M12 22V7 M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z',
   draft: 'M9 11l3 3L22 4 M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
   rosterMgr: 'M4 6h16 M4 10h16 M4 14h16 M4 18h16',
-  schedule: 'M8 2v4 M16 2v4 M3 10h18 M21 8a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V8z',
   injuries: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10 M12 9v4 M12 15h.01',
   minors: 'M22 17a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2h4l2-3h4l2 3h4a2 2 0 012 2v8z',
   waivers: 'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4 M17 8l-5-5-5 5 M12 3v12',
@@ -45,13 +44,22 @@ const Icons = {
   settings: 'M12 15a3 3 0 100-6 3 3 0 000 6z M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 000 2.32 1.65 1.65 0 001.82.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06',
   chevronLeft: 'M15 18l-6-6 6-6',
   chevronRight: 'M9 18l6-6-6-6',
-  menu: 'M3 12h18 M3 6h18 M3 18h18',
+  customLeague: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z M8 12h8 M12 8v8',
+  schedule: 'M8 2v4 M16 2v4 M3 10h18 M21 8a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V8z',
+  gameLog: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+  allStar: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  awards: 'M8.21 13.89L7 23l5-3 5 3-1.21-9.12 M12 2a4 4 0 100 8 4 4 0 000-8z',
+  tradeProposals: 'M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z',
+  history: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
 };
 
 interface NavItem {
   label: string;
-  path: string;
+  /** Static path, or a function that resolves to a path given the userTeamId */
+  path: string | ((userTeamId: string | null) => string);
   icon: keyof typeof Icons;
+  /** Optional: used for active-path matching when path is dynamic */
+  activePrefixes?: string[];
 }
 
 interface NavSection {
@@ -70,9 +78,19 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'TEAM',
     items: [
       { label: 'Roster', path: '/franchise/roster', icon: 'roster' },
-      { label: 'Player Editor', path: '/franchise/player', icon: 'playerEditor' },
+      {
+        label: 'Player Editor',
+        path: (id) => id ? `/franchise/roster` : '/franchise/roster',
+        icon: 'playerEditor',
+        activePrefixes: ['/franchise/player/'],
+      },
       { label: 'Create Player', path: '/franchise/create-player', icon: 'createPlayer' },
-      { label: 'Team Editor', path: '/franchise/team', icon: 'teamEditor' },
+      {
+        label: 'Team Editor',
+        path: (id) => id ? `/franchise/team/${id}` : '/franchise/roster',
+        icon: 'teamEditor',
+        activePrefixes: ['/franchise/team/'],
+      },
     ],
   },
   {
@@ -93,12 +111,28 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    heading: 'GAMES',
+    items: [
+      { label: 'Schedule', path: '/franchise/schedule', icon: 'schedule' },
+      { label: 'Game Log', path: '/franchise/game-log', icon: 'gameLog' },
+      { label: 'All-Star Game', path: '/franchise/all-star', icon: 'allStar' },
+    ],
+  },
+  {
     heading: 'SEASON',
     items: [
+      { label: 'Awards', path: '/franchise/awards', icon: 'awards' },
+      { label: 'Trade Proposals', path: '/franchise/trade-proposals', icon: 'tradeProposals' },
       { label: 'Injuries', path: '/franchise/injuries', icon: 'injuries' },
       { label: 'Minors', path: '/franchise/minors', icon: 'minors' },
       { label: 'Waivers', path: '/franchise/waivers', icon: 'waivers' },
       { label: 'Trade History', path: '/franchise/trade-history', icon: 'tradeHistory' },
+    ],
+  },
+  {
+    heading: 'HISTORY',
+    items: [
+      { label: 'Franchise History', path: '/franchise/history', icon: 'history' },
     ],
   },
   {
@@ -127,14 +161,25 @@ export function FranchiseSidebar() {
   const userTeam = userTeamId ? engine?.getTeam(userTeamId) ?? null : null;
   const userRecord = userTeamId ? season?.standings.getRecord(userTeamId) ?? null : null;
 
-  // Determine active path — exact match for dashboard, prefix for others
-  const isActive = (path: string) => {
-    if (path === '/franchise') return location.pathname === '/franchise';
-    // For player/team editor parent paths, match prefix but exclude exact /franchise
-    if (path === '/franchise/player' || path === '/franchise/team') {
-      return location.pathname.startsWith(path + '/');
+  // Resolve the actual path for a nav item (handles dynamic paths)
+  const resolvePath = (item: NavItem): string => {
+    if (typeof item.path === 'function') {
+      return item.path(userTeamId);
     }
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+    return item.path;
+  };
+
+  // Determine active path — exact match for dashboard, prefix for others
+  const isActive = (item: NavItem) => {
+    const resolved = resolvePath(item);
+    if (resolved === '/franchise') return location.pathname === '/franchise';
+
+    // Check explicit active prefixes (for dynamic paths)
+    if (item.activePrefixes) {
+      return item.activePrefixes.some(prefix => location.pathname.startsWith(prefix));
+    }
+
+    return location.pathname === resolved || location.pathname.startsWith(resolved + '/');
   };
 
   return (
@@ -228,12 +273,13 @@ export function FranchiseSidebar() {
             )}
 
             {section.items.map(item => {
-              const active = isActive(item.path);
+              const active = isActive(item);
+              const resolvedPath = resolvePath(item);
               return (
                 <button
-                  key={item.path}
-                  data-testid={`nav-${item.path.replace(/\//g, '-').slice(1)}`}
-                  onClick={() => navigate(item.path)}
+                  key={typeof item.path === 'string' ? item.path : item.label}
+                  data-testid={`nav-${resolvedPath.replace(/\//g, '-').slice(1)}`}
+                  onClick={() => navigate(resolvedPath)}
                   title={collapsed ? item.label : undefined}
                   className={cn(
                     'w-full flex items-center gap-3 transition-all cursor-pointer',

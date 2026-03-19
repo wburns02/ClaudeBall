@@ -8,6 +8,66 @@ import { winPct, gamesBehind, streakStr, last10Str, runDifferential } from '@/en
 import type { TeamRecord } from '@/engine/season/index.ts';
 import { cn } from '@/lib/cn.ts';
 
+// Season milestones
+const MILESTONES = [
+  { day: 90, label: 'All-Star Break', shortLabel: 'ASB', color: 'text-gold' },
+  { day: 120, label: 'Trade Deadline', shortLabel: 'TDL', color: 'text-red-400' },
+  { day: 183, label: 'Playoffs', shortLabel: 'PO', color: 'text-green-light' },
+];
+
+function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; totalDays: number }) {
+  const pct = Math.min(100, (currentDay / totalDays) * 100);
+  return (
+    <div>
+      <div className="flex justify-between font-mono text-xs text-cream-dim mb-1">
+        <span>Day {currentDay}</span>
+        <span className="text-cream-dim/60">Season Progress</span>
+        <span>Day {totalDays}</span>
+      </div>
+      <div className="relative h-5 bg-navy-lighter rounded-full overflow-hidden">
+        {/* Progress fill */}
+        <div
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold/60 to-gold/90 rounded-full transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+        {/* Milestone markers */}
+        {MILESTONES.map(m => (
+          <div
+            key={m.day}
+            className={cn(
+              'absolute top-0 bottom-0 flex items-center',
+              currentDay >= m.day ? 'opacity-40' : 'opacity-100',
+            )}
+            style={{ left: `${(m.day / totalDays) * 100}%`, transform: 'translateX(-50%)' }}
+          >
+            <div className="w-px h-full bg-cream-dim/40" />
+          </div>
+        ))}
+      </div>
+      {/* Milestone labels */}
+      <div className="relative h-5 mt-0.5">
+        {MILESTONES.map(m => (
+          <div
+            key={m.day}
+            className="absolute flex flex-col items-center"
+            style={{ left: `${(m.day / totalDays) * 100}%`, transform: 'translateX(-50%)' }}
+          >
+            <span className={cn(
+              'font-mono text-[10px] whitespace-nowrap',
+              currentDay >= m.day ? 'text-cream-dim/40' : m.color,
+            )}>
+              {m.shortLabel}
+            </span>
+          </div>
+        ))}
+      </div>
+      <p className="font-mono text-xs text-cream-dim/40 text-right mt-0.5">
+        {Math.round(pct)}% complete
+      </p>
+    </div>
+  );
+}
+
 export function FranchiseDashboard() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs } = useFranchiseStore();
@@ -208,6 +268,15 @@ export function FranchiseDashboard() {
           <Button variant="secondary" onClick={() => navigate('/franchise/offseason')}>
             Offseason Hub
           </Button>
+        </div>
+      )}
+
+      {/* Season Progress Bar */}
+      {isRegularSeason && (
+        <div className="mt-4">
+          <Panel title="Season Progress">
+            <SeasonProgressBar currentDay={season.currentDay} totalDays={season.totalDays} />
+          </Panel>
         </div>
       )}
 

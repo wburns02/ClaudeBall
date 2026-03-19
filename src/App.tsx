@@ -7,6 +7,7 @@ import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
 import { FranchiseLayout } from '@/components/layout/FranchiseLayout.tsx';
 import { MainLayout } from '@/components/layout/MainLayout.tsx';
 import { GameLayout } from '@/components/layout/GameLayout.tsx';
+import { CareerLayout } from '@/components/layout/CareerLayout.tsx';
 
 // Eager-load critical path pages
 import { MainMenuPage } from '@/pages/MainMenuPage.tsx';
@@ -35,6 +36,11 @@ const TeamEditorPage = lazy(() => import('@/pages/TeamEditorPage.tsx').then(m =>
 const RosterManagerPage = lazy(() => import('@/pages/RosterManagerPage.tsx').then(m => ({ default: m.RosterManagerPage })));
 const CustomLeaguePage = lazy(() => import('@/pages/CustomLeaguePage.tsx').then(m => ({ default: m.CustomLeaguePage })));
 const CareerDashboardPage = lazy(() => import('@/pages/CareerDashboardPage.tsx').then(m => ({ default: m.CareerDashboardPage })));
+const CareerStatsPage = lazy(() => import('@/pages/CareerStatsPage.tsx').then(m => ({ default: m.CareerStatsPage })));
+const CareerTrainingPage = lazy(() => import('@/pages/CareerTrainingPage.tsx').then(m => ({ default: m.CareerTrainingPage })));
+const CareerContractPage = lazy(() => import('@/pages/CareerContractPage.tsx').then(m => ({ default: m.CareerContractPage })));
+const CareerHofPage = lazy(() => import('@/pages/CareerHofPage.tsx').then(m => ({ default: m.CareerHofPage })));
+const CareerGamePage = lazy(() => import('@/pages/CareerGamePage.tsx').then(m => ({ default: m.CareerGamePage })));
 const HistoricalPage = lazy(() => import('@/pages/HistoricalPage.tsx').then(m => ({ default: m.HistoricalPage })));
 const FantasyDraftPage = lazy(() => import('@/pages/FantasyDraftPage.tsx').then(m => ({ default: m.FantasyDraftPage })));
 const LeagueLeadersPage = lazy(() => import('@/pages/LeagueLeadersPage.tsx').then(m => ({ default: m.LeagueLeadersPage })));
@@ -45,6 +51,13 @@ const InjuryReportPage = lazy(() => import('@/pages/InjuryReportPage.tsx').then(
 const MinorLeaguePage = lazy(() => import('@/pages/MinorLeaguePage.tsx').then(m => ({ default: m.MinorLeaguePage })));
 const TradeHistoryPage = lazy(() => import('@/pages/TradeHistoryPage.tsx').then(m => ({ default: m.TradeHistoryPage })));
 const WaiverWirePage = lazy(() => import('@/pages/WaiverWirePage.tsx').then(m => ({ default: m.WaiverWirePage })));
+const SchedulePage = lazy(() => import('@/pages/SchedulePage.tsx').then(m => ({ default: m.SchedulePage })));
+const GameLogPage = lazy(() => import('@/pages/GameLogPage.tsx').then(m => ({ default: m.GameLogPage })));
+const BoxScoreHistoryPage = lazy(() => import('@/pages/BoxScoreHistoryPage.tsx').then(m => ({ default: m.BoxScoreHistoryPage })));
+const AllStarPage = lazy(() => import('@/pages/AllStarPage.tsx').then(m => ({ default: m.AllStarPage })));
+const AwardsPage = lazy(() => import('@/pages/AwardsPage.tsx').then(m => ({ default: m.AwardsPage })));
+const TradeProposalPage = lazy(() => import('@/pages/TradeProposalPage.tsx').then(m => ({ default: m.TradeProposalPage })));
+const FranchiseHistoryPage = lazy(() => import('@/pages/FranchiseHistoryPage.tsx').then(m => ({ default: m.FranchiseHistoryPage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -94,8 +107,13 @@ function AppRoutes() {
           <Route path="/" element={<MainLayout><MainMenuPage /></MainLayout>} />
           <Route path="/test" element={<MainLayout><TestHarnessPage /></MainLayout>} />
           <Route path="/sprint-c" element={<MainLayout><SprintCTestPage /></MainLayout>} />
-          <Route path="/career" element={<MainLayout><CareerDashboardPage /></MainLayout>} />
+          <Route path="/career" element={<CareerLayout><CareerDashboardPage /></CareerLayout>} />
           <Route path="/career/new" element={<MainLayout><CreatePlayerPage /></MainLayout>} />
+          <Route path="/career/stats" element={<CareerLayout><CareerStatsPage /></CareerLayout>} />
+          <Route path="/career/training" element={<CareerLayout><CareerTrainingPage /></CareerLayout>} />
+          <Route path="/career/contract" element={<CareerLayout><CareerContractPage /></CareerLayout>} />
+          <Route path="/career/hof" element={<CareerLayout><CareerHofPage /></CareerLayout>} />
+          <Route path="/career/game" element={<CareerLayout><CareerGamePage /></CareerLayout>} />
           <Route path="/historical" element={<MainLayout><HistoricalPage /></MainLayout>} />
           <Route path="/historical/draft" element={<MainLayout><FantasyDraftPage /></MainLayout>} />
           <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
@@ -139,6 +157,14 @@ function AppRoutes() {
           <Route path="/franchise/team/:teamId" element={<FranchiseLayout><TeamEditorPage /></FranchiseLayout>} />
           <Route path="/franchise/player-stats/:playerId" element={<FranchiseLayout><PlayerStatsPage /></FranchiseLayout>} />
           <Route path="/franchise/team-stats/:teamId" element={<FranchiseLayout><TeamStatsPage /></FranchiseLayout>} />
+          {/* New franchise features */}
+          <Route path="/franchise/schedule" element={<FranchiseLayout><SchedulePage /></FranchiseLayout>} />
+          <Route path="/franchise/game-log" element={<FranchiseLayout><GameLogPage /></FranchiseLayout>} />
+          <Route path="/franchise/box-score/:gameId" element={<FranchiseLayout><BoxScoreHistoryPage /></FranchiseLayout>} />
+          <Route path="/franchise/all-star" element={<FranchiseLayout><AllStarPage /></FranchiseLayout>} />
+          <Route path="/franchise/awards" element={<FranchiseLayout><AwardsPage /></FranchiseLayout>} />
+          <Route path="/franchise/trade-proposals" element={<FranchiseLayout><TradeProposalPage /></FranchiseLayout>} />
+          <Route path="/franchise/history" element={<FranchiseLayout><FranchiseHistoryPage /></FranchiseLayout>} />
         </Routes>
       </Suspense>
     </FadeWrapper>
