@@ -489,7 +489,7 @@ export function PayrollPage() {
       </div>
 
       {viewMode === 'roster' && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr,320px] gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
           {/* Contracts Table */}
           <Panel title={`Contracts (${sortedContracts.length})`}>
             <div className="overflow-x-auto">

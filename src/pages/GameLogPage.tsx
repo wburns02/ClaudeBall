@@ -170,9 +170,12 @@ export function GameLogPage() {
                 )}
               >
                 {/* Main row */}
-                <button
+                <div
                   className="w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-navy-lighter/10 transition-colors cursor-pointer"
                   onClick={() => setExpandedId(isExpanded ? null : g.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && setExpandedId(isExpanded ? null : g.id)}
                 >
                   {/* Result badge */}
                   {isUserGame ? (
@@ -215,11 +218,21 @@ export function GameLogPage() {
                     </span>
                   )}
 
+                  {/* Box score quick link */}
+                  {isUserGame && (
+                    <button
+                      className="font-mono text-[10px] text-cream-dim/50 hover:text-gold border border-navy-lighter/50 hover:border-gold/40 rounded px-1.5 py-0.5 transition-colors shrink-0 cursor-pointer"
+                      onClick={e => { e.stopPropagation(); navigate(`/franchise/box-score/${g.id}`); }}
+                    >
+                      BOX
+                    </button>
+                  )}
+
                   {/* Expand indicator */}
                   <span className="font-mono text-xs text-cream-dim/40 shrink-0">
                     {isExpanded ? '▲' : '▼'}
                   </span>
-                </button>
+                </div>
 
                 {/* Expanded box score summary */}
                 {isExpanded && (

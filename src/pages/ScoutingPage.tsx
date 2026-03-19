@@ -552,7 +552,7 @@ export function ScoutingPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr,360px] gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5">
         {/* ── Left Column ────────────────────────────────────────── */}
         <div className="space-y-4 min-w-0">
           {/* Team Needs */}

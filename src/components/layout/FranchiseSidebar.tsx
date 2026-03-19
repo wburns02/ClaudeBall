@@ -88,12 +88,6 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Development Hub', path: '/franchise/development', icon: 'development' },
       { label: 'Training Center', path: '/franchise/training', icon: 'training' },
       { label: 'Lineup Editor', path: '/franchise/lineup-editor', icon: 'lineup' },
-      {
-        label: 'Player Editor',
-        path: (id) => id ? `/franchise/roster` : '/franchise/roster',
-        icon: 'playerEditor',
-        activePrefixes: ['/franchise/player/'],
-      },
       { label: 'Create Player', path: '/franchise/create-player', icon: 'createPlayer' },
       {
         label: 'Team Editor',

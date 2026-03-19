@@ -244,7 +244,7 @@ export function LineupEditorPage() {
       </div>
 
       {activeTab === 'batting' && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr,320px] gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
           {/* Batting Order */}
           <Panel title={`Batting Order (${currentLineup.length}/9)`}>
             <div className="flex justify-between items-center mb-4">
@@ -424,7 +424,7 @@ export function LineupEditorPage() {
       )}
 
       {activeTab === 'pitching' && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr,320px] gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
           {/* Starting Rotation */}
           <div className="space-y-5">
             <Panel title={`Starting Rotation (${rotationPitchers.length}/5)`}>

@@ -52,12 +52,38 @@ export function DraftPage() {
     if (!isInitialized) navigate('/franchise/new');
   }, [isInitialized, navigate]);
 
-  // Auto-init draft if needed
+  const isOffseason = season?.phase === 'offseason';
+
+  // Auto-init draft only during offseason
   useEffect(() => {
-    if (!draftClass && season && engine) {
+    if (!draftClass && season && engine && isOffseason) {
       initDraft();
     }
-  }, [draftClass, season, engine, initDraft]);
+  }, [draftClass, season, engine, isOffseason, initDraft]);
+
+  // Gate: show friendly message during regular season
+  if (season && season.phase === 'regular') {
+    const daysLeft = season.totalDays - season.currentDay;
+    return (
+      <div className="min-h-screen p-6 max-w-3xl mx-auto">
+        <div className="mb-6">
+          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Draft Room</h1>
+        </div>
+        <Panel>
+          <div className="py-12 text-center">
+            <div className="text-5xl mb-4">📋</div>
+            <p className="font-display text-xl text-gold mb-2">Season in Progress</p>
+            <p className="font-mono text-cream-dim text-sm mb-4">
+              The {season.year} amateur draft takes place during the offseason.
+            </p>
+            <p className="font-mono text-xs text-cream-dim/50">
+              {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining in the regular season
+            </p>
+          </div>
+        </Panel>
+      </div>
+    );
+  }
 
   if (!season || !engine || !draftClass) {
     return (

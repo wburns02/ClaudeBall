@@ -8,6 +8,27 @@ import { getPlayerName } from '@/engine/types/player.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Player } from '@/engine/types/player.ts';
 import type { DevelopmentChange, DevelopmentPhase } from '@/engine/season/OffseasonEngine.ts';
+import type { TrainingAssignment } from '@/engine/player/DevelopmentEngine.ts';
+
+const FOCUS_COLORS: Record<string, { color: string; bg: string }> = {
+  contact:  { color: 'text-blue-400',   bg: 'bg-blue-900/20'   },
+  power:    { color: 'text-orange-400', bg: 'bg-orange-900/20' },
+  eye:      { color: 'text-green-light',bg: 'bg-green-900/20'  },
+  speed:    { color: 'text-cyan-400',   bg: 'bg-cyan-900/20'   },
+  stuff:    { color: 'text-red-400',    bg: 'bg-red-900/20'    },
+  movement: { color: 'text-purple-400', bg: 'bg-purple-900/20' },
+  control:  { color: 'text-gold',       bg: 'bg-gold/10'       },
+  stamina:  { color: 'text-teal-400',   bg: 'bg-teal-900/20'   },
+  mental:   { color: 'text-cream',      bg: 'bg-cream/5'       },
+};
+
+function trainingBonus(training: TrainingAssignment | undefined): number {
+  if (!training || training.focus === 'none') return 0;
+  if (training.intensity === 'rest') return -1;
+  if (training.intensity === 'light') return 0;
+  if (training.intensity === 'normal') return 1;
+  return 2; // intense
+}
 
 // ── Phase metadata ──────────────────────────────────────────────────────────
 const PHASE_META: Record<DevelopmentPhase, { label: string; color: string; bg: string; border: string; description: string }> = {
@@ -45,14 +66,25 @@ function expectedOvrDelta(age: number, workEthic: number): { min: number; max: n
 }
 
 // ── Player Projection Card ──────────────────────────────────────────────────
-function ProjectionCard({ player, userTeamId, teamId }: { player: Player; userTeamId: string; teamId: string }) {
+function ProjectionCard({
+  player, userTeamId, teamId, training,
+}: {
+  player: Player;
+  userTeamId: string;
+  teamId: string;
+  training?: TrainingAssignment;
+}) {
   const ovr = Math.round(evaluatePlayer(player));
   const age = player.age;
   const phase = getPhase(age);
-  const { avg, min, max } = expectedOvrDelta(age, player.mental.work_ethic);
+  const { avg: baseAvg, min, max } = expectedOvrDelta(age, player.mental.work_ethic);
+  const bonus = trainingBonus(training);
+  const avg = baseAvg + (baseAvg >= 0 ? bonus : Math.min(0, baseAvg + bonus));
   const meta = PHASE_META[phase];
   const isUserTeam = teamId === userTeamId;
   const retirementRisk = age >= 37;
+  const hasTraining = training && training.focus !== 'none';
+  const focusStyle = hasTraining ? (FOCUS_COLORS[training!.focus] ?? FOCUS_COLORS.mental) : null;
 
   // Bar: center-origin, green right for growth, red left for decline
   const barPct = Math.min(100, Math.abs(avg) * 15);
@@ -70,6 +102,23 @@ function ProjectionCard({ player, userTeamId, teamId }: { player: Player; userTe
             <span className="font-mono text-[10px] text-cream-dim bg-navy-lighter px-1.5 py-0.5 rounded">{player.position}</span>
             {!isUserTeam && (
               <span className="font-mono text-[10px] text-cream-dim/40">Other team</span>
+            )}
+            {/* Training badge */}
+            {hasTraining && focusStyle && (
+              <span className={cn(
+                'font-mono text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border',
+                focusStyle.color, focusStyle.bg,
+                training!.intensity === 'intense' ? 'border-current/50' : 'border-current/20',
+              )}>
+                {training!.focus} · {training!.intensity}
+                {bonus > 0 && <span className="ml-1 text-green-light">+{bonus}</span>}
+                {bonus < 0 && <span className="ml-1 text-red-400">{bonus}</span>}
+              </span>
+            )}
+            {isUserTeam && !hasTraining && (
+              <span className="font-mono text-[9px] text-cream-dim/30 uppercase tracking-wide border border-navy-lighter/30 px-1.5 py-0.5 rounded">
+                no training
+              </span>
             )}
           </div>
           <div className="flex items-center gap-3 mt-1 font-mono text-xs">
@@ -101,6 +150,11 @@ function ProjectionCard({ player, userTeamId, teamId }: { player: Player; userTe
             <span className="text-cream-dim/40 font-normal ml-1">
               ({min > 0 ? '+' : ''}{min} to {max > 0 ? '+' : ''}{max})
             </span>
+            {bonus !== 0 && (
+              <span className={cn('ml-1 font-bold', bonus > 0 ? 'text-green-light' : 'text-red-400')}>
+                ({bonus > 0 ? '+' : ''}{bonus} training)
+              </span>
+            )}
           </span>
         </div>
 
@@ -201,7 +255,7 @@ function ChangeCard({ change, userTeamId }: { change: DevelopmentChange; userTea
 // ── Main Page ────────────────────────────────────────────────────────────────
 export function DevelopmentHubPage() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, lastDevelopmentChanges } = useFranchiseStore();
+  const { season, engine, userTeamId, lastDevelopmentChanges, trainingAssignments } = useFranchiseStore();
   const [activeTab, setActiveTab] = useState<'projections' | 'history'>('projections');
   const [phaseFilter, setPhaseFilter] = useState<DevelopmentPhase | 'ALL'>('ALL');
   const [teamFilter, setTeamFilter] = useState<'user' | 'all'>('user');
@@ -390,7 +444,7 @@ export function DevelopmentHubPage() {
 
       {/* ── Projections Tab ── */}
       {activeTab === 'projections' && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr,290px] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-5">
           <div>
             <Panel title={`Roster Projections (${filteredProjections.length})`}>
               {filteredProjections.length === 0 ? (
@@ -400,7 +454,13 @@ export function DevelopmentHubPage() {
               ) : (
                 <div className="space-y-2">
                   {filteredProjections.map(({ player, teamId }) => (
-                    <ProjectionCard key={player.id} player={player} userTeamId={userTeamId} teamId={teamId} />
+                    <ProjectionCard
+                      key={player.id}
+                      player={player}
+                      userTeamId={userTeamId}
+                      teamId={teamId}
+                      training={teamId === userTeamId ? trainingAssignments[player.id] : undefined}
+                    />
                   ))}
                 </div>
               )}
@@ -409,6 +469,59 @@ export function DevelopmentHubPage() {
 
           {/* Sidebar info */}
           <div className="space-y-4">
+            {/* Training Coverage — only show for user's roster */}
+            {teamFilter === 'user' && (() => {
+              const rosterPlayers = userTeam?.roster.players ?? [];
+              const assigned = rosterPlayers.filter(p => {
+                const t = trainingAssignments[p.id];
+                return t && t.focus !== 'none' && t.intensity !== 'rest';
+              });
+              const intense = rosterPlayers.filter(p => trainingAssignments[p.id]?.intensity === 'intense');
+              const unassigned = rosterPlayers.filter(p => !trainingAssignments[p.id] || trainingAssignments[p.id].focus === 'none');
+              const pct = rosterPlayers.length > 0 ? Math.round(assigned.length / rosterPlayers.length * 100) : 0;
+              return (
+                <Panel title="Training Coverage">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs text-cream-dim">{assigned.length}/{rosterPlayers.length} assigned</span>
+                      <span className={cn(
+                        'font-mono text-xs font-bold',
+                        pct >= 80 ? 'text-green-light' : pct >= 50 ? 'text-gold' : 'text-red-400',
+                      )}>{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-navy-lighter rounded-full overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-full rounded-full transition-all',
+                          pct >= 80 ? 'bg-green-light' : pct >= 50 ? 'bg-gold' : 'bg-red-400',
+                        )}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                      <div className="text-center rounded border border-gold/20 bg-gold/5 py-1.5">
+                        <p className="text-gold font-bold text-base">{intense.length}</p>
+                        <p className="text-cream-dim/60">Intense</p>
+                      </div>
+                      <div className="text-center rounded border border-red-400/20 bg-red-900/10 py-1.5">
+                        <p className="text-red-400 font-bold text-base">{unassigned.length}</p>
+                        <p className="text-cream-dim/60">Unassigned</p>
+                      </div>
+                    </div>
+                    {unassigned.length > 0 && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => navigate('/franchise/training')}
+                      >
+                        Assign Training →
+                      </Button>
+                    )}
+                  </div>
+                </Panel>
+              );
+            })()}
+
             <Panel title="Age Curve Guide">
               <div className="space-y-2.5">
                 {(['growth', 'peak', 'decline', 'steep'] as DevelopmentPhase[]).map(phase => {

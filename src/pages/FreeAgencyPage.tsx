@@ -152,9 +152,8 @@ export function FreeAgencyPage() {
   const isOffseason = season?.phase === 'offseason';
 
   useEffect(() => {
-    if (!isOffseason) return;
     if (!freeAgentPool) initFreeAgency();
-  }, [isOffseason, freeAgentPool, initFreeAgency]);
+  }, [freeAgentPool, initFreeAgency]);
 
   const agents = useMemo(() => {
     let list: FreeAgent[] = freeAgentPool ? freeAgentPool.getAll() : [];
@@ -178,25 +177,6 @@ export function FreeAgencyPage() {
 
   const POS_FILTERS: FilterPos[] = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 
-  if (!isOffseason) {
-    return (
-      <div className="min-h-screen p-6 max-w-5xl mx-auto">
-        <div className="mb-6">
-          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Free Agency</h1>
-        </div>
-        <Panel>
-          <div className="py-12 text-center">
-            <div className="text-4xl mb-4">⏳</div>
-            <p className="font-display text-xl text-gold mb-2">Regular Season in Progress</p>
-            <p className="font-mono text-cream-dim text-sm">
-              Free agency opens after the season ends. Finish out the season first.
-            </p>
-          </div>
-        </Panel>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen p-6 max-w-5xl mx-auto">
       {/* Header */}
@@ -206,6 +186,13 @@ export function FreeAgencyPage() {
           {agents.length} players available
         </p>
       </div>
+
+      {/* In-season notice */}
+      {!isOffseason && (
+        <div className="mb-4 px-4 py-3 rounded-md font-mono text-sm border border-gold/30 bg-gold/5 text-gold/80">
+          In-season free agency — fringe players available now. Full FA market opens after the season.
+        </div>
+      )}
 
       {/* Notice banner */}
       {notice && (
