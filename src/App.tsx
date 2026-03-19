@@ -1,9 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from '@/components/ui/Toast.tsx';
 import { SplashScreen } from '@/components/ui/SplashScreen.tsx';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner.tsx';
 import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
+import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { FranchiseLayout } from '@/components/layout/FranchiseLayout.tsx';
 import { MainLayout } from '@/components/layout/MainLayout.tsx';
 import { GameLayout } from '@/components/layout/GameLayout.tsx';
@@ -82,6 +83,13 @@ const TEAM_OPTIONS = (() => {
   }
   return opts;
 })();
+
+
+/** Redirects /franchise/team-stats → /franchise/team-stats/:userTeamId */
+function TeamStatsRedirect() {
+  const userTeamId = useFranchiseStore(s => s.userTeamId);
+  return <Navigate to={`/franchise/team-stats/${userTeamId ?? 'unknown'}`} replace />;
+}
 
 /** Fade wrapper — re-mounts on location change, triggering CSS animation */
 function FadeWrapper({ children }: { children: React.ReactNode }) {
@@ -179,6 +187,14 @@ function AppRoutes() {
           <Route path="/franchise/training" element={<FranchiseLayout><TrainingCenterPage /></FranchiseLayout>} />
           <Route path="/franchise/news" element={<FranchiseLayout><NewsPage /></FranchiseLayout>} />
           <Route path="/franchise/hot-cold" element={<FranchiseLayout><HotColdPage /></FranchiseLayout>} />
+
+          {/* ── URL alias redirects (common alternative paths) ──────── */}
+          <Route path="/franchise/trades" element={<Navigate to="/franchise/trade" replace />} />
+          <Route path="/franchise/lineup" element={<Navigate to="/franchise/lineup-editor" replace />} />
+          <Route path="/franchise/minor-leagues" element={<Navigate to="/franchise/minors" replace />} />
+          <Route path="/franchise/franchise-history" element={<Navigate to="/franchise/history" replace />} />
+          <Route path="/franchise/league-news" element={<Navigate to="/franchise/news" replace />} />
+          <Route path="/franchise/team-stats" element={<TeamStatsRedirect />} />
         </Routes>
       </Suspense>
     </FadeWrapper>

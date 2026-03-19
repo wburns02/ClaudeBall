@@ -8,10 +8,10 @@ import { useStatsStore } from '@/stores/statsStore.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Award } from '@/engine/season/index.ts';
 
-const AWARD_META: Record<string, { label: string; icon: string; color: string }> = {
-  MVP: { label: 'Most Valuable Player', icon: '★', color: 'text-gold' },
-  CyYoung: { label: 'Cy Young Award', icon: '⚾', color: 'text-blue-400' },
-  ROY: { label: 'Rookie of the Year', icon: '🔰', color: 'text-green-light' },
+const AWARD_META: Record<string, { label: string; icon: string; color: string; valueLabel: string }> = {
+  MVP: { label: 'Most Valuable Player', icon: '★', color: 'text-gold', valueLabel: 'HR+RBI' },
+  CyYoung: { label: 'Cy Young Award', icon: '⚾', color: 'text-blue-400', valueLabel: 'ERA' },
+  ROY: { label: 'Rookie of the Year', icon: '🔰', color: 'text-green-light', valueLabel: 'HR+RBI' },
 };
 
 function AwardCard({
@@ -46,6 +46,7 @@ function AwardCard({
         <div className="text-right shrink-0">
           <p className="font-mono text-xs text-cream-dim">{year}</p>
           <p className={cn('font-mono text-sm font-bold', meta.color)}>{award.value.toFixed(1)}</p>
+          <p className="font-mono text-[10px] text-cream-dim/40">{meta.valueLabel}</p>
         </div>
       </div>
     </div>

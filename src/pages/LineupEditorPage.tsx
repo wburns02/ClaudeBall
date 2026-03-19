@@ -316,7 +316,7 @@ export function LineupEditorPage() {
             {currentLineup.length < 9 && (
               <div className="mt-3 px-3 py-2 bg-gold/5 border border-gold/20 rounded-lg">
                 <p className="font-mono text-xs text-gold/70">
-                  ⚠ Lineup incomplete — {9 - currentLineup.length} spots empty. Use Auto-Fill or drag from bench.
+                  ⚠ Lineup incomplete — {9 - currentLineup.length} spot{9 - currentLineup.length !== 1 ? 's' : ''} empty. Click a spot to select it, then click a bench player to assign.
                 </p>
               </div>
             )}

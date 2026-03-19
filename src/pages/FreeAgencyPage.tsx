@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { addToast } from '@/stores/toastStore.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { cn } from '@/lib/cn.ts';
@@ -181,7 +182,9 @@ export function FreeAgencyPage() {
   const handleSign = (fa: FreeAgent, years: number, salary: number) => {
     setSigning(fa.player.id);
     const result = signFreeAgent(fa.player.id, years, salary);
-    setNotice({ msg: result.reason ?? `Signed ${getPlayerName(fa.player)}!`, ok: result.success });
+    const msg = result.reason ?? `Signed ${getPlayerName(fa.player)}! ${years}yr / $${(salary / 1000).toFixed(1)}M`;
+    setNotice({ msg, ok: result.success });
+    addToast(msg, result.success ? 'success' : 'error');
     setSigning(null);
     setTimeout(() => setNotice(null), 3500);
   };
