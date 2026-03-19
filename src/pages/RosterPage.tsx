@@ -43,7 +43,7 @@ function ratingBar(val: number, max = 100): ReactElement {
 
 export function RosterPage() {
   const navigate = useNavigate();
-  const { engine, userTeamId, teams } = useFranchiseStore();
+  const { engine, userTeamId, teams, getPlayerContract } = useFranchiseStore();
   const { releasePlayer } = useGMStore();
 
   const [sortKey, setSortKey] = useState<SortKey>('ovr');
@@ -103,8 +103,14 @@ export function RosterPage() {
   const PlayerRow = ({ p }: { p: Player }) => {
     const ovr = playerOvr(p);
     const isPitcher = p.position === 'P';
+    const contract = getPlayerContract(p.id);
+    const salary = contract ? `$${(contract.salaryPerYear / 1000).toFixed(1)}M` : '—';
+    const contractYrs = contract && !contract.isFreeAgent ? `${contract.yearsRemaining}yr` : 'FA';
     return (
-      <tr className="border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors">
+      <tr
+        className="border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors cursor-pointer"
+        onClick={() => navigate(`/franchise/player/${p.id}`)}
+      >
         <td className="px-3 py-2 text-cream font-body text-sm">{getPlayerName(p)}</td>
         <td className="px-3 py-2 font-mono text-xs text-gold text-center">{p.position}</td>
         <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.bats}/{p.throws}</td>
@@ -117,15 +123,12 @@ export function RosterPage() {
             ? `${p.pitching.stuff}/${p.pitching.movement}/${p.pitching.control}`
             : `${p.batting.contact_R}/${p.batting.power_R}/${p.batting.eye}`}
         </td>
-        <td className="px-3 py-2">
+        <td className="px-3 py-2 font-mono text-xs text-center">
+          <span className="text-gold">{salary}</span>
+          <span className="text-cream-dim/50 ml-1">{contractYrs}</span>
+        </td>
+        <td className="px-3 py-2" onClick={e => e.stopPropagation()}>
           <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => navigate(`/franchise/player/${p.id}`)}
-            >
-              Edit
-            </Button>
             <Button
               size="sm"
               variant="secondary"
@@ -172,9 +175,8 @@ export function RosterPage() {
       <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">B/T</th>
       <th className="px-3 py-2 text-center"><SortHeader col="age" label="Age" /></th>
       <th className="px-3 py-2 text-left"><SortHeader col="ovr" label="OVR" /></th>
-      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">
-        {/* dynamic header */}Key
-      </th>
+      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">Key</th>
+      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">Salary</th>
       <th className="px-3 py-2 text-left text-gold-dim text-xs font-semibold uppercase tracking-wider">Actions</th>
     </tr>
   );

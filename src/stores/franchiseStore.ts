@@ -72,6 +72,7 @@ interface FranchiseState {
   // Minor league actions
   getAAATeam: (teamId: string) => MinorLeagueRoster | undefined;
   callUpPlayer: (teamId: string) => CallupEvent | null;
+  callUpSpecificPlayer: (teamId: string, playerId: string) => CallupEvent | null;
   sendDownPlayer: (teamId: string, playerId: string) => CallupEvent | null;
 
   // Waiver wire actions
@@ -498,6 +499,16 @@ export const useFranchiseStore = create<FranchiseState>()(
     if (!team) return null;
     const event = engine.minorLeagues.callUp(teamId, team.roster.players, engine.getState().currentDay);
     if (event) set(s => ({ callupLog: [...s.callupLog, event] }));
+    return event;
+  },
+
+  callUpSpecificPlayer: (teamId: string, playerId: string) => {
+    const { engine } = get();
+    if (!engine) return null;
+    const team = engine.getTeam(teamId);
+    if (!team) return null;
+    const event = engine.minorLeagues.callUpSpecific(teamId, team.roster.players, playerId, engine.getState().currentDay);
+    if (event) set(s => ({ callupLog: [...s.callupLog, event], season: { ...engine.getState() } }));
     return event;
   },
 

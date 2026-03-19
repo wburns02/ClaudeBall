@@ -169,6 +169,36 @@ export class MinorLeagues {
   }
 
   /**
+   * Call up a specific prospect by player ID.
+   * Returns a CallupEvent if successful.
+   */
+  callUpSpecific(
+    teamId: string,
+    mlbRoster: Player[],
+    playerId: string,
+    currentDay: number,
+  ): CallupEvent | null {
+    const affiliate = this.affiliates.get(teamId);
+    if (!affiliate) return null;
+
+    const maxRoster = currentDay >= SEPTEMBER_CALLUP_DAY ? MAX_EXPANDED_ROSTER : 26;
+    if (mlbRoster.length >= maxRoster) return null;
+
+    const idx = affiliate.players.findIndex(p => p.id === playerId);
+    if (idx === -1) return null;
+
+    const [player] = affiliate.players.splice(idx, 1);
+    mlbRoster.push(player);
+
+    return {
+      type: 'callup',
+      teamId,
+      player,
+      message: `${getPlayerName(player)} called up from AAA.`,
+    };
+  }
+
+  /**
    * Send a struggling MLB player to the minors.
    */
   sendDown(

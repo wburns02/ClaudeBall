@@ -44,10 +44,11 @@ export function MinorLeaguePage() {
   const navigate = useNavigate();
   const {
     engine, season, userTeamId,
-    getAAATeam, callUpPlayer, sendDownPlayer, callupLog,
+    getAAATeam, callUpPlayer, callUpSpecificPlayer, sendDownPlayer, callupLog,
   } = useFranchiseStore();
 
   const [lastEvent, setLastEvent] = useState<string | null>(null);
+  const [showAllMLB, setShowAllMLB] = useState(false);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -71,6 +72,15 @@ export function MinorLeaguePage() {
     }
   };
 
+  const handleCallUpSpecific = (playerId: string) => {
+    const event = callUpSpecificPlayer(userTeamId, playerId);
+    if (event) {
+      setLastEvent(event.message);
+    } else {
+      setLastEvent('Could not call up player — roster may be full.');
+    }
+  };
+
   const handleSendDown = (playerId: string) => {
     const event = sendDownPlayer(userTeamId, playerId);
     if (event) {
@@ -81,12 +91,12 @@ export function MinorLeaguePage() {
   const mlbRoster = userTeam?.roster.players ?? [];
   const maxRoster = isSeptemberCallups ? 40 : 26;
 
-  // Identify send-down candidates: players with low value, not injured
-  const sendDownCandidates = [...mlbRoster]
+  // Full MLB roster sorted by OVR (lowest first = best send-down candidates)
+  const mlbSorted = [...mlbRoster]
     .map(p => ({ p, v: evaluatePlayer(p) }))
-    .filter(({ p }) => !p.state.isInjured)
-    .sort((a, b) => a.v - b.v)
-    .slice(0, 5);
+    .sort((a, b) => a.v - b.v);
+
+  const sendDownCandidates = showAllMLB ? mlbSorted : mlbSorted.slice(0, 5);
 
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto">
@@ -150,15 +160,7 @@ export function MinorLeaguePage() {
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => {
-                            // Call up specific player
-                            const event = engine.minorLeagues.callUp(
-                              userTeamId,
-                              mlbRoster,
-                              currentDay
-                            );
-                            if (event) setLastEvent(event.message);
-                          }}
+                          onClick={() => handleCallUpSpecific(p.id)}
                         >
                           ↑ MLB
                         </Button>
@@ -170,31 +172,41 @@ export function MinorLeaguePage() {
           )}
         </Panel>
 
-        {/* Send-down candidates */}
-        <Panel title="Send-Down Candidates">
+        {/* Send-down panel — full MLB roster */}
+        <Panel title={`MLB Roster — Send Down (${mlbRoster.length}/${maxRoster})`}>
           <p className="font-mono text-xs text-cream-dim mb-3">
-            Lowest-value active MLB players. Send down to free roster spot.
+            Full MLB roster sorted by OVR (lowest first). Click ↓ AAA to option a player.
           </p>
-          {sendDownCandidates.length === 0 ? (
-            <p className="font-mono text-cream-dim text-sm py-4 text-center">No send-down candidates</p>
+          {mlbSorted.length === 0 ? (
+            <p className="font-mono text-cream-dim text-sm py-4 text-center">No MLB players</p>
           ) : (
-            <div className="space-y-1.5">
-              {sendDownCandidates.map(({ p }) => (
-                <PlayerRow
-                  key={p.id}
-                  player={p}
-                  actions={
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleSendDown(p.id)}
-                    >
-                      ↓ AAA
-                    </Button>
-                  }
-                />
-              ))}
-            </div>
+            <>
+              <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-1">
+                {sendDownCandidates.map(({ p }) => (
+                  <PlayerRow
+                    key={p.id}
+                    player={p}
+                    actions={
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleSendDown(p.id)}
+                      >
+                        ↓ AAA
+                      </Button>
+                    }
+                  />
+                ))}
+              </div>
+              {mlbSorted.length > 5 && (
+                <button
+                  onClick={() => setShowAllMLB(v => !v)}
+                  className="mt-2 w-full font-mono text-xs text-cream-dim/50 hover:text-cream-dim transition-colors py-1"
+                >
+                  {showAllMLB ? '▲ Show fewer' : `▼ Show all ${mlbSorted.length} players`}
+                </button>
+              )}
+            </>
           )}
         </Panel>
 

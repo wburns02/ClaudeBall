@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -70,7 +70,8 @@ function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; tota
 
 export function FranchiseDashboard() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs } = useFranchiseStore();
+  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents } = useFranchiseStore();
+  const [showEvents, setShowEvents] = useState(true);
 
   useEffect(() => {
     if (!isInitialized) navigate('/franchise/new');
@@ -88,13 +89,14 @@ export function FranchiseDashboard() {
   const userDiv = divStandings.find(d => d.teams.some(t => t.teamId === userTeamId));
 
   const handleAdvance = () => {
+    setShowEvents(true);
     const userGame = advanceDay();
     if (userGame) {
       navigate(`/game/live?gameId=${userGame.id}`);
     }
   };
 
-  const handleSimWeek = () => simDays(7);
+  const handleSimWeek = () => { setShowEvents(true); simDays(7); };
 
   const isRegularSeason = season.phase === 'regular' || season.phase === 'preseason';
   const isPostseason = season.phase === 'postseason';
@@ -268,6 +270,48 @@ export function FranchiseDashboard() {
           <Button variant="secondary" onClick={() => navigate('/franchise/offseason')}>
             Offseason Hub
           </Button>
+        </div>
+      )}
+
+      {/* Day Events Summary */}
+      {showEvents && lastDayEvents && (lastDayEvents.injuries.length + lastDayEvents.returns.length + lastDayEvents.callups.length + lastDayEvents.aiTrades.length) > 0 && (
+        <div className="mt-4 p-4 rounded-lg border border-navy-lighter bg-navy-light/40">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display text-sm text-cream uppercase tracking-wider">Last Sim Summary</h3>
+            <button
+              onClick={() => setShowEvents(false)}
+              className="font-mono text-xs text-cream-dim/40 hover:text-cream-dim transition-colors"
+            >
+              ✕ Dismiss
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-3 text-xs font-mono">
+            {lastDayEvents.injuries.map((e, i) => (
+              <span key={`inj-${i}`} className="px-2 py-1 bg-red/10 border border-red/20 rounded text-red-400">
+                🩹 {e.record.playerName} injured ({e.record.daysOut}d)
+              </span>
+            ))}
+            {lastDayEvents.returns.map((e, i) => (
+              <span key={`ret-${i}`} className="px-2 py-1 bg-green-900/20 border border-green-light/20 rounded text-green-light">
+                ✓ {e.record.playerName} returned
+              </span>
+            ))}
+            {lastDayEvents.callups.map((e, i) => (
+              <span key={`cup-${i}`} className={cn(
+                'px-2 py-1 rounded border',
+                e.type === 'callup'
+                  ? 'bg-gold/10 border-gold/20 text-gold'
+                  : 'bg-navy-lighter/30 border-navy-lighter text-cream-dim',
+              )}>
+                {e.type === 'callup' ? '↑' : '↓'} {e.message}
+              </span>
+            ))}
+            {lastDayEvents.aiTrades.map((e, i) => (
+              <span key={`trd-${i}`} className="px-2 py-1 bg-blue-900/20 border border-blue-400/20 rounded text-blue-400">
+                🔄 Trade: {e.description ?? 'AI teams swapped players'}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

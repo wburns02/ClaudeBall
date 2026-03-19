@@ -442,6 +442,7 @@ export function ScoutingPage() {
   const [sortMode, setSortMode] = useState<SortMode>('overall');
   const [posFilter, setPosFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(36);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -539,7 +540,7 @@ export function ScoutingPage() {
           {(['roster', 'league', 'prospects'] as ViewMode[]).map(v => (
             <button
               key={v}
-              onClick={() => { setView(v); setSelectedPlayer(null); }}
+              onClick={() => { setView(v); setSelectedPlayer(null); setVisibleCount(36); }}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all',
                 view === v ? 'bg-gold text-navy shadow-[0_1px_3px_rgba(0,0,0,0.3)]' : 'text-cream-dim hover:text-cream',
@@ -603,7 +604,7 @@ export function ScoutingPage() {
             {POSITIONS.map(pos => (
               <button
                 key={pos}
-                onClick={() => setPosFilter(pos)}
+                onClick={() => { setPosFilter(pos); setVisibleCount(36); }}
                 className={cn(
                   'px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase transition-all',
                   posFilter === pos
@@ -624,17 +625,35 @@ export function ScoutingPage() {
               </p>
             </Panel>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {displayedPlayers.slice(0, 36).map(({ player, team }) => (
-                <ScoutCard
-                  key={player.id}
-                  player={player}
-                  team={team}
-                  onSelect={handleSelect}
-                  selected={selectedPlayer?.id === player.id}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {displayedPlayers.slice(0, visibleCount).map(({ player, team }) => (
+                  <ScoutCard
+                    key={player.id}
+                    player={player}
+                    team={team}
+                    onSelect={handleSelect}
+                    selected={selectedPlayer?.id === player.id}
+                  />
+                ))}
+              </div>
+              {displayedPlayers.length > visibleCount && (
+                <button
+                  onClick={() => setVisibleCount(c => c + 36)}
+                  className="w-full mt-3 py-2 font-mono text-xs text-cream-dim/50 hover:text-cream-dim border border-dashed border-navy-lighter/60 hover:border-navy-lighter rounded-lg transition-all"
+                >
+                  ▼ Show more ({displayedPlayers.length - visibleCount} remaining)
+                </button>
+              )}
+              {visibleCount > 36 && (
+                <button
+                  onClick={() => setVisibleCount(36)}
+                  className="w-full py-1 font-mono text-xs text-cream-dim/30 hover:text-cream-dim/50 transition-colors"
+                >
+                  ▲ Collapse
+                </button>
+              )}
+            </>
           )}
           {displayedPlayers.length > 36 && (
             <p className="text-xs font-mono text-cream-dim/30 text-center">
