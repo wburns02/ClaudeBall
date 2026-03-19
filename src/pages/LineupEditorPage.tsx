@@ -20,7 +20,7 @@ const BATTING_SPOT_ROLES = [
   'Middle',
   'Bottom',
   'Bottom',
-  '9th',
+  'Flex / P',
 ];
 
 const ROLE_COLORS = [
@@ -68,6 +68,8 @@ export function LineupEditorPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, reorderLineup, setRotation, setBullpen } = useFranchiseStore();
   const [saved, setSaved] = useState(false);
+  const [autoFilledBatting, setAutoFilledBatting] = useState(false);
+  const [autoFilledPitching, setAutoFilledPitching] = useState(false);
   const [activeTab, setActiveTab] = useState<'batting' | 'pitching'>('batting');
   // Selected batting spot index for swap
   const [selectedSpot, setSelectedSpot] = useState<number | null>(null);
@@ -110,6 +112,8 @@ export function LineupEditorPage() {
     const builtLineup = LineupBuilder.buildLineup(userTeam);
     reorderLineup(userTeamId, builtLineup);
     setSaved(false);
+    setAutoFilledBatting(true);
+    setTimeout(() => setAutoFilledBatting(false), 1500);
   };
 
   // Auto-fill rotation: top 5 starters by stuff+movement+control
@@ -120,6 +124,8 @@ export function LineupEditorPage() {
     );
     setRotation(userTeamId, sorted.slice(0, 5).map(p => p.id));
     setSaved(false);
+    setAutoFilledPitching(true);
+    setTimeout(() => setAutoFilledPitching(false), 1500);
   };
 
   // Auto-fill bullpen: remaining pitchers after rotation
@@ -209,10 +215,14 @@ export function LineupEditorPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {saved && (
-            <span className="font-mono text-xs text-green-light animate-pulse">✓ Saved</span>
-          )}
-          <Button onClick={handleSave} variant="primary" size="sm">Save Lineup</Button>
+          <Button
+            onClick={handleSave}
+            variant="primary"
+            size="sm"
+            className={saved ? '!bg-green-700 !shadow-green-900/50' : ''}
+          >
+            {saved ? '✓ Saved' : 'Save Lineup'}
+          </Button>
           <Button onClick={() => navigate('/franchise/roster')} variant="ghost" size="sm">Roster</Button>
         </div>
       </div>
@@ -243,8 +253,13 @@ export function LineupEditorPage() {
                   ? `Spot #${selectedSpot + 1} selected — click another spot to swap`
                   : 'Click two spots to swap them'}
               </p>
-              <Button size="sm" variant="secondary" onClick={handleAutoFillBatting}>
-                Auto-Fill (AI)
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleAutoFillBatting}
+                className={autoFilledBatting ? '!bg-green-700/30 !border-green-600/50 !text-green-400' : ''}
+              >
+                {autoFilledBatting ? '✓ Filled!' : 'Auto-Fill (AI)'}
               </Button>
             </div>
 
@@ -419,8 +434,13 @@ export function LineupEditorPage() {
                     ? `SP${selectedRotSlot + 1} selected — click another slot to swap`
                     : 'Click two slots to swap • Click + to add from available'}
                 </p>
-                <Button size="sm" variant="secondary" onClick={handleAutoFillRotation}>
-                  Auto-Fill (AI)
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleAutoFillRotation}
+                  className={autoFilledPitching ? '!bg-green-700/30 !border-green-600/50 !text-green-400' : ''}
+                >
+                  {autoFilledPitching ? '✓ Filled!' : 'Auto-Fill (AI)'}
                 </Button>
               </div>
 
@@ -533,52 +553,45 @@ export function LineupEditorPage() {
           </div>
 
           {/* Available pitchers to add to rotation */}
-          <Panel title="Available Starters">
-            <p className="font-mono text-xs text-cream-dim/50 mb-3">Click + to add to rotation (max 5)</p>
+          <Panel title={`Available Starters (${bullpenPitchers.length})`}>
+            <p className="font-mono text-xs text-cream-dim/50 mb-3">
+              {currentRotation.length >= 5 ? 'Rotation full — remove a starter to swap' : 'Click + to add to rotation (max 5)'}
+            </p>
             {pitchers.length === 0 ? (
               <p className="font-mono text-xs text-cream-dim/40 text-center py-3">No pitchers on roster</p>
+            ) : bullpenPitchers.length === 0 ? (
+              <p className="font-mono text-xs text-green-light/60 text-center py-3">All pitchers assigned to rotation</p>
             ) : (
               <div className="space-y-1.5">
-                {[...pitchers]
+                {[...bullpenPitchers]
                   .sort((a, b) =>
                     (b.pitching.stuff + b.pitching.movement + b.pitching.control) -
                     (a.pitching.stuff + a.pitching.movement + a.pitching.control)
                   )
                   .map(p => {
-                    const inRotation = rotationSet.has(p.id);
                     const ovr = Math.round(evaluatePlayer(p));
-                    const rotIdx = currentRotation.indexOf(p.id);
                     return (
                       <div
                         key={p.id}
-                        className={cn(
-                          'flex items-center gap-2 p-2 rounded-md border transition-all',
-                          inRotation
-                            ? 'bg-gold/10 border-gold/30'
-                            : 'bg-navy-lighter/15 border-navy-lighter/30 hover:border-navy-lighter/60',
-                        )}
+                        className="flex items-center gap-2 p-2 rounded-md border transition-all bg-navy-lighter/15 border-navy-lighter/30 hover:border-navy-lighter/60"
                       >
                         <div className="flex-1 min-w-0">
                           <p className="font-body text-xs text-cream truncate">{getPlayerName(p)}</p>
                           <PitcherGrades p={p} />
                         </div>
                         <span className={cn('font-mono text-xs font-bold shrink-0', ovrColor(ovr))}>{ovr}</span>
-                        {inRotation ? (
-                          <span className="font-mono text-[10px] text-gold shrink-0">SP{rotIdx + 1}</span>
-                        ) : (
-                          <button
-                            onClick={() => handleAddToRotation(p.id)}
-                            disabled={currentRotation.length >= 5}
-                            className={cn(
-                              'font-mono text-[10px] border px-2 py-0.5 rounded transition-colors shrink-0',
-                              currentRotation.length >= 5
-                                ? 'text-cream-dim/20 border-navy-lighter/20 cursor-not-allowed'
-                                : 'text-green-light border-green-light/40 hover:bg-green-light/10',
-                            )}
-                          >
-                            + Add
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleAddToRotation(p.id)}
+                          disabled={currentRotation.length >= 5}
+                          className={cn(
+                            'font-mono text-[10px] border px-2 py-0.5 rounded transition-colors shrink-0',
+                            currentRotation.length >= 5
+                              ? 'text-cream-dim/20 border-navy-lighter/20 cursor-not-allowed'
+                              : 'text-green-light border-green-light/40 hover:bg-green-light/10 cursor-pointer',
+                          )}
+                        >
+                          + Add
+                        </button>
                       </div>
                     );
                   })}

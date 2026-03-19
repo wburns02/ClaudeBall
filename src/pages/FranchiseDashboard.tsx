@@ -72,6 +72,7 @@ export function FranchiseDashboard() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents } = useFranchiseStore();
   const [showEvents, setShowEvents] = useState(true);
+  const [simConfirm, setSimConfirm] = useState<number | null>(null); // days pending confirm
 
   useEffect(() => {
     if (!isInitialized) navigate('/franchise/new');
@@ -97,6 +98,7 @@ export function FranchiseDashboard() {
   };
 
   const handleSimWeek = () => { setShowEvents(true); simDays(7); };
+  const handleSimConfirm = (days: number) => { setShowEvents(true); simDays(days); setSimConfirm(null); };
 
   const isRegularSeason = season.phase === 'regular' || season.phase === 'preseason';
   const isPostseason = season.phase === 'postseason';
@@ -179,13 +181,35 @@ export function FranchiseDashboard() {
                 <Button className="w-full" variant="secondary" onClick={handleSimWeek}>
                   Sim 7 Days
                 </Button>
-                <Button className="w-full" variant="secondary" onClick={() => simDays(30)}>
-                  Sim 30 Days
-                </Button>
-                {season.currentDay >= season.totalDays - 7 && (
-                  <Button className="w-full" variant="secondary" onClick={() => simDays(183)}>
-                    Finish Season
+                {simConfirm === 30 ? (
+                  <div className="flex gap-2">
+                    <Button className="flex-1 !bg-red-700/80 !shadow-none text-white text-xs" onClick={() => handleSimConfirm(30)}>
+                      Confirm 30 Days
+                    </Button>
+                    <Button variant="ghost" className="flex-1 text-xs" onClick={() => setSimConfirm(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <Button className="w-full" variant="secondary" onClick={() => setSimConfirm(30)}>
+                    Sim 30 Days
                   </Button>
+                )}
+                {season.currentDay >= season.totalDays - 7 && (
+                  simConfirm === 183 ? (
+                    <div className="flex gap-2">
+                      <Button className="flex-1 !bg-red-700/80 !shadow-none text-white text-xs" onClick={() => handleSimConfirm(183)}>
+                        Confirm Finish
+                      </Button>
+                      <Button variant="ghost" className="flex-1 text-xs" onClick={() => setSimConfirm(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button className="w-full" variant="secondary" onClick={() => setSimConfirm(183)}>
+                      Finish Season
+                    </Button>
+                  )
                 )}
               </>
             )}
