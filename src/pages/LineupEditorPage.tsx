@@ -67,7 +67,7 @@ function BatterGrades({ p }: { p: Player }) {
 export function LineupEditorPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, reorderLineup, setRotation, setBullpen } = useFranchiseStore();
-  const [saved, setSaved] = useState(false);
+
   const [autoFilledBatting, setAutoFilledBatting] = useState(false);
   const [autoFilledPitching, setAutoFilledPitching] = useState(false);
   const [activeTab, setActiveTab] = useState<'batting' | 'pitching'>('batting');
@@ -111,7 +111,6 @@ export function LineupEditorPage() {
   const handleAutoFillBatting = () => {
     const builtLineup = LineupBuilder.buildLineup(userTeam);
     reorderLineup(userTeamId, builtLineup);
-    setSaved(false);
     setAutoFilledBatting(true);
     setTimeout(() => setAutoFilledBatting(false), 1500);
   };
@@ -123,7 +122,6 @@ export function LineupEditorPage() {
       (a.pitching.stuff + a.pitching.movement + a.pitching.control)
     );
     setRotation(userTeamId, sorted.slice(0, 5).map(p => p.id));
-    setSaved(false);
     setAutoFilledPitching(true);
     setTimeout(() => setAutoFilledPitching(false), 1500);
   };
@@ -133,12 +131,6 @@ export function LineupEditorPage() {
     const rotSet = new Set(currentRotation);
     const relievers = pitchers.filter(p => !rotSet.has(p.id)).map(p => p.id);
     setBullpen(userTeamId, relievers);
-    setSaved(false);
-  };
-
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   // ── Batting order swap logic ──
@@ -158,7 +150,6 @@ export function LineupEditorPage() {
         reorderLineup(userTeamId, newLineup);
       }
       setSelectedSpot(null);
-      setSaved(false);
     }
   };
 
@@ -168,7 +159,6 @@ export function LineupEditorPage() {
     newLineup[spotIdx] = { playerId, position: roster.find(p => p.id === playerId)?.position ?? 'DH' };
     reorderLineup(userTeamId, newLineup);
     setSelectedSpot(null);
-    setSaved(false);
   };
 
   // ── Rotation slot swap logic ──
@@ -187,19 +177,16 @@ export function LineupEditorPage() {
         setRotation(userTeamId, newRot);
       }
       setSelectedRotSlot(null);
-      setSaved(false);
     }
   };
 
   const handleAddToRotation = (playerId: string) => {
     if (currentRotation.length >= 5) return;
     setRotation(userTeamId, [...currentRotation, playerId]);
-    setSaved(false);
   };
 
   const handleRemoveFromRotation = (playerId: string) => {
     setRotation(userTeamId, currentRotation.filter(id => id !== playerId));
-    setSaved(false);
   };
 
   const bullpenRoles = ['Closer', 'Setup', 'Long Relief', 'Middle Relief', 'Spot Starter'];
@@ -215,14 +202,9 @@ export function LineupEditorPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleSave}
-            variant="primary"
-            size="sm"
-            className={saved ? '!bg-green-700 !shadow-green-900/50' : ''}
-          >
-            {saved ? '✓ Saved' : 'Save Lineup'}
-          </Button>
+          <span className="font-mono text-xs text-green-light/70 flex items-center gap-1">
+            <span>✓</span><span>Auto-saved</span>
+          </span>
           <Button onClick={() => navigate('/franchise/roster')} variant="ghost" size="sm">Roster</Button>
         </div>
       </div>

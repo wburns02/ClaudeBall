@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -133,7 +133,7 @@ export function TradePage() {
   );
 
   // Pre-select target player from URL
-  useMemo(() => {
+  useEffect(() => {
     const tp = searchParams.get('targetPlayer');
     if (tp && partnerTeam?.roster.players.some(p => p.id === tp)) {
       setTheirBlock([tp]);

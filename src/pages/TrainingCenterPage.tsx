@@ -8,6 +8,7 @@ import { getPlayerName } from '@/engine/types/player.ts';
 import { cn } from '@/lib/cn.ts';
 import type { TrainingFocus, TrainingIntensity, TrainingAssignment } from '@/engine/player/DevelopmentEngine.ts';
 import type { Player } from '@/engine/types/player.ts';
+import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
 
 // ── Training metadata ────────────────────────────────────────────────────────
 
@@ -198,7 +199,7 @@ function PlayerTrainingCard({
 
 export function TrainingCenterPage() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, trainingAssignments, setTrainingAssignment, clearTrainingAssignments } = useFranchiseStore();
+  const { season, engine, userTeamId, trainingAssignments, setTrainingAssignment, clearTrainingAssignments, lastDevelopmentChanges } = useFranchiseStore();
 
   const userTeam = useMemo(
     () => (engine && userTeamId) ? engine.getTeam(userTeamId) : null,
@@ -274,6 +275,37 @@ export function TrainingCenterPage() {
           <p className="font-mono text-xs text-cream-dim/50 mt-0.5">Total Players</p>
         </div>
       </div>
+
+      {/* Last offseason results */}
+      {lastDevelopmentChanges && userTeamId && (() => {
+        const myChanges = lastDevelopmentChanges.filter(c => c.teamId === userTeamId && c.ovrDelta !== 0);
+        if (myChanges.length === 0) return null;
+        const improved = myChanges.filter(c => c.ovrDelta > 0);
+        const declined = myChanges.filter(c => c.ovrDelta < 0);
+        return (
+          <div className="mb-6 rounded-lg border border-green-light/20 bg-green-900/10 px-4 py-3">
+            <h3 className="font-mono text-xs text-green-light/70 uppercase tracking-wider mb-3">
+              Last Offseason Development Results — {myChanges.length} players changed
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto">
+              {[...improved, ...declined].slice(0, 20).map((c: DevelopmentChange) => (
+                <div key={c.playerId} className="flex items-center justify-between gap-2 font-mono text-xs">
+                  <span className="text-cream truncate">{c.playerName}</span>
+                  <span className={cn(
+                    'shrink-0 font-bold',
+                    c.ovrDelta > 0 ? 'text-green-light' : 'text-red-400',
+                  )}>
+                    {c.ovrDelta > 0 ? '+' : ''}{c.ovrDelta} OVR
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="font-mono text-[10px] text-cream-dim/40 mt-2">
+              {improved.length} improved · {declined.length} declined
+            </p>
+          </div>
+        );
+      })()}
 
       {/* How it works callout */}
       <div className="mb-6 px-4 py-3 rounded-lg border border-gold/15 bg-gold/5 font-mono text-xs text-cream-dim/70">

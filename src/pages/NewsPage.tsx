@@ -242,21 +242,13 @@ export function NewsPage() {
   const { season, engine, userTeamId, lastDayEvents, injuryLog, tradeLog, callupLog } = useFranchiseStore();
   const { playerStats } = useStatsStore();
 
-  if (!season || !engine || !userTeamId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
-      </div>
-    );
-  }
-
-  const currentDay = season.currentDay;
+  const currentDay = season?.currentDay ?? 0;
   const recentDays = 7; // news window
 
   // ── Generate news items ──────────────────────────────────────────────────
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const newsItems = useMemo((): NewsItem[] => {
+    if (!season || !engine || !userTeamId) return [];
     const items: NewsItem[] = [];
 
     // 1. Today's game results (last recentDays days)
@@ -458,6 +450,14 @@ export function NewsPage() {
       return true;
     });
   }, [season, engine, userTeamId, currentDay, lastDayEvents, injuryLog, tradeLog, callupLog, playerStats]);
+
+  if (!season || !engine || !userTeamId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      </div>
+    );
+  }
 
   const userTeam = engine.getTeam(userTeamId);
   const userRecord = season.standings.getRecord(userTeamId);

@@ -258,11 +258,16 @@ export function BoxScoreHistoryPage() {
       {/* Box Scores */}
       {noStatsAvailable ? (
         <Panel>
-          <p className="text-cream-dim font-mono text-sm text-center py-8">
-            Detailed player stats not available for this game.
-            <br />
-            Stats are recorded starting from the current season.
-          </p>
+          <div className="text-center py-10">
+            <p className="font-mono text-cream-dim text-sm mb-2">
+              Detailed player stats unavailable for this game.
+            </p>
+            <p className="font-mono text-cream-dim/40 text-xs">
+              Per-game stats are kept for the most recent 19 games per player.
+              <br />
+              Older games show only the final score.
+            </p>
+          </div>
         </Panel>
       ) : (
         <div className="space-y-4">
