@@ -81,7 +81,7 @@ function getPitcherGrades(p: Player): PitcherGrades {
 }
 
 function isPitcherPos(pos: string): boolean {
-  return pos === 'SP' || pos === 'RP';
+  return pos === 'P' || pos === 'SP' || pos === 'RP';
 }
 
 function overallGrade(p: Player): number {
@@ -186,7 +186,7 @@ function ScoutCard({
               'inline-block px-1.5 py-px rounded text-[9px] font-bold font-mono uppercase',
               isP ? 'bg-blue-400/20 text-blue-400' : 'bg-green-light/20 text-green-light'
             )}>
-              {player.position}
+              {player.position === 'P' ? 'P' : player.position}
             </span>
             <span className="text-[10px] font-mono text-cream-dim/40">
               Age {player.age} · {team.abbreviation}
@@ -232,7 +232,7 @@ function ScoutCard({
 
 // ── Team Needs ───────────────────────────────────────────────────────────────
 function TeamNeedsPanel({ userTeam }: { userTeam: Team }) {
-  const POS_LIST = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'SP', 'RP'] as const;
+  const POS_LIST = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'P'] as const;
   const posStrength = POS_LIST.map(pos => {
     const posPlayers = userTeam.roster.players.filter(p => p.position === pos);
     if (posPlayers.length === 0) return { pos, grade: 20, count: 0 };
@@ -354,16 +354,16 @@ function DetailedReport({ player, team }: { player: Player; team: Team }) {
             { label: 'Current', g: overall },
             { label: 'Ceiling', g: ceilingGrade },
           ].map(({ label, g }, i, arr) => (
-            <>
-              <div key={label} className="text-center">
+            <div key={label} className="flex items-center gap-3">
+              <div className="text-center">
                 <div className="text-[10px] font-mono text-cream-dim/40 mb-1">{label}</div>
                 <div className={cn('text-xl font-display font-bold', letterGradeColor(letterGrade(g)))}>
                   {letterGrade(g)}
                 </div>
                 <div className="text-[10px] font-mono text-cream-dim/40">{g}</div>
               </div>
-              {i < arr.length - 1 && <div key={`div-${i}`} className="w-px h-10 bg-navy-lighter" />}
-            </>
+              {i < arr.length - 1 && <div className="w-px h-10 bg-navy-lighter" />}
+            </div>
           ))}
         </div>
       </div>
@@ -516,7 +516,7 @@ export function ScoutingPage() {
     setSelectedPlayerTeam(found?.team ?? null);
   }
 
-  const POSITIONS = ['ALL', 'SP', 'RP', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+  const POSITIONS = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 
   // Summary stats
   const avgGrade = displayedPlayers.length > 0
