@@ -119,8 +119,7 @@ export function TradeProposalPage() {
     if (newProposals.length > 0) {
       setProposals([...proposals, ...newProposals]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [season?.currentDay]);
+  }, [engine, season?.currentDay, userTeamId, userTeam, proposals.length, setProposals]);
 
   const handleAccept = (prop: IncomingProposal) => {
     if (!userTeam || !engine) return;

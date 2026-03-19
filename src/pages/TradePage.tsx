@@ -106,8 +106,8 @@ function FairnessMeter({ score }: { score: number }) {
 export function TradePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { engine, userTeamId, teams } = useFranchiseStore();
-  const { evaluateTradePackages, checkAIAccepts, executeTrade } = useGMStore();
+  const { engine, userTeamId, teams, movePlayer, addUserTradeLog } = useFranchiseStore();
+  const { evaluateTradePackages, checkAIAccepts } = useGMStore();
 
   // Get user team
   const userTeam = useMemo(
@@ -174,7 +174,9 @@ export function TradePage() {
     const accepts = checkAIAccepts(partnerTeam, offering, receiving, allT);
 
     if (accepts) {
-      executeTrade(userTeam, partnerTeam, userBlock, theirBlock);
+      for (const pid of userBlock) movePlayer(pid, userTeam.id, partnerTeam.id);
+      for (const pid of theirBlock) movePlayer(pid, partnerTeam.id, userTeam.id);
+      addUserTradeLog(`Traded ${userBlock.length}P to ${partnerTeam.city} ${partnerTeam.name}, received ${theirBlock.length}P`);
       setUserBlock([]);
       setTheirBlock([]);
       setEvaluated(null);

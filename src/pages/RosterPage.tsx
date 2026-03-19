@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
-import { useGMStore } from '@/stores/gmStore.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { cn } from '@/lib/cn.ts';
@@ -43,8 +42,7 @@ function ratingBar(val: number, max = 100): ReactElement {
 
 export function RosterPage() {
   const navigate = useNavigate();
-  const { engine, userTeamId, teams, getPlayerContract } = useFranchiseStore();
-  const { releasePlayer } = useGMStore();
+  const { engine, userTeamId, teams, getPlayerContract, releasePlayerToWaivers } = useFranchiseStore();
 
   const [sortKey, setSortKey] = useState<SortKey>('ovr');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -143,7 +141,7 @@ export function RosterPage() {
                   variant="primary"
                   className="!bg-red-500 !shadow-none text-white"
                   onClick={() => {
-                    releasePlayer(userTeam, p.id);
+                    releasePlayerToWaivers(userTeamId!, p.id);
                     setConfirmRelease(null);
                   }}
                 >

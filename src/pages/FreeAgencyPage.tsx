@@ -142,16 +142,19 @@ function FACard({
 }
 
 export function FreeAgencyPage() {
-  const { freeAgentPool, initFreeAgency, signFreeAgent } = useFranchiseStore();
+  const { freeAgentPool, initFreeAgency, signFreeAgent, season } = useFranchiseStore();
 
   const [posFilter, setPosFilter] = useState<FilterPos>('ALL');
   const [sortMode, setSortMode] = useState<SortMode>('ovr');
   const [notice, setNotice] = useState<{ msg: string; ok: boolean } | null>(null);
   const [signing, setSigning] = useState<string | null>(null);
 
+  const isOffseason = season?.phase === 'offseason';
+
   useEffect(() => {
+    if (!isOffseason) return;
     if (!freeAgentPool) initFreeAgency();
-  }, [freeAgentPool, initFreeAgency]);
+  }, [isOffseason, freeAgentPool, initFreeAgency]);
 
   const agents = useMemo(() => {
     let list: FreeAgent[] = freeAgentPool ? freeAgentPool.getAll() : [];
@@ -174,6 +177,25 @@ export function FreeAgencyPage() {
   };
 
   const POS_FILTERS: FilterPos[] = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+
+  if (!isOffseason) {
+    return (
+      <div className="min-h-screen p-6 max-w-5xl mx-auto">
+        <div className="mb-6">
+          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Free Agency</h1>
+        </div>
+        <Panel>
+          <div className="py-12 text-center">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="font-display text-xl text-gold mb-2">Regular Season in Progress</p>
+            <p className="font-mono text-cream-dim text-sm">
+              Free agency opens after the season ends. Finish out the season first.
+            </p>
+          </div>
+        </Panel>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 max-w-5xl mx-auto">
