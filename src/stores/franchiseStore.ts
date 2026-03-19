@@ -83,6 +83,8 @@ interface FranchiseState {
   // Contract actions
   getPlayerContract: (playerId: string) => PlayerContract | undefined;
   getTeamPayroll: (teamId: string) => number;
+  getAllTeamContracts: (teamId: string) => Array<{ player: import('@/engine/types/player.ts').Player; contract: PlayerContract }>;
+  signExtension: (playerId: string, teamId: string, years: number, salaryPerYear: number) => import('@/engine/gm/ContractEngine.ts').ContractResult;
 
   // Trade deadline / logs
   isTradeDeadlinePassed: () => boolean;
@@ -563,6 +565,31 @@ export const useFranchiseStore = create<FranchiseState>()(
     const { engine } = get();
     if (!engine) return 0;
     return engine.contractEngine.getTeamPayroll(teamId);
+  },
+
+  getAllTeamContracts: (teamId: string) => {
+    const { engine } = get();
+    if (!engine) return [];
+    const team = engine.getTeam(teamId);
+    if (!team) return [];
+    return team.roster.players
+      .map(player => {
+        const contract = engine.contractEngine.getContract(player.id);
+        return contract ? { player, contract } : null;
+      })
+      .filter((x): x is { player: import('@/engine/types/player.ts').Player; contract: PlayerContract } => x !== null);
+  },
+
+  signExtension: (playerId: string, teamId: string, years: number, salaryPerYear: number) => {
+    const { engine } = get();
+    if (!engine) return { success: false, reason: 'No franchise loaded' };
+    const allTeams = engine.getAllTeams();
+    const team = allTeams.find(t => t.id === teamId);
+    const player = team?.roster.players.find(p => p.id === playerId);
+    if (!player) return { success: false, reason: 'Player not found' };
+    const result = engine.contractEngine.signContract(player, teamId, { years, salaryPerYear });
+    if (result.success) set(s => ({ season: s.season ? { ...s.season } : s.season }));
+    return result;
   },
 
   // Trade deadline / logs
