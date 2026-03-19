@@ -20,6 +20,7 @@ import type { PlayerContract } from '@/engine/gm/ContractEngine.ts';
 import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
 import type { TrainingAssignment } from '@/engine/player/DevelopmentEngine.ts';
 import type { TradeProposal } from '@/engine/gm/TradeEngine.ts';
+import { computeFormSummary } from '@/engine/performance/HotColdEngine.ts';
 
 /** Serializable trade proposal stored in the franchise store so it persists across navigation */
 export interface StoredTradeProposal {
@@ -120,6 +121,9 @@ interface FranchiseState {
   getTeamPayroll: (teamId: string) => number;
   getAllTeamContracts: (teamId: string) => Array<{ player: import('@/engine/types/player.ts').Player; contract: PlayerContract }>;
   signExtension: (playerId: string, teamId: string, years: number, salaryPerYear: number) => import('@/engine/gm/ContractEngine.ts').ContractResult;
+
+  // Hot/cold performance tracking
+  refreshHotCold: () => void;
 
   // Trade deadline / logs
   isTradeDeadlinePassed: () => boolean;
@@ -303,6 +307,8 @@ export const useFranchiseStore = create<FranchiseState>()(
       waiverLog: [...s.waiverLog, ...events.waivers],
       callupLog: [...s.callupLog, ...events.callups],
     }));
+    // Update player morale based on recent performance (non-blocking, best-effort)
+    try { get().refreshHotCold(); } catch { /* non-critical */ }
     return userGame;
   },
 
@@ -355,6 +361,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       waiverLog: [...s.waiverLog, ...events.waivers],
       callupLog: [...s.callupLog, ...events.callups],
     }));
+    try { get().refreshHotCold(); } catch { /* non-critical */ }
   },
 
   simGame: (gameId) => {
@@ -787,6 +794,31 @@ export const useFranchiseStore = create<FranchiseState>()(
     const result = engine.contractEngine.signContract(player, teamId, { years, salaryPerYear });
     if (result.success) set(s => ({ season: s.season ? { ...s.season } : s.season }));
     return result;
+  },
+
+  // Hot/cold performance tracking — updates player morale from recent game logs
+  refreshHotCold: () => {
+    const { engine, teams } = get();
+    if (!engine) return;
+    const statsState = useStatsStore.getState();
+    for (const team of teams) {
+      const engineTeam = engine.getTeam(team.id);
+      if (!engineTeam) continue;
+      for (const player of engineTeam.roster.players) {
+        const stats = statsState.playerStats[player.id];
+        if (!stats || stats.gameLog.length === 0) continue;
+        const form = computeFormSummary(
+          player.id,
+          stats.gameLog,
+          player.position,
+          stats.batting.ab > 0 ? { ab: stats.batting.ab, h: stats.batting.h, bb: stats.batting.bb, hr: stats.batting.hr } : undefined,
+          stats.pitching.ip > 0 ? { ip: stats.pitching.ip / 3, er: stats.pitching.er, bb: stats.pitching.bb, so: stats.pitching.so } : undefined,
+        );
+        // Nudge morale toward target gradually
+        const current = player.state.morale;
+        player.state.morale = Math.round(current + (form.moraleTarget - current) * 0.25);
+      }
+    }
   },
 
   // Trade deadline / logs

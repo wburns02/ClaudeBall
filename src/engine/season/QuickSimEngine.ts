@@ -45,7 +45,10 @@ export class QuickSimEngine {
       if (!player) continue;
       const contact = (player.batting.contact_L + player.batting.contact_R) / 2;
       const power = (player.batting.power_L + player.batting.power_R) / 2;
-      total += contact * 0.4 + power * 0.35 + player.batting.eye * 0.25;
+      const base = contact * 0.4 + power * 0.35 + player.batting.eye * 0.25;
+      // Morale modifier: 0–100 → -8% to +8% (neutral = 60)
+      const moraleMod = 1 + ((player.state.morale - 60) / 100) * 0.16;
+      total += base * moraleMod;
       count++;
     }
     return count === 0 ? 50 : total / count;
@@ -54,7 +57,10 @@ export class QuickSimEngine {
   private static teamPitching(team: Team): number {
     const pitcher = team.roster.players.find(p => p.id === team.pitcherId);
     if (!pitcher) return 50;
-    return pitcher.pitching.stuff * 0.35 + pitcher.pitching.control * 0.35 + pitcher.pitching.movement * 0.30;
+    const base = pitcher.pitching.stuff * 0.35 + pitcher.pitching.control * 0.35 + pitcher.pitching.movement * 0.30;
+    // Morale modifier: 0–100 → -8% to +8% (neutral = 60)
+    const moraleMod = 1 + ((pitcher.state.morale - 60) / 100) * 0.16;
+    return base * moraleMod;
   }
 
   private static expectedRuns(offense: number, pitching: number): number {

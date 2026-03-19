@@ -58,6 +58,7 @@ const Icons = {
   training: 'M6.5 6.5a5.5 5.5 0 0111 0c0 4-5.5 8-5.5 8S6.5 10.5 6.5 6.5z M12 6.5h.01',
   news: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z M9 10h6 M9 14h4',
   teamStats: 'M3 3h18v18H3z M7 7h4v4H7z M13 7h4v4h-4z M7 13h4v4H7z M13 13h4v4h-4z',
+  hotCold: 'M12 2a5 5 0 015 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 015-5z M12 22l2-4h-4l2 4z',
 };
 
 interface NavItem {
@@ -134,6 +135,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: 'SEASON',
     items: [
+      { label: 'Hot & Cold', path: '/franchise/hot-cold', icon: 'hotCold' },
       { label: 'Awards', path: '/franchise/awards', icon: 'awards' },
       { label: 'Trade Proposals', path: '/franchise/trade-proposals', icon: 'tradeProposals' },
       { label: 'Injuries', path: '/franchise/injuries', icon: 'injuries' },
