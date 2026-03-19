@@ -1,7 +1,7 @@
 import type { Player, ContactType, PitchType } from '../types/index.ts';
 import type { RandomProvider } from './RandomProvider.ts';
 import type { BallparkFactors } from '../types/ballpark.ts';
-import { clamp, ratingToRange } from '../util/helpers.ts';
+import { clamp, ratingToRange, ratingToProb } from '../util/helpers.ts';
 
 export interface ContactOutcome {
   type: ContactType;
@@ -24,18 +24,32 @@ export class ContactEngine {
     ballpark: BallparkFactors,
     rng: RandomProvider
   ): ContactOutcome {
+    // ── Platoon splits ─────────────────────────────────────────────────────
+    // Same-handed matchup (L vs L, R vs R) is harder for batter:
+    // contact suffers, launch angle is depressed (more weak grounders).
+    const sameSide = batter.bats !== 'S' && batter.bats === pitcher.throws;
+    const platoonPenalty = sameSide ? 5 : 0; // subtract from effective power
+
     const powerVsHand = pitcher.throws === 'L' ? batter.batting.power_L : batter.batting.power_R;
+    const effectivePower = Math.max(1, powerVsHand - platoonPenalty);
 
     // Exit velocity: MLB average ~87 mph, leaders ~93-95
-    const basePower = ratingToRange(powerVsHand, 74, 100);
+    const basePower = ratingToRange(effectivePower, 74, 100);
     const variance = rng.nextGaussian(0, 7);
     const exitVelo = clamp(basePower + variance, 55, 115);
     const isHard = exitVelo >= 95;
 
+    // ── Groundball pitcher effect ──────────────────────────────────────────
+    // High groundball_pct pitchers suppress launch angle (more grounders).
+    // groundball_pct of 50 is neutral; 80+ is elite grounder-inducer.
+    const gbPct = pitcher.pitching.groundball_pct;
+    const gbBias = (gbPct - 50) / 50; // -1.0 to +1.0
+    const gbAngleAdjust = gbBias * -6; // up to -6° for elite GB pitcher
+
     // Launch angle: power hitters elevate more
-    const laTarget = ratingToRange(powerVsHand, 4, 20);
+    const laTarget = ratingToRange(effectivePower, 4, 20) + (sameSide ? -2 : 0);
     const laVariance = rng.nextGaussian(0, 13);
-    const launchAngle = clamp(laTarget + laVariance + this.pitchTypeAngleAdjust(pitchType), -30, 75);
+    const launchAngle = clamp(laTarget + laVariance + this.pitchTypeAngleAdjust(pitchType) + gbAngleAdjust, -30, 75);
 
     // Spray angle: platoon splits, randomness
     const sprayAngle = this.calculateSpray(batter, pitcher, rng);

@@ -5,14 +5,15 @@ const POSITION_ORDER: Position[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF
 
 /**
  * Constructs an optimal batting order from a roster.
- * Uses a simple OPS-proxy heuristic:
- * 1. Leadoff: highest speed + eye
- * 2. #2: high contact + speed
- * 3. #3: best overall hitter (contact + power)
+ * MLB-realistic batting order philosophy:
+ * 1. Leadoff: best speed + eye (OBP focus)
+ * 2. #2: high contact + speed (moves runners, gets on base)
+ * 3. #3: best overall hitter (contact + power + eye)
  * 4. #4 (cleanup): most power
- * 5-6: next best power
- * 7-8: remaining
- * 9: pitcher/weakest
+ * 5. #5: second-best power hitter
+ * 6. #6: solid contact hitter
+ * 7-8: weaker offensive players (lower OBP/power)
+ * 9: pitcher or weakest hitter
  */
 export class LineupBuilder {
   static buildLineup(team: Team): LineupSpot[] {
@@ -23,38 +24,58 @@ export class LineupBuilder {
     // Assign fielding positions
     const assigned = this.assignPositions(positionPlayers);
 
-    // Sort by batting value
+    // Sort by overall batting value descending (best to worst)
     const sorted = [...assigned].sort((a, b) => {
       return this.battingValue(b.player) - this.battingValue(a.player);
     });
 
-    // Build lineup
     const lineup: LineupSpot[] = [];
 
-    // Find leadoff: speed + eye
-    const leadoffIdx = this.findBest(sorted, p => p.batting.speed + p.batting.eye);
+    // #1 Leadoff: best on-base + speed (OBP proxy = eye + avg contact)
+    const leadoffIdx = this.findBest(sorted, p =>
+      p.batting.speed * 1.2 + p.batting.eye * 1.1 + (p.batting.contact_L + p.batting.contact_R) / 2 * 0.5
+    );
     lineup.push(this.spotFromAssigned(sorted, leadoffIdx));
     sorted.splice(leadoffIdx, 1);
 
-    // #2: contact + speed
-    const twoIdx = this.findBest(sorted, p => p.batting.contact_R + p.batting.contact_L + p.batting.speed);
+    // #2: high contact + speed (protects leadoff, moves runners)
+    const twoIdx = this.findBest(sorted, p =>
+      (p.batting.contact_L + p.batting.contact_R) / 2 * 1.0 + p.batting.speed * 0.6 + p.batting.eye * 0.5
+    );
     lineup.push(this.spotFromAssigned(sorted, twoIdx));
     sorted.splice(twoIdx, 1);
 
-    // #3: best overall
-    const threeIdx = this.findBest(sorted, p => this.battingValue(p) * 1.2);
+    // #3: best overall hitter (highest combined batting value)
+    const threeIdx = this.findBest(sorted, p => this.battingValue(p));
     lineup.push(this.spotFromAssigned(sorted, threeIdx));
     sorted.splice(threeIdx, 1);
 
-    // #4: cleanup - most power
-    const fourIdx = this.findBest(sorted, p => p.batting.power_R + p.batting.power_L);
+    // #4 Cleanup: most power
+    const fourIdx = this.findBest(sorted, p =>
+      (p.batting.power_L + p.batting.power_R) / 2 * 1.5 + p.batting.clutch * 0.3
+    );
     lineup.push(this.spotFromAssigned(sorted, fourIdx));
     sorted.splice(fourIdx, 1);
 
-    // #5-8: remaining in order of batting value
-    for (let i = 0; i < 4 && sorted.length > 0; i++) {
-      lineup.push(this.spotFromAssigned(sorted, 0));
-      sorted.shift();
+    // #5: second power hitter
+    const fiveIdx = this.findBest(sorted, p =>
+      (p.batting.power_L + p.batting.power_R) / 2 * 1.2 + (p.batting.contact_L + p.batting.contact_R) / 2 * 0.4
+    );
+    lineup.push(this.spotFromAssigned(sorted, fiveIdx));
+    sorted.splice(fiveIdx, 1);
+
+    // #6: solid contact, decent power
+    const sixIdx = this.findBest(sorted, p => this.battingValue(p));
+    lineup.push(this.spotFromAssigned(sorted, sixIdx));
+    sorted.splice(sixIdx, 1);
+
+    // #7-8: remaining position players in descending batting value order
+    // (sorted is already descending by battingValue, just take from front)
+    for (let i = 0; i < 2 && sorted.length > 0; i++) {
+      // Take the best remaining
+      const idx = this.findBest(sorted, p => this.battingValue(p));
+      lineup.push(this.spotFromAssigned(sorted, idx));
+      sorted.splice(idx, 1);
     }
 
     // #9: pitcher

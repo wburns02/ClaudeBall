@@ -8,6 +8,10 @@ export interface PitchOutcome {
   velocity: number;
   inZone: boolean;
   swung: boolean;
+  /** True if this pitch qualifies as "in the dirt" for wild pitch / passed ball purposes */
+  isInDirt: boolean;
+  /** True if this pitch results in a hit-by-pitch (batter is struck) */
+  isHBP: boolean;
 }
 
 /**
@@ -32,6 +36,22 @@ export class PitchEngine {
     const pitchType = this.selectPitch(pitcher, balls, strikes, rng);
     const velocity = this.calculateVelocity(pitcher, pitchType, rng);
     const inZone = this.determineLocation(pitcher, balls, strikes, rng);
+
+    // ── Hit By Pitch (~1% of pitches, skewed toward low-control pitchers) ──
+    // Only when pitch is not in zone (inside/tight)
+    if (!inZone) {
+      const controlRating = ratingToProb(pitcher.pitching.control);
+      // Low-control pitchers hit more batters. Base 0.8%, max ~1.8% when control is very low.
+      const hbpChance = clamp(0.018 - controlRating * 0.012, 0.004, 0.020);
+      if (rng.chance(hbpChance)) {
+        return { pitchType, result: 'ball', velocity, inZone: false, swung: false, isInDirt: false, isHBP: true };
+      }
+    }
+
+    // ── In-the-dirt determination ──────────────────────────────────────────
+    // Roughly 10% of out-of-zone pitches land in the dirt (low breaking balls)
+    const isInDirt = !inZone && rng.chance(0.10);
+
     const swung = this.determineSwing(batter, pitcher, inZone, pitchType, balls, strikes, rng);
 
     let result: PitchResult;
@@ -48,23 +68,23 @@ export class PitchEngine {
         result = 'swinging_strike';
       }
     } else {
-      // In-zone contact: MLB ~83%
+      // In-zone contact: MLB ~83% — raised base to reduce excessive K%
       const contactRating = this.getBatterContact(batter, pitcher);
-      const stuffPenalty = ratingToProb(pitcher.pitching.stuff) * 0.06;
+      const stuffPenalty = ratingToProb(pitcher.pitching.stuff) * 0.04; // reduced from 0.06
       const contactChance = clamp(
-        ratingToProb(contactRating) * 0.15 + 0.78 - stuffPenalty,
-        0.72, 0.95
+        ratingToProb(contactRating) * 0.15 + 0.80 - stuffPenalty, // raised from 0.78
+        0.74, 0.96
       );
 
       if (rng.chance(contactChance)) {
-        const foulChance = strikes === 2 ? 0.45 : 0.38;
+        const foulChance = strikes === 2 ? 0.42 : 0.35; // reduced foul rate slightly
         result = rng.chance(foulChance) ? 'foul' : 'contact';
       } else {
         result = 'swinging_strike';
       }
     }
 
-    return { pitchType, result, velocity, inZone, swung };
+    return { pitchType, result, velocity, inZone, swung, isInDirt, isHBP: false };
   }
 
   private static selectPitch(pitcher: Player, balls: number, strikes: number, rng: RandomProvider): PitchType {

@@ -71,8 +71,8 @@ export class FieldingEngine {
     const range = fielder ? this.getFielderRange(fielder, fieldPos) : 50;
     const difficulty = clamp((contact.distance - 200) / 200, 0, 1);
 
-    let catchChance = 0.93 - difficulty * 0.35 + ratingToProb(range) * 0.18;
-    catchChance = clamp(catchChance, 0.45, 0.98);
+    let catchChance = 0.92 - difficulty * 0.35 + ratingToProb(range) * 0.18;
+    catchChance = clamp(catchChance, 0.44, 0.97);
 
     if (rng.chance(catchChance)) {
       // Sac fly possibility
@@ -88,7 +88,11 @@ export class FieldingEngine {
     }
 
     // Not caught — hit
-    const hitType = contact.distance >= 300 ? 'double' as const : 'single' as const;
+    // Triples: deep fly ball to gap (LF or RF) with sufficient distance and batter speed factor
+    // ~8% of uncaught outfield fly balls in the gap are triples
+    const isGapField = fieldPos === 'LF' || fieldPos === 'RF';
+    const isTriple = isGapField && contact.distance >= 310 && rng.chance(0.08);
+    const hitType = isTriple ? 'triple' as const : (contact.distance >= 300 ? 'double' as const : 'single' as const);
     return { isOut: false, isError: false, hitResult: hitType, fieldedBy: fieldPos, isDoublePlay: false, runnersAdvanceExtra: contact.distance > 280 };
   }
 
@@ -124,7 +128,11 @@ export class FieldingEngine {
     }
 
     // Hit — line drives often go for extra bases
-    const hitType = contact.distance >= 280 || (contact.isHard && rng.chance(0.25)) ? 'double' as const : 'single' as const;
+    // Hard line drives to the gap can be triples (~4% of line drive hits to outfield)
+    const isOutfieldLD = ['LF', 'CF', 'RF'].includes(fieldPos);
+    const isTripleLD = isOutfieldLD && contact.isHard && (fieldPos === 'LF' || fieldPos === 'RF') && rng.chance(0.04);
+    const hitType = isTripleLD ? 'triple' as const :
+      (contact.distance >= 280 || (contact.isHard && rng.chance(0.25)) ? 'double' as const : 'single' as const);
     return { isOut: false, isError: false, hitResult: hitType, fieldedBy: fieldPos, isDoublePlay: false, runnersAdvanceExtra: contact.isHard };
   }
 
@@ -141,9 +149,9 @@ export class FieldingEngine {
 
     // Difficulty based on exit velo and position
     const difficulty = clamp((contact.exitVelo - 70) / 40, 0, 1);
-    // MLB GB out rate ~76%
-    let fieldChance = 0.76 + ratingToProb(range) * 0.14 - difficulty * 0.10;
-    fieldChance = clamp(fieldChance, 0.62, 0.94);
+    // MLB GB out rate ~76-78%
+    let fieldChance = 0.77 + ratingToProb(range) * 0.14 - difficulty * 0.10;
+    fieldChance = clamp(fieldChance, 0.63, 0.94);
 
     if (!rng.chance(fieldChance)) {
       // Through the infield — hit

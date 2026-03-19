@@ -32,6 +32,102 @@ export interface AtBatResult {
  * to resolve a complete at-bat.
  */
 export class AtBatResolver {
+  /**
+   * Execute an intentional walk — 4 automatic balls.
+   */
+  static resolveIntentionalWalk(
+    batter: Player,
+    pitcher: Player,
+    bases: BaseState,
+    _rng: RandomProvider
+  ): AtBatResult {
+    const batterName = getPlayerName(batter);
+    const pitcherName = getPlayerName(pitcher);
+    const brResult = this.walkAdvance(bases, batter.id);
+    const ev: GameEvent = {
+      type: 'at_bat_result',
+      description: `${batterName} is intentionally walked`,
+      batter: batterName,
+      pitcher: pitcherName,
+      result: 'walk',
+      rbiCount: brResult.runsScored,
+    };
+    return {
+      events: [ev], newBases: brResult.newBases, runsScored: brResult.runsScored,
+      scoringRunners: brResult.scoringRunners, outsRecorded: 0,
+      isHit: false, isWalk: true, isHBP: false, isStrikeout: false,
+      isHomeRun: false, isSacFly: false, isDoublePlay: false, isError: false,
+      totalPitches: 4, // 4 pitches counted for intentional walk
+    };
+  }
+
+  /**
+   * Execute a sacrifice bunt. The batter makes contact, runner(s) advance.
+   * Batter is out at first unless fielding error. Count as SH (sacrifice hit).
+   */
+  static resolveSacBunt(
+    batter: Player,
+    pitcher: Player,
+    bases: BaseState,
+    outs: number,
+    rng: RandomProvider
+  ): AtBatResult {
+    const batterName = getPlayerName(batter);
+    const pitcherName = getPlayerName(pitcher);
+    // Bunt skill: higher bunt rating = higher success rate
+    const buntSkill = batter.batting.bunt / 100;
+    // Base 85% success + bunt skill modifier
+    const successChance = 0.78 + buntSkill * 0.18;
+    const success = rng.chance(successChance);
+
+    const newBases: BaseState = { first: null, second: null, third: null };
+    const scorers: string[] = [];
+
+    if (success) {
+      // Standard sac bunt: runner from 2nd to 3rd, runner from 1st to 2nd
+      if (bases.third) scorers.push(bases.third); // runner on 3rd scores
+      if (bases.second) newBases.third = bases.second;
+      if (bases.first) newBases.second = bases.first;
+      // Batter is out at first (no base reached)
+      const ev: GameEvent = {
+        type: 'at_bat_result',
+        description: `${batterName} sacrifice bunt — runners advance`,
+        batter: batterName,
+        pitcher: pitcherName,
+        result: 'sacrifice_bunt',
+        rbiCount: scorers.length,
+      };
+      return {
+        events: [ev], newBases, runsScored: scorers.length,
+        scoringRunners: scorers, outsRecorded: 1,
+        isHit: false, isWalk: false, isHBP: false, isStrikeout: false,
+        isHomeRun: false, isSacFly: false, isDoublePlay: false, isError: false,
+        totalPitches: 2,
+      };
+    } else {
+      // Failed bunt — treated as a foul ball / pop-up out
+      if (bases.second) newBases.second = bases.second; // runners don't advance on popout
+      if (bases.first) newBases.first = bases.first;
+      if (bases.third) newBases.third = bases.third;
+      const ev: GameEvent = {
+        type: 'at_bat_result',
+        description: `${batterName} pops up the bunt — out`,
+        batter: batterName,
+        pitcher: pitcherName,
+        result: 'popout',
+        rbiCount: 0,
+      };
+      return {
+        events: [ev], newBases, runsScored: 0,
+        scoringRunners: [], outsRecorded: 1,
+        isHit: false, isWalk: false, isHBP: false, isStrikeout: false,
+        isHomeRun: false, isSacFly: false, isDoublePlay: false, isError: false,
+        totalPitches: 2,
+      };
+    }
+    // suppress TS no-return: all paths above return
+  }
+
   static resolve(
     batter: Player,
     pitcher: Player,
@@ -39,27 +135,87 @@ export class AtBatResolver {
     bases: BaseState,
     outs: number,
     ballpark: BallparkFactors,
-    rng: RandomProvider
+    rng: RandomProvider,
+    /** If true, batter will attempt a sacrifice bunt */
+    isBuntMode: boolean = false,
+    /** If true, pitcher will issue an intentional walk */
+    isIntentionalWalk: boolean = false
   ): AtBatResult {
+    // ── Intentional Walk ──────────────────────────────────────────────────
+    if (isIntentionalWalk) {
+      return this.resolveIntentionalWalk(batter, pitcher, bases, rng);
+    }
+
+    // ── Sacrifice Bunt ────────────────────────────────────────────────────
+    if (isBuntMode && outs < 2) {
+      return this.resolveSacBunt(batter, pitcher, bases, outs, rng);
+    }
+
     const events: GameEvent[] = [];
     let balls = 0;
     let strikes = 0;
     let totalPitches = 0;
     const batterName = getPlayerName(batter);
     const pitcherName = getPlayerName(pitcher);
+    // Mutable copy so wild pitches can advance runners during the at-bat
+    let currentBases: BaseState = { ...bases };
 
     // Pitch-by-pitch loop
     while (true) {
       totalPitches++;
       const pitch = PitchEngine.throw(pitcher, batter, balls, strikes, rng);
 
+      // ── Hit By Pitch ──────────────────────────────────────────────────────
+      if (pitch.isHBP) {
+        const brResult = this.walkAdvance(currentBases, batter.id); // HBP advances runners same as walk
+        events.push({
+          type: 'at_bat_result',
+          description: `${batterName} hit by pitch`,
+          batter: batterName,
+          pitcher: pitcherName,
+          result: 'hit_by_pitch',
+          rbiCount: brResult.runsScored,
+        });
+        return {
+          events, newBases: brResult.newBases, runsScored: brResult.runsScored,
+          scoringRunners: brResult.scoringRunners, outsRecorded: 0,
+          isHit: false, isWalk: false, isHBP: true, isStrikeout: false,
+          isHomeRun: false, isSacFly: false, isDoublePlay: false, isError: false,
+          totalPitches,
+        };
+      }
+
       if (pitch.result === 'ball') {
         balls++;
+
+        // ── Wild Pitch / Passed Ball (~2% of in-the-dirt pitches) ─────────
+        // Runners advance one base on a wild pitch. At-bat continues.
+        if (pitch.isInDirt && (currentBases.first !== null || currentBases.second !== null || currentBases.third !== null)) {
+          const catcher = fielders.get('C');
+          const catcherBlock = catcher ? (catcher.fielding.find(f => f.position === 'C')?.range ?? 50) / 100 : 0.5;
+          // ~2% chance of wild pitch, reduced by catcher's blocking ability
+          if (rng.chance(0.02) && !rng.chance(catcherBlock * 0.60)) {
+            // Advance all runners one base (batter stays at bat)
+            let wpRuns = 0;
+            const afterWP: BaseState = { first: null, second: null, third: null };
+            if (currentBases.third) wpRuns++;                // runner on 3rd scores
+            if (currentBases.second) afterWP.third = currentBases.second;
+            if (currentBases.first) afterWP.second = currentBases.first;
+            // batter's base slot (first) stays vacant since batter is still at bat
+            currentBases = afterWP;
+            events.push({
+              type: 'baserunning',
+              description: `Wild pitch — runners advance${wpRuns > 0 ? ', run scores' : ''}`,
+              runner: 'all',
+            });
+          }
+        }
+
         events.push({ type: 'pitch', description: `Ball ${balls}`, balls, strikes, result: 'ball' });
 
         if (balls >= 4) {
           // Walk
-          const brResult = this.walkAdvance(bases, batter.id);
+          const brResult = this.walkAdvance(currentBases, batter.id);
           events.push({
             type: 'at_bat_result',
             description: `${batterName} walks`,
@@ -97,7 +253,7 @@ export class AtBatResolver {
             result: soType, rbiCount: 0,
           });
           return {
-            events, newBases: { ...bases }, runsScored: 0, scoringRunners: [],
+            events, newBases: { ...currentBases }, runsScored: 0, scoringRunners: [],
             outsRecorded: 1, isHit: false, isWalk: false, isHBP: false,
             isStrikeout: true, isHomeRun: false, isSacFly: false,
             isDoublePlay: false, isError: false, totalPitches,
@@ -116,14 +272,14 @@ export class AtBatResolver {
       events.push({ type: 'pitch', description: `${batterName} puts it in play`, balls, strikes, result: 'contact' });
 
       const contact = ContactEngine.resolve(batter, pitcher, pitch.pitchType, ballpark, rng);
-      const fieldingResult = FieldingEngine.resolve(contact, fielders, bases, outs, rng);
+      const fieldingResult = FieldingEngine.resolve(contact, fielders, currentBases, outs, rng);
 
       if (fieldingResult.isError) {
         const fielderName = this.getFielderName(fielders, fieldingResult.fieldedBy);
         events.push({ type: 'error', description: `Error by ${fielderName} (${fieldingResult.fieldedBy})`, fielder: fielderName });
       }
 
-      const brResult = BaserunningEngine.advanceRunners(bases, batter.id, fieldingResult, outs, rng);
+      const brResult = BaserunningEngine.advanceRunners(currentBases, batter.id, fieldingResult, outs, rng);
       const outsRecorded = (fieldingResult.isOut ? 1 : 0) + brResult.outsOnBases;
 
       // Build description

@@ -470,6 +470,8 @@ export class InteractiveAtBat {
       velocity: adjVelocity,
       inZone,
       swung,
+      isInDirt: false,
+      isHBP: false,
     };
   }
 
