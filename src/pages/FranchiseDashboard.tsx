@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { StatsTable } from '@/components/ui/StatsTable.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useStatsStore } from '@/stores/statsStore.ts';
 import { useInboxStore } from '@/stores/inboxStore.ts';
 import type { InboxItemType } from '@/stores/inboxStore.ts';
 import { winPct, gamesBehind, streakStr, last10Str, runDifferential } from '@/engine/season/index.ts';
@@ -88,7 +89,9 @@ export function FranchiseDashboard() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals } = useFranchiseStore();
   const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount } = useInboxStore();
+  const playerStats = useStatsStore(s => s.playerStats);
   const [showEvents, setShowEvents] = useState(true);
+  const [recapTab, setRecapTab] = useState<'summary' | 'scores' | 'performers'>('summary');
   const [simConfirm, setSimConfirm] = useState<number | null>(null);
   const [simFromDay, setSimFromDay] = useState<number | null>(null);
   const [simFromRecord, setSimFromRecord] = useState<{ wins: number; losses: number } | null>(null); // days pending confirm
@@ -238,10 +241,16 @@ export function FranchiseDashboard() {
   });
 
   const handleAdvance = () => {
+    const prevDay = season.currentDay;
+    const rec = season.standings.getRecord(userTeamId);
     setShowEvents(true);
+    setRecapTab('summary');
     const userGame = advanceDay();
     if (userGame) {
       navigate(`/game/live?gameId=${userGame.id}`);
+    } else {
+      setSimFromDay(prevDay);
+      setSimFromRecord(rec ? { wins: rec.wins, losses: rec.losses } : null);
     }
   };
 
@@ -250,6 +259,7 @@ export function FranchiseDashboard() {
     setSimFromDay(season.currentDay);
     setSimFromRecord(rec ? { wins: rec.wins, losses: rec.losses } : null);
     setShowEvents(true);
+    setRecapTab('summary');
     simDays(days);
   };
 
@@ -284,6 +294,37 @@ export function FranchiseDashboard() {
       : (g.awayScore ?? 0) > (g.homeScore ?? 0);
   }).length;
   const simLosses = simGames.length - simWins;
+
+  // All league games in the simmed period (for "All Scores" tab)
+  const leagueGames = useMemo(() => simFromDay !== null
+    ? season.schedule.filter(g => g.played && g.date > simFromDay && g.date <= season.currentDay)
+        .sort((a, b) => a.date - b.date)
+    : [],
+  [season.schedule, simFromDay, season.currentDay]);
+
+  // Top performers from the simmed period
+  const topPerformers = useMemo(() => {
+    if (leagueGames.length === 0) return { batters: [], pitchers: [] };
+    const gameIds = new Set(leagueGames.map(g => g.id));
+    const battingPerfs: { name: string; abbr: string; hr: number; rbi: number; h: number; ab: number }[] = [];
+    const pitchingPerfs: { name: string; abbr: string; ip: string; er: number; k: number; decision: string }[] = [];
+    for (const ps of Object.values(playerStats)) {
+      const teamAbbr = engine?.getTeam(ps.teamId)?.abbreviation ?? '???';
+      for (const log of ps.gameLog) {
+        if (!gameIds.has(log.gameId)) continue;
+        if (log.ip) {
+          if (log.kPitching >= 7 || (parseFloat(log.ip) >= 6 && log.er <= 2)) {
+            pitchingPerfs.push({ name: ps.playerName.split(' ').pop()!, abbr: teamAbbr, ip: log.ip, er: log.er, k: log.kPitching, decision: log.decision ?? '' });
+          }
+        } else if (log.hr > 0 || log.rbi >= 3 || log.h >= 3) {
+          battingPerfs.push({ name: ps.playerName.split(' ').pop()!, abbr: teamAbbr, hr: log.hr, rbi: log.rbi, h: log.h, ab: log.ab });
+        }
+      }
+    }
+    battingPerfs.sort((a, b) => (b.hr * 3 + b.rbi * 1.5 + b.h) - (a.hr * 3 + a.rbi * 1.5 + a.h));
+    pitchingPerfs.sort((a, b) => b.k - a.k);
+    return { batters: battingPerfs.slice(0, 6), pitchers: pitchingPerfs.slice(0, 4) };
+  }, [leagueGames, playerStats, engine]);
   const divRank = userDiv ? userDiv.teams.findIndex(t => t.teamId === userTeamId) + 1 : 0;
   const divLeader = userDiv?.teams[0];
   const gamesBack = divRank > 1 && divLeader && userRecord
@@ -564,13 +605,14 @@ export function FranchiseDashboard() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-navy-lighter/50 bg-navy-light/60">
             <div className="flex items-center gap-3">
-              <span className="font-display text-sm text-gold uppercase tracking-wider">Sim Recap</span>
-              <span className="font-mono text-xs text-cream-dim">
-                Day {simFromDay} → Day {season.currentDay}
+              <span className="font-display text-sm text-gold uppercase tracking-wider">
+                {season.currentDay - simFromDay === 1 ? `Day ${season.currentDay} Recap` : 'Sim Recap'}
               </span>
-              <span className="font-mono text-[10px] text-cream-dim/40">
-                ({season.currentDay - simFromDay} days)
-              </span>
+              {season.currentDay - simFromDay > 1 && (
+                <span className="font-mono text-xs text-cream-dim">
+                  Day {simFromDay + 1}–{season.currentDay} · {season.currentDay - simFromDay} days
+                </span>
+              )}
             </div>
             <button
               onClick={() => { setShowEvents(false); setSimFromDay(null); setSimFromRecord(null); }}
@@ -580,6 +622,32 @@ export function FranchiseDashboard() {
             </button>
           </div>
 
+          {/* Tab bar */}
+          <div className="flex items-center gap-0 border-b border-navy-lighter/40 bg-navy-light/30">
+            {([
+              ['summary', 'Summary'],
+              ['scores', `Scores (${leagueGames.length})`],
+              ...(topPerformers.batters.length > 0 || topPerformers.pitchers.length > 0
+                ? [['performers', 'Top Performers'] as const]
+                : []),
+            ] as [string, string][]).map(([tab, label]) => (
+              <button
+                key={tab}
+                onClick={() => setRecapTab(tab as typeof recapTab)}
+                className={cn(
+                  'px-4 py-2 font-mono text-xs transition-all border-b-2',
+                  recapTab === tab
+                    ? 'border-gold text-gold'
+                    : 'border-transparent text-cream-dim/50 hover:text-cream-dim',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Summary Tab */}
+          {recapTab === 'summary' && <>
           {/* Quick Stats Row */}
           <div className="grid grid-cols-3 divide-x divide-navy-lighter/50 border-b border-navy-lighter/50">
             <div className="px-4 py-3 text-center">
@@ -729,6 +797,98 @@ export function FranchiseDashboard() {
               </div>
             );
           })()}
+          </>}
+
+          {/* Scores Tab — all league games in the period */}
+          {recapTab === 'scores' && (
+            <div className="px-4 py-3">
+              {leagueGames.length === 0 ? (
+                <p className="font-mono text-xs text-cream-dim/40 text-center py-4">No games in this period</p>
+              ) : (() => {
+                // Group by date
+                const byDate = new Map<number, typeof leagueGames>();
+                for (const g of leagueGames) {
+                  if (!byDate.has(g.date)) byDate.set(g.date, []);
+                  byDate.get(g.date)!.push(g);
+                }
+                return Array.from(byDate.entries()).reverse().map(([day, games]) => (
+                  <div key={day} className="mb-4">
+                    <p className="font-mono text-[10px] text-cream-dim/40 uppercase tracking-widest mb-2">Day {day}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                      {games.map(g => {
+                        const isUser = g.homeId === userTeamId || g.awayId === userTeamId;
+                        const awayAbbr = engine.getTeam(g.awayId)?.abbreviation ?? g.awayId.slice(0, 3);
+                        const homeAbbr = engine.getTeam(g.homeId)?.abbreviation ?? g.homeId.slice(0, 3);
+                        const awayWon = (g.awayScore ?? 0) > (g.homeScore ?? 0);
+                        return (
+                          <div key={g.id} className={cn(
+                            'flex items-center gap-2 px-2 py-1 rounded text-xs font-mono border',
+                            isUser ? 'border-gold/30 bg-gold/5' : 'border-navy-lighter/30 bg-navy-lighter/10',
+                          )}>
+                            <span className={cn('w-8 text-right font-bold', awayWon ? 'text-cream' : 'text-cream-dim/50')}>{awayAbbr}</span>
+                            <span className={cn('text-base font-bold w-5 text-center', awayWon ? 'text-cream' : 'text-cream-dim/40')}>{g.awayScore}</span>
+                            <span className="text-cream-dim/30 text-[10px]">–</span>
+                            <span className={cn('text-base font-bold w-5 text-center', !awayWon ? 'text-cream' : 'text-cream-dim/40')}>{g.homeScore}</span>
+                            <span className={cn('w-8 font-bold', !awayWon ? 'text-cream' : 'text-cream-dim/50')}>{homeAbbr}</span>
+                            {isUser && <span className="ml-auto text-[9px] text-gold">◀ YOU</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
+
+          {/* Top Performers Tab */}
+          {recapTab === 'performers' && (
+            <div className="px-4 py-3 space-y-4">
+              {topPerformers.batters.length > 0 && (
+                <div>
+                  <p className="font-mono text-[10px] text-gold/70 uppercase tracking-widest mb-2">Batting</p>
+                  <div className="space-y-1">
+                    {topPerformers.batters.map((p, i) => (
+                      <div key={i} className="flex items-center gap-3 text-xs font-mono">
+                        <span className="text-cream-dim/40 w-4 text-right">{i + 1}</span>
+                        <span className="text-cream font-bold w-20 truncate">{p.name}</span>
+                        <span className="text-cream-dim/50 w-8">{p.abbr}</span>
+                        <div className="flex gap-2 ml-auto">
+                          {p.hr > 0 && <span className="text-gold font-bold">{p.hr}HR</span>}
+                          {p.rbi > 0 && <span className="text-cream">{p.rbi}RBI</span>}
+                          <span className="text-cream-dim/60">{p.h}/{p.ab}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {topPerformers.pitchers.length > 0 && (
+                <div>
+                  <p className="font-mono text-[10px] text-blue-400/70 uppercase tracking-widest mb-2">Pitching</p>
+                  <div className="space-y-1">
+                    {topPerformers.pitchers.map((p, i) => (
+                      <div key={i} className="flex items-center gap-3 text-xs font-mono">
+                        <span className="text-cream-dim/40 w-4 text-right">{i + 1}</span>
+                        <span className="text-cream font-bold w-20 truncate">{p.name}</span>
+                        <span className="text-cream-dim/50 w-8">{p.abbr}</span>
+                        <div className="flex gap-2 ml-auto">
+                          {p.decision === 'W' && <span className="text-green-light font-bold">W</span>}
+                          {p.decision === 'S' && <span className="text-gold font-bold">SV</span>}
+                          <span className="text-cream">{p.ip}IP</span>
+                          <span className="text-cream">{p.k}K</span>
+                          <span className="text-cream-dim/60">{p.er}ER</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {topPerformers.batters.length === 0 && topPerformers.pitchers.length === 0 && (
+                <p className="font-mono text-xs text-cream-dim/40 text-center py-4">No standout performances found</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
