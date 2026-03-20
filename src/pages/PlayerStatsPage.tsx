@@ -146,7 +146,7 @@ export function PlayerStatsPage() {
                 <span className="text-cream-dim">Age {player.age}</span>
                 <span className="text-cream-dim">{player.bats}/{player.throws}</span>
                 <span className="text-cream font-bold">OVR {ovrRatings}</span>
-                <span className="text-cream-dim/40 text-[10px]">engine rating</span>
+                <span className="text-cream-dim/40 text-[10px]">overall</span>
               </div>
             </div>
             <div className="flex gap-2">

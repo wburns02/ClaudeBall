@@ -250,15 +250,12 @@ export function RosterPage() {
   const positionPlayers = sorted.filter(p => p.position !== 'P');
 
   const SortHeader = ({ col, label }: { col: SortKey; label: string }) => (
-    <button
-      onClick={() => handleSort(col)}
-      className={cn(
-        'text-xs uppercase tracking-wider font-semibold transition-colors cursor-pointer',
-        sortKey === col ? 'text-gold' : 'text-gold-dim hover:text-gold',
-      )}
-    >
-      {label} {sortKey === col ? (sortDir === 'desc' ? '▼' : '▲') : ''}
-    </button>
+    <span className={cn(
+      'text-xs uppercase tracking-wider font-semibold transition-colors select-none',
+      sortKey === col ? 'text-gold' : 'text-gold-dim',
+    )}>
+      {label} {sortKey === col ? (sortDir === 'desc' ? '▼' : '▲') : <span className="text-gold-dim/30">↕</span>}
+    </span>
   );
 
   const PlayerRow = ({ p }: { p: Player }) => {
@@ -370,12 +367,12 @@ export function RosterPage() {
 
   const tableHead = (
     <tr className="border-b border-navy-lighter">
-      <th className="px-3 py-2 text-left"><SortHeader col="name" label="Name" /></th>
-      <th className="px-3 py-2 text-center"><SortHeader col="pos" label="Pos" /></th>
+      <th className="px-3 py-2 text-left cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('name')}><SortHeader col="name" label="Name" /></th>
+      <th className="px-3 py-2 text-center cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('pos')}><SortHeader col="pos" label="Pos" /></th>
       <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">B/T</th>
-      <th className="px-3 py-2 text-center"><SortHeader col="age" label="Age" /></th>
-      <th className="px-3 py-2 text-left"><SortHeader col="ovr" label="OVR" /></th>
-      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">Key</th>
+      <th className="px-3 py-2 text-center cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('age')}><SortHeader col="age" label="Age" /></th>
+      <th className="px-3 py-2 text-left cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('ovr')}><SortHeader col="ovr" label="OVR" /></th>
+      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider" title="Key ratings: Contact/Power/Eye for batters · Stuff/Move/Ctrl for pitchers">Key Stats</th>
       <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">Salary</th>
       <th className="px-3 py-2 text-left text-gold-dim text-xs font-semibold uppercase tracking-wider">Actions</th>
     </tr>

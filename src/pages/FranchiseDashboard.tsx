@@ -366,7 +366,23 @@ export function FranchiseDashboard() {
                 <Button className="w-full" variant="secondary" onClick={() => { setShowEvents(true); simDays(30); }}>
                   Sim 30 Days
                 </Button>
-                {season.currentDay >= season.totalDays - 7 && (
+                {/* Sim-to-milestone shortcuts */}
+                {season.currentDay < 90 && (
+                  <Button className="w-full" variant="ghost" size="sm" onClick={() => { setShowEvents(true); simDays(90 - season.currentDay); }}>
+                    → Sim to All-Star Break (Day 90)
+                  </Button>
+                )}
+                {season.currentDay >= 90 && season.currentDay < 120 && (
+                  <Button className="w-full" variant="ghost" size="sm" onClick={() => { setShowEvents(true); simDays(120 - season.currentDay); }}>
+                    → Sim to Trade Deadline (Day 120)
+                  </Button>
+                )}
+                {season.currentDay >= 120 && season.currentDay < season.totalDays - 5 && (
+                  <Button className="w-full" variant="ghost" size="sm" onClick={() => { setShowEvents(true); simDays(season.totalDays - season.currentDay); }}>
+                    → Sim to End of Season
+                  </Button>
+                )}
+                {season.currentDay >= season.totalDays - 5 && (
                   <Button className="w-full" variant="secondary" onClick={() => { setShowEvents(true); simDays(183); }}>
                     Finish Season
                   </Button>

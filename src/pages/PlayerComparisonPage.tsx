@@ -460,8 +460,20 @@ export function PlayerComparisonPage() {
                 .filter(Boolean) as { label: string; values: number[] }[];
 
               return (
-                <div className="mt-4 flex justify-center">
-                  {allBatters ? <RadarChart datasets={datasets} /> : <PitcherRadarChart datasets={datasets} />}
+                <div className="mt-4">
+                  <div className="flex justify-center gap-4 mb-2">
+                    {datasets.map((ds, di) => (
+                      <div key={di} className="flex items-center gap-1.5">
+                        <div className={cn('w-3 h-3 rounded-sm', SLOT_COLORS[di]?.bar)} style={{ opacity: 0.75 }} />
+                        <span className={cn('font-mono text-[10px]', SLOT_COLORS[di]?.text)}>
+                          {slotData[di] ? getPlayerName(slotData[di]!.player) : `Player ${di + 1}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center">
+                    {allBatters ? <RadarChart datasets={datasets} /> : <PitcherRadarChart datasets={datasets} />}
+                  </div>
                 </div>
               );
             })()}
