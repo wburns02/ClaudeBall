@@ -737,16 +737,12 @@ export const useFranchiseStore = create<FranchiseState>()(
     engineTeam.roster.players.push(signedPlayer);
     // Sign contract via engine
     engine.contractEngine.signContract(signedPlayer, userTeamId, { years, salaryPerYear });
-    // Remove from pool and update React state — create a new FreeAgentPool instance so
-    // the reference changes and useMemo dependencies in React components re-run correctly.
+    // Remove from pool and update React state — re-derive teams from engine so the
+    // player appears exactly once (engine is the single source of truth for rosters).
     freeAgentPool.remove(playerId);
     const newPool = new FreeAgentPool();
     for (const agent of freeAgentPool.getAll()) newPool.add(agent);
-    const newTeams = teams.map(t =>
-      t.id === userTeamId
-        ? { ...t, roster: { ...t.roster, players: [...t.roster.players, signedPlayer] } }
-        : t
-    );
+    const newTeams = engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } }));
     set({ freeAgentPool: newPool, teams: newTeams });
     return { success: true };
   },

@@ -57,6 +57,7 @@ export function TradeProposalPage() {
   const [counterTarget, setCounterTarget] = useState<string | null>(null); // proposal id
   const [counterOfferIds, setCounterOfferIds] = useState<string[]>([]);
   const [result, setResult] = useState<{ proposalId: string; msg: string; ok: boolean } | null>(null);
+  const [confirmAcceptId, setConfirmAcceptId] = useState<string | null>(null);
 
   const userTeam = useMemo(
     () => teams.find(t => t.id === userTeamId) ?? engine?.getTeam(userTeamId ?? '') ?? null,
@@ -372,28 +373,50 @@ export function TradeProposalPage() {
 
                 {/* Action buttons */}
                 {!isCountering && (
-                  <div className="flex gap-2 mt-4">
-                    <Button
-                      size="sm"
-                      onClick={() => handleAccept(prop)}
-                      disabled={wantedPlayers.length === 0 || offeredPlayers.length === 0}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleCounter(prop)}
-                    >
-                      Counter
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleReject(prop.id)}
-                    >
-                      Reject
-                    </Button>
+                  <div className="flex gap-2 mt-4 flex-wrap">
+                    {confirmAcceptId === prop.id ? (
+                      <>
+                        <Button
+                          size="sm"
+                          className="!bg-green-700/80 !shadow-none"
+                          onClick={() => { handleAccept(prop); setConfirmAcceptId(null); }}
+                          disabled={wantedPlayers.length === 0 || offeredPlayers.length === 0}
+                        >
+                          Confirm Trade
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setConfirmAcceptId(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => setConfirmAcceptId(prop.id)}
+                          disabled={wantedPlayers.length === 0 || offeredPlayers.length === 0}
+                        >
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleCounter(prop)}
+                        >
+                          Counter
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleReject(prop.id)}
+                        >
+                          Reject
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
               </Panel>

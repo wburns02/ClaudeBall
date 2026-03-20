@@ -105,9 +105,10 @@ export class WaiverWire {
   ): WaiverEvent[] {
     const newEvents: WaiverEvent[] = [];
 
-    // Clear expired entries (not claimed within 3 days)
+    // Clear expired entries (not claimed within 3 days) and remove them from the wire
+    const toRemove = new Set<WaiverPlayer>();
     for (const entry of this.wire) {
-      if (entry.claimedBy || entry.claimedDay) continue;
+      if (entry.claimedBy || entry.claimedDay) { toRemove.add(entry); continue; }
       if (currentDay > entry.expiresDay) {
         const event: WaiverEvent = {
           type: 'clear',
@@ -117,8 +118,10 @@ export class WaiverWire {
         };
         newEvents.push(event);
         this.events.push(event);
+        toRemove.add(entry);
       }
     }
+    this.wire = this.wire.filter(e => !toRemove.has(e));
 
     // AI teams periodically release low-value players (roster management)
     // Each AI team has a ~8% daily chance to release their weakest player
