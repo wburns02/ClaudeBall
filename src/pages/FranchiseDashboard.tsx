@@ -306,23 +306,36 @@ export function FranchiseDashboard() {
   const topPerformers = useMemo(() => {
     if (leagueGames.length === 0) return { batters: [], pitchers: [] };
     const gameIds = new Set(leagueGames.map(g => g.id));
-    const battingPerfs: { name: string; abbr: string; hr: number; rbi: number; h: number; ab: number }[] = [];
-    const pitchingPerfs: { name: string; abbr: string; ip: string; er: number; k: number; decision: string }[] = [];
+    type BatPerf = { name: string; abbr: string; hr: number; rbi: number; h: number; ab: number };
+    type PitPerf = { name: string; abbr: string; ip: string; er: number; k: number; decision: string };
+    const battingMap = new Map<string, BatPerf>();
+    const pitchingMap = new Map<string, PitPerf>();
     for (const ps of Object.values(playerStats)) {
       const teamAbbr = engine?.getTeam(ps.teamId)?.abbreviation ?? '???';
+      const key = ps.playerName;
       for (const log of ps.gameLog) {
         if (!gameIds.has(log.gameId)) continue;
         if (log.ip) {
           if (log.kPitching >= 7 || (parseFloat(log.ip) >= 6 && log.er <= 2)) {
-            pitchingPerfs.push({ name: ps.playerName.split(' ').pop()!, abbr: teamAbbr, ip: log.ip, er: log.er, k: log.kPitching, decision: log.decision ?? '' });
+            const prev = pitchingMap.get(key);
+            const score = log.kPitching * 2 + parseFloat(log.ip) - log.er;
+            const prevScore = prev ? prev.k * 2 + parseFloat(prev.ip) - prev.er : -Infinity;
+            if (score > prevScore) {
+              pitchingMap.set(key, { name: ps.playerName.split(' ').pop()!, abbr: teamAbbr, ip: log.ip, er: log.er, k: log.kPitching, decision: log.decision ?? '' });
+            }
           }
         } else if (log.hr > 0 || log.rbi >= 3 || log.h >= 3) {
-          battingPerfs.push({ name: ps.playerName.split(' ').pop()!, abbr: teamAbbr, hr: log.hr, rbi: log.rbi, h: log.h, ab: log.ab });
+          const prev = battingMap.get(key);
+          const score = log.hr * 3 + log.rbi * 1.5 + log.h;
+          const prevScore = prev ? prev.hr * 3 + prev.rbi * 1.5 + prev.h : -Infinity;
+          if (score > prevScore) {
+            battingMap.set(key, { name: ps.playerName.split(' ').pop()!, abbr: teamAbbr, hr: log.hr, rbi: log.rbi, h: log.h, ab: log.ab });
+          }
         }
       }
     }
-    battingPerfs.sort((a, b) => (b.hr * 3 + b.rbi * 1.5 + b.h) - (a.hr * 3 + a.rbi * 1.5 + a.h));
-    pitchingPerfs.sort((a, b) => b.k - a.k);
+    const battingPerfs = Array.from(battingMap.values()).sort((a, b) => (b.hr * 3 + b.rbi * 1.5 + b.h) - (a.hr * 3 + a.rbi * 1.5 + a.h));
+    const pitchingPerfs = Array.from(pitchingMap.values()).sort((a, b) => b.k - a.k);
     return { batters: battingPerfs.slice(0, 6), pitchers: pitchingPerfs.slice(0, 4) };
   }, [leagueGames, playerStats, engine]);
   const divRank = userDiv ? userDiv.teams.findIndex(t => t.teamId === userTeamId) + 1 : 0;
