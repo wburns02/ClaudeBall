@@ -67,6 +67,7 @@ const Icons = {
   depthChart: 'M3 3h18v4H3z M3 10h8v4H3z M3 17h8v4H3z M14 10h7v11h-7z',
   warRoom: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18',
   scoreboard: 'M2 3h20v14H2z M8 21h8 M12 17v4',
+  transactions: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2 M9 12h6 M9 16h4',
 };
 
 interface NavItem {
@@ -158,6 +159,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Minors', path: '/franchise/minors', icon: 'minors' },
       { label: 'Waivers', path: '/franchise/waivers', icon: 'waivers' },
       { label: 'Trade History', path: '/franchise/trade-history', icon: 'tradeHistory' },
+      { label: 'Transactions', path: '/franchise/transactions', icon: 'transactions' },
     ],
   },
   {
