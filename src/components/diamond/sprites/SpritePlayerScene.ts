@@ -403,6 +403,157 @@ export class SpritePlayerScene {
     await _delay(300);
   }
 
+  // ── Fielder movement ─────────────────────────────────────────────
+  // Move a fielder sprite from its current position to a target (for chasing balls).
+
+  async moveFielderTo(
+    position: string,
+    targetX: number,
+    targetY: number,
+    duration: number,
+  ): Promise<void> {
+    if (!this._loaded || this._destroyed) return;
+
+    const anim = this.fielderSprites.get(position);
+    if (anim === undefined) return;
+
+    const sprite = anim.getSprite();
+    const startX = sprite.x;
+    const startY = sprite.y;
+    const startTime = performance.now();
+
+    // Flip to face direction of travel
+    const movingLeft = targetX < startX;
+    anim.setFlip(movingLeft);
+
+    // Play running animation (use ready→bend→scoop as a running cycle)
+    const runFrames = [
+      this.fielderFrames[FIELDER_V2_FRAMES.ready],
+      this.fielderFrames[FIELDER_V2_FRAMES.crowHop],
+      this.fielderFrames[FIELDER_V2_FRAMES.ready],
+      this.fielderFrames[FIELDER_V2_FRAMES.throwing],
+    ].filter((t): t is Texture => t !== undefined);
+
+    const runPromise = anim.playAnimation(runFrames, 300, true);
+
+    await new Promise<void>((resolve) => {
+      const onTick = () => {
+        if (this._destroyed) {
+          Ticker.shared.remove(onTick);
+          resolve();
+          return;
+        }
+        const elapsed = performance.now() - startTime;
+        const t = Math.min(elapsed / Math.max(1, duration), 1);
+        // easeInOut for natural accel/decel
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        anim.setPosition(
+          startX + (targetX - startX) * e,
+          startY + (targetY - startY) * e,
+        );
+        if (t >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+      Ticker.shared.add(onTick);
+    });
+
+    anim.stop();
+    void runPromise;
+    if (!this._destroyed) {
+      anim.setFrame(FIELDER_V2_FRAMES.ready);
+    }
+  }
+
+  /** Return a fielder to its default position (fire-and-forget). */
+  async resetFielderPosition(position: string, duration: number): Promise<void> {
+    if (!this._loaded || this._destroyed) return;
+
+    const defaults = FIELDER_DEFAULTS[position];
+    if (!defaults) return;
+
+    const anim = this.fielderSprites.get(position);
+    if (anim === undefined) return;
+
+    const sprite = anim.getSprite();
+    const startX = sprite.x;
+    const startY = sprite.y;
+    const startTime = performance.now();
+
+    await new Promise<void>((resolve) => {
+      const onTick = () => {
+        if (this._destroyed) {
+          Ticker.shared.remove(onTick);
+          resolve();
+          return;
+        }
+        const elapsed = performance.now() - startTime;
+        const t = Math.min(elapsed / Math.max(1, duration), 1);
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        anim.setPosition(
+          startX + (defaults.x - startX) * e,
+          startY + (defaults.y - startY) * e,
+        );
+        if (t >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+      Ticker.shared.add(onTick);
+    });
+
+    if (!this._destroyed) {
+      // Restore original flip
+      const flip = FIELDER_FLIP[position] ?? false;
+      anim.setFlip(flip);
+      anim.setFrame(FIELDER_V2_FRAMES.ready);
+    }
+  }
+
+  // ── Batter walkup ──────────────────────────────────────────────────
+  // Batter enters from the right side of screen to the batter's box.
+
+  async animateBatterWalkup(): Promise<void> {
+    if (!this._loaded || this._batter === null || this._destroyed) return;
+
+    const batter = this._batter;
+    const sprite = batter.getSprite();
+    const targetX = sprite.x;
+    const targetY = sprite.y;
+
+    // Start off-screen right
+    sprite.x = 480;
+    sprite.y = targetY;
+
+    batter.setFrame(BATTER_V2_FRAMES.stance);
+    const startTime = performance.now();
+    const duration = 600;
+
+    await new Promise<void>((resolve) => {
+      const onTick = () => {
+        if (this._destroyed) {
+          Ticker.shared.remove(onTick);
+          resolve();
+          return;
+        }
+        const elapsed = performance.now() - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        const e = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        sprite.x = 480 + (targetX - 480) * e;
+        if (t >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+      Ticker.shared.add(onTick);
+    });
+
+    if (!this._destroyed) {
+      batter.setFrame(BATTER_V2_FRAMES.stance);
+    }
+  }
+
   // ── Animation: Fielders ───────────────────────────────────────────
   // Ready(0), then catch sequence: bendGrounder(5)→scooping(6)→standingUp(7)→crowHop(8) over 600ms
 

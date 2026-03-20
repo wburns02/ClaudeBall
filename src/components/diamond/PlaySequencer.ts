@@ -13,7 +13,7 @@ import type { DiamondRenderer } from './DiamondRenderer.ts';
 import type { SpritePlayerScene } from './sprites/SpritePlayerScene.ts';
 import { delay } from './Tween.ts';
 import type { Point } from './Tween.ts';
-import { soundEngine } from '@/audio/index.ts';
+import { soundEngine, crowdAmbience } from '@/audio/index.ts';
 import {
   spawnBatCrack,
   spawnDustCloud,
@@ -74,6 +74,19 @@ const PITCH_BEZIER: Record<string, BezierConfig> = {
   changeup:    { ctrlOffsetX: 6,    ctrlOffsetY: 5   },
   splitter:    { ctrlOffsetX: 0,    ctrlOffsetY: 40  },
   knuckleball: { ctrlOffsetX: 18,   ctrlOffsetY: 18  },
+};
+
+// ── Pitch-type color map (for ball glow + trail) ─────────────────────────────
+
+const PITCH_COLORS: Record<string, number> = {
+  fastball:    0xFF4444,   // red
+  sinker:      0xFF6633,   // orange-red
+  cutter:      0xFF8800,   // orange
+  slider:      0x4488FF,   // blue
+  curveball:   0x44CC44,   // green
+  changeup:    0xFFCC00,   // yellow
+  splitter:    0xCC44FF,   // purple
+  knuckleball: 0xFFFFFF,   // white (unpredictable)
 };
 
 // ── Spray angle helpers ───────────────────────────────────────────────────────
@@ -143,6 +156,15 @@ export class PlaySequencer {
   /** Incremental pitch count per sequencer instance. */
   private _pitchCount = 0;
 
+  /** Track first pitch of at-bat for camera zoom-in (only zoom on first pitch). */
+  private _isFirstPitchOfAB = true;
+
+  /** Track at-bat pitch count for between-pitch ritual (skip ritual on first pitch). */
+  private _abPitchIndex = 0;
+
+  /** Current batter name for detecting new at-bats. */
+  private _currentBatterName = '';
+
   constructor(renderer: DiamondRenderer) {
     this.renderer = renderer;
   }
@@ -175,8 +197,13 @@ export class PlaySequencer {
     this._updateOverlay({ resultText: text, pitchType: '', pitchSpeedMph: 0 });
   }
 
-  /** Set batter/pitcher names for the overlay HUD. */
+  /** Set batter/pitcher names for the overlay HUD. Detects new at-bats. */
   setAtBatNames(batterName: string, pitcherName: string): void {
+    if (batterName && batterName !== this._currentBatterName) {
+      this._currentBatterName = batterName;
+      this._isFirstPitchOfAB = true;
+      this._abPitchIndex = 0;
+    }
     this._updateOverlay({ batterName, pitcherName });
   }
 
@@ -231,18 +258,21 @@ export class PlaySequencer {
     event: Extract<GameEvent, { type: 'pitch' }>,
   ): Promise<void> {
     const result = event.result;
+    // Extract pitch type from event data
+    const pitchType = (event as Record<string, unknown>).pitchType as string | undefined
+      ?? (event as Record<string, unknown>).pitch_type as string | undefined
+      ?? 'fastball';
 
     if (result === 'ball') {
-      await this.playBallPitch();
+      await this.playBallPitch(pitchType);
     } else if (result === 'called_strike') {
-      await this.playStrikeCalled();
+      await this.playStrikeCalled(pitchType);
     } else if (result === 'swinging_strike' || result === 'strike') {
-      await this.playStrikeSwinging();
+      await this.playStrikeSwinging(pitchType);
     } else if (result === 'foul') {
-      await this.playFoulBall();
+      await this.playFoulBall(pitchType);
     } else {
-      // Fallback: plain pitch
-      await this.playBallPitch();
+      await this.playBallPitch(pitchType);
     }
   }
 
@@ -284,38 +314,41 @@ export class PlaySequencer {
   // ── Choreographed sequences ──────────────────────────────────────────────
   // ══════════════════════════════════════════════════════════════════════════
 
-  // ── Ball pitch (~1500ms) ──────────────────────────────────────────────────
-  // 1. Pitcher winds up (600ms)
-  // 2. Ball travels to plate (400ms)
-  // 3. Catcher receives (100ms)
-  // 4. Umpire calls ball (400ms)
+  // ── Ball pitch (~2800ms) ──────────────────────────────────────────────────
+  // 1. Between-pitch ritual (400ms, skip on first pitch of AB)
+  // 2. Pitcher winds up (1200ms)
+  // 3. Ball travels to plate (650ms)
+  // 4. Catcher receives (200ms)
+  // 5. Umpire calls ball (500ms)
+  // 6. Result hold (300ms)
 
-  async playBallPitch(): Promise<void> {
+  async playBallPitch(pitchType = 'fastball'): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
-    // Zoom to at-bat view + show overlay
+    // Between-pitch ritual (skip on first pitch of AB)
+    await this._betweenPitchRitual();
+
+    // Zoom to at-bat view (only on first pitch of AB)
     await this._zoomInForPitch();
-    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
+    this._showPitchFlash(pitchType, this._randomPitchSpeed(pitchType));
 
-    // Step 1: pitcher windup
+    // Set ball color for pitch type
+    this.renderer.setBallColor(PITCH_COLORS[pitchType] ?? 0xFFFFFF);
+
+    // Pitcher windup
     await this._pitcherWindup(ss);
-
     if (this._destroyed) return;
 
-    // Step 2: ball travels — whoosh when released
+    // Ball travels — whoosh when released
     soundEngine.playPitchThrow();
-    await this._throwBallToPlate('fastball');
-
+    await this._throwBallToPlate(pitchType);
     if (this._destroyed) return;
 
-    // Step 3 + 4: catcher receives (leather pop), umpire calls ball
+    // Catcher receives (leather pop), umpire calls ball
     soundEngine.playBallInGlove();
     spawnCatchPop(this.renderer.getApp()!, HOME_X, HOME_Y, this._fx());
-    await Promise.all([
-      this._catcherReceive(ss),
-      delay(this.dur(50)),
-    ]);
+    await this._catcherReceive(ss);
 
     if (!this._destroyed && ss) {
       await ss.animateUmpireBallCall();
@@ -324,24 +357,25 @@ export class PlaySequencer {
     this._showResultFlash('BALL!');
 
     this.renderer.hideBall();
-    await delay(this.dur(200));
+    await delay(this.dur(400));
   }
 
-  // ── Called strike (~1500ms) ────────────────────────────────────────────────
-  // Same as ball pitch but umpire does strike call
+  // ── Called strike (~2800ms) ────────────────────────────────────────────────
 
-  async playStrikeCalled(): Promise<void> {
+  async playStrikeCalled(pitchType = 'fastball'): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
+    await this._betweenPitchRitual();
     await this._zoomInForPitch();
-    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
+    this._showPitchFlash(pitchType, this._randomPitchSpeed(pitchType));
+    this.renderer.setBallColor(PITCH_COLORS[pitchType] ?? 0xFFFFFF);
 
     await this._pitcherWindup(ss);
     if (this._destroyed) return;
 
     soundEngine.playPitchThrow();
-    await this._throwBallToPlate('fastball');
+    await this._throwBallToPlate(pitchType);
     if (this._destroyed) return;
 
     soundEngine.playBallInGlove();
@@ -353,31 +387,35 @@ export class PlaySequencer {
     this._showResultFlash('STRIKE!');
     if (ss) await ss.animateUmpireStrikeCall();
 
+    // Build crowd on 2-strike counts
+    if (this._overlayState.strikes >= 2) {
+      soundEngine.playCrowdBuild(1200);
+      crowdAmbience.setIntensity(7);
+    }
+
     this.renderer.hideBall();
-    await delay(this.dur(200));
+    await delay(this.dur(400));
   }
 
-  // ── Swinging strike (~1500ms) ─────────────────────────────────────────────
-  // 1. Pitcher winds up (600ms)
-  // 2. Ball travels — batter swing fires at ~300ms mark (350ms)
-  // 3. Catcher catches (100ms)
-  // 4. Brief pause (150ms)
+  // ── Swinging strike (~3000ms) ─────────────────────────────────────────────
 
-  async playStrikeSwinging(): Promise<void> {
+  async playStrikeSwinging(pitchType = 'slider'): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
+    await this._betweenPitchRitual();
     await this._zoomInForPitch();
-    this._showPitchFlash('slider', this._randomPitchSpeed('slider'));
+    this._showPitchFlash(pitchType, this._randomPitchSpeed(pitchType));
+    this.renderer.setBallColor(PITCH_COLORS[pitchType] ?? 0xFFFFFF);
 
     await this._pitcherWindup(ss);
     if (this._destroyed) return;
 
     // Ball and swing run concurrently; swing fires slightly after ball starts
     soundEngine.playPitchThrow();
-    const ballPromise = this._throwBallToPlate('fastball');
+    const ballPromise = this._throwBallToPlate(pitchType);
     const swingPromise = (async () => {
-      await delay(this.dur(280));
+      await delay(this.dur(350));
       soundEngine.playStrikeoutSwing();
       if (!this._destroyed && ss) await ss.animateBatterSwing('late');
     })();
@@ -389,48 +427,52 @@ export class PlaySequencer {
     this._showResultFlash('STRIKE!');
     spawnCatchPop(this.renderer.getApp()!, HOME_X, HOME_Y, this._fx());
     await this._catcherReceive(ss);
-    await delay(this.dur(150));
+
+    // Build crowd on 2-strike counts
+    if (this._overlayState.strikes >= 2) {
+      soundEngine.playCrowdBuild(1000);
+      crowdAmbience.setIntensity(7);
+    }
 
     this.renderer.hideBall();
-    await delay(this.dur(150));
+    await delay(this.dur(400));
   }
 
-  // ── Foul ball (~1800ms) ────────────────────────────────────────────────────
-  // 1. Pitcher winds up (600ms)
-  // 2. Ball to plate (350ms), batter swings (fire at 300ms)
-  // 3. Contact flash at plate + bat crack effect
-  // 4. Ball pops off to foul territory and fades (400ms)
-  // 5. Reset (200ms)
+  // ── Foul ball (~3000ms) ────────────────────────────────────────────────────
 
-  async playFoulBall(): Promise<void> {
+  async playFoulBall(pitchType = 'curveball'): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
+    await this._betweenPitchRitual();
     await this._zoomInForPitch();
-    this._showPitchFlash('curveball', this._randomPitchSpeed('curveball'));
+    this._showPitchFlash(pitchType, this._randomPitchSpeed(pitchType));
+    this.renderer.setBallColor(PITCH_COLORS[pitchType] ?? 0xFFFFFF);
 
     await this._pitcherWindup(ss);
     if (this._destroyed) return;
 
-    const ballPromise = this._throwBallToPlate('fastball');
+    const ballPromise = this._throwBallToPlate(pitchType);
     const swingPromise = (async () => {
-      await delay(this.dur(290));
+      await delay(this.dur(360));
       if (!this._destroyed && ss) await ss.animateBatterSwing('normal');
     })();
     await Promise.all([ballPromise, swingPromise]);
     if (this._destroyed) return;
 
-    // Contact flash + bat crack particle effect
+    // Contact flash + bat crack + screen shake
     this._showResultFlash('FOUL!');
     this.renderer.showContactFlash(HOME_X, HOME_Y - 10);
+    this.renderer.screenShake(2, 100);
     soundEngine.playBatCrack();
+    soundEngine.playCrowdOoh();
     spawnBatCrack(this.renderer.getApp()!, HOME_X, HOME_Y - 10, this._fx());
 
-    // Ball pops foul — to the right side (1B side)
+    // Ball pops foul
     const foulTarget: Point = { x: HOME_X + 80 + Math.random() * 40, y: HOME_Y + 30 };
     await this._animateFoulBall(foulTarget);
 
-    await delay(this.dur(200));
+    await delay(this.dur(400));
     this.renderer.hideBall();
   }
 
@@ -444,200 +486,232 @@ export class PlaySequencer {
   ): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
-    const angle = 0; // neutral angle for generic plays
+    const angle = 0;
 
-    // Zoom in for the pitch
+    // Between-pitch ritual + zoom
+    await this._betweenPitchRitual();
     await this._zoomInForPitch();
-    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
 
-    // Step 1: pitcher winds up (shorter for contact plays)
-    if (ss) {
-      await ss.animatePitcherWindup();
-    } else {
-      await delay(this.dur(500));
-    }
+    // Pick a realistic pitch type for contact plays
+    const pitchTypes = ['fastball', 'slider', 'curveball', 'changeup', 'sinker', 'cutter'];
+    const contactPitch = pitchTypes[Math.floor(Math.random() * pitchTypes.length)] ?? 'fastball';
+    this._showPitchFlash(contactPitch, this._randomPitchSpeed(contactPitch));
+    this.renderer.setBallColor(PITCH_COLORS[contactPitch] ?? 0xFFFFFF);
+
+    // Pitcher winds up
+    await this._pitcherWindup(ss);
     if (this._destroyed) return;
 
-    // Step 2: ball to plate, batter swings simultaneously
-    const ballToPlate = this._throwBallToPlate('fastball');
+    // Ball to plate, batter swings simultaneously
+    soundEngine.playPitchThrow();
+    const ballToPlate = this._throwBallToPlate(contactPitch);
     const swingDelay = (async () => {
-      await delay(this.dur(280));
+      await delay(this.dur(350));
       if (!this._destroyed && ss) await ss.animateBatterSwing('perfect');
     })();
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // Step 3: contact flash + bat crack sound + bat crack particle
+    // Contact flash + bat crack + screen shake + crowd ooh
     this._showResultFlash('IN PLAY!');
     this.renderer.showContactFlash(HOME_X - 10, HOME_Y - 15);
+    this.renderer.screenShake(3, 150);
     soundEngine.playBatCrack();
+    soundEngine.playCrowdOoh();
     spawnBatCrack(this.renderer.getApp()!, HOME_X - 10, HOME_Y - 15, this._fx());
 
-    // Zoom back to field so we can see the ball in play
-    void this._zoomOutToField(350);
+    // Reset crowd after 2-strike build
+    crowdAmbience.setIntensity(5);
 
-    // Step 4+: route based on hit type
+    // Zoom back to field so we can see the ball in play
+    void this._zoomOutToField(this.dur(500));
+
+    // Route based on hit type
     if (hitType === 'groundout' || hitType === 'fielders_choice' || hitType === 'double_play') {
       await this._playGroundout(fielderPos, angle, distNorm, ss);
     } else if (hitType === 'single') {
       if (ss) void ss.animateBatterRunning?.();
+      soundEngine.playCrowdGroan();
       await this._playSingle(fielderPos, angle, distNorm, ss);
     } else if (hitType === 'double' || hitType === 'triple') {
       if (ss) void ss.animateBatterRunning?.();
+      soundEngine.playCrowdCheer('medium');
       await this._playExtraBase(fielderPos, angle, distNorm, ss, hitType);
     } else if (hitType === 'flyout' || hitType === 'lineout') {
       await this._playFlyout(fielderPos, angle, distNorm, ss);
     } else if (hitType === 'popout') {
       await this._playPopout(fielderPos, ss);
     } else {
-      // fallback
       await this._playGroundout(fielderPos, angle, distNorm, ss);
     }
 
     this.renderer.hideBall();
+    // Post-play pause
+    await delay(this.dur(400));
   }
 
-  // ── Home run (~3500ms) ─────────────────────────────────────────────────────
-  // 1. Pitcher winds up (500ms)
-  // 2. Ball to plate (300ms)
-  // 3. Batter swings — BIG contact flash (300ms)
-  // 4. Ball arcs high into outfield (800ms)
-  // 5. Ball clears wall — flash (200ms)
-  // 6. Brief celebration (200ms)
+  // ── Home run (~6000ms) ─────────────────────────────────────────────────────
+  // Dramatic full sequence with camera tracking and crowd eruption.
 
   async playHomeRun(distance: number): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
     const angle = (Math.random() - 0.5) * 40;
 
-    // Zoom in for pitch
+    // Between-pitch ritual + zoom
+    await this._betweenPitchRitual();
     await this._zoomInForPitch();
-    this._showPitchFlash('fastball', this._randomPitchSpeed('fastball'));
 
-    if (ss) {
-      await ss.animatePitcherWindup();
-    } else {
-      await delay(this.dur(500));
-    }
+    const pitchType = 'fastball';
+    this._showPitchFlash(pitchType, this._randomPitchSpeed(pitchType));
+    this.renderer.setBallColor(PITCH_COLORS[pitchType] ?? 0xFF4444);
+
+    await this._pitcherWindup(ss);
     if (this._destroyed) return;
 
-    const ballToPlate = this._throwBallToPlate('fastball');
+    soundEngine.playPitchThrow();
+    const ballToPlate = this._throwBallToPlate(pitchType);
     const swingDelay = (async () => {
-      await delay(this.dur(260));
+      await delay(this.dur(330));
       if (!this._destroyed && ss) await ss.animateBatterSwing('perfect');
     })();
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // Big contact flash + bat crack particle effect
+    // BIG contact flash + screen shake + bat crack
     this._showResultFlash('HOME RUN!');
     this.renderer.showContactFlash(HOME_X - 12, HOME_Y - 18);
     this.renderer.showHomeRunFlash();
+    this.renderer.screenShake(5, 200);
     soundEngine.playBatCrack(1.4);
     spawnBatCrack(this.renderer.getApp()!, HOME_X - 12, HOME_Y - 18, this._fx());
     if (ss) void ss.animateBatterRunning?.();
 
-    // Zoom to outfield to track ball flight
-    const outfieldDir = angle < -10 ? 'left' : angle > 10 ? 'right' : 'center';
-    void this.camera?.zoomToOutfield(outfieldDir, this.dur(500));
+    // Quick zoom out to field (400ms), then pan to follow ball
     this._updateOverlay({ visible: false });
+    await this._zoomOutToField(this.dur(400));
+
+    // Pan camera to outfield to follow ball arc
+    const outfieldDir = angle < -10 ? 'left' : angle > 10 ? 'right' : 'center';
+    const panTarget = outfieldDir === 'left' ? { x: 150, y: 158 }
+      : outfieldDir === 'right' ? { x: 450, y: 158 }
+      : { x: 300, y: 100 };
+    void this.camera?.panToPoint(panTarget.x, panTarget.y, 1.3, this.dur(700));
 
     // Ball arcs out of the park
     await this.renderer.animateBallHomeRun(angle, distance);
     if (this._destroyed) return;
 
-    // Fireworks celebration + horn blast
-    // Procedural particle fireworks run in parallel with sprite-based overlays
+    // Crowd eruption + horn blast
+    crowdAmbience.spike(10, 3000, 5);
+    soundEngine.playCrowdCheer('roar');
+    soundEngine.playHomeRunHorn();
+
     const hrApp = this.renderer.getApp();
     if (hrApp) {
       spawnHomeRunFireworks(hrApp, 600, 500, this._fx());
     }
-    soundEngine.playHomeRunHorn();
 
-    // Sprite-based celebration frames (homerun1.png: fireworks, confetti, text)
-    // Run concurrently with the delay — both start immediately after ball clears wall
     const spriteEffectsPromise = this._playHomeRunSpriteEffects();
 
-    await delay(this.dur(200));
+    await delay(this.dur(300));
     this.renderer.hideBall();
 
-    // Zoom back to full field during celebration
-    void this._zoomOutToField(this.dur(800));
+    // Slow pull back to full field (1000ms)
+    void this._zoomOutToField(this.dur(1000));
 
-    // Wait for sprite celebration to finish (it lasts ~2.4s)
+    // Wait for celebration + dramatic hold
     await spriteEffectsPromise;
+    await delay(this.dur(1500));
   }
 
-  // ── Strikeout (~1000ms after last pitch) ──────────────────────────────────
-  // 1. Umpire dramatic punch-out (600ms)
-  // 2. Batter reset (400ms)
+  // ── Strikeout (~2000ms after last pitch) ──────────────────────────────────
+  // Dramatic umpire punch-out with crowd eruption and camera hold.
 
   async playStrikeout(looking: boolean): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
-    // Show strikeout result flash (while still zoomed in for drama)
     this._showResultFlash('STRIKEOUT!');
 
     if (!looking && ss) {
-      // swinging strikeout — show swing first
       await ss.animateBatterSwing('late');
       if (this._destroyed) return;
     }
 
-    // Dramatic K flash near home plate area
+    // Dramatic K flash
     spawnStrikeoutK(this.renderer.getApp()!, HOME_X, HOME_Y - 60, looking, this._fx());
 
+    // Crowd eruption + umpire call
+    crowdAmbience.spike(9, 2000, 4);
+    soundEngine.playCrowdCheer('roar');
+
     if (ss) {
-      soundEngine.playCrowdCheer('roar');
       await ss.animateUmpireStrikeCall();
       if (this._destroyed) return;
-      // Hold the at-bat zoom for dramatic effect
-      await delay(this.dur(500));
+      // Hold the dramatic zoom for longer
+      await delay(this.dur(1000));
     } else {
-      soundEngine.playCrowdCheer('roar');
-      await delay(this.dur(700));
+      await delay(this.dur(1200));
     }
 
-    // Now zoom back out to field
-    await this._zoomOutToField(this.dur(380));
+    // Zoom back out for next batter
+    await this._zoomOutToField(this.dur(600));
+    // Dramatic post-strikeout pause
+    await delay(this.dur(500));
   }
 
-  // ── Walk (~800ms) ─────────────────────────────────────────────────────────
+  // ── Walk (~1200ms) ─────────────────────────────────────────────────────────
 
   async playWalk(): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
     this._showResultFlash('WALK!');
+    crowdAmbience.setIntensity(4);
 
     if (ss) {
       await ss.animateBatterTake();
       if (this._destroyed) return;
     }
 
-    await delay(this.dur(300));
+    await delay(this.dur(500));
 
-    // Zoom out as batter walks to first
-    await this._zoomOutToField(this.dur(450));
+    // Slow zoom out as batter walks to first
+    await this._zoomOutToField(this.dur(600));
+    await delay(this.dur(300));
   }
 
-  // ── Inning change (~600ms) ────────────────────────────────────────────────
+  // ── Inning change (~1200ms) ────────────────────────────────────────────────
 
   async playInningChange(): Promise<void> {
     if (this._destroyed) return;
     const ss = this.renderer.getSpriteScene();
 
-    // Always ensure full field view at inning change
+    // Reset at-bat tracking for new half-inning
+    this._isFirstPitchOfAB = true;
+    this._abPitchIndex = 0;
+    this._currentBatterName = '';
+
+    // Smooth zoom out instead of snap
     if (this.camera) {
       this._updateOverlay({ visible: false, resultText: '', pitchType: '', pitchSpeedMph: 0 });
-      this.camera.snapToField();
+      if (this.camera.isZoomedIn) {
+        await this.camera.zoomToField(this.dur(500));
+      } else {
+        this.camera.snapToField();
+      }
     }
 
     this.renderer.reset();
     if (ss) ss.resetToReady();
+
+    // Between-inning atmosphere: organ charge + crowd swell
     soundEngine.playOrganCharge();
-    await delay(this.dur(300));
+    crowdAmbience.spike(6, 800, 4);
+    soundEngine.playCrowdCheer('light');
+
+    await delay(this.dur(600));
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -648,19 +722,48 @@ export class PlaySequencer {
 
   private async _zoomInForPitch(): Promise<void> {
     if (!this.camera || this.skipAnimations) return;
-    // Only zoom in if not already zoomed — avoids double-zoom on sequential pitches
-    if (!this.camera.isZoomedIn) {
-      // Show overlay immediately
+    // Only zoom in on first pitch of at-bat — stay zoomed for subsequent pitches
+    if (this._isFirstPitchOfAB && !this.camera.isZoomedIn) {
       this._updateOverlay({ visible: true });
-      await this.camera.zoomToAtBat(this.dur(450));
+      await this.camera.zoomToAtBat(this.dur(700));
+      this._isFirstPitchOfAB = false;
+    } else if (!this.camera.isZoomedIn) {
+      // Camera was zoomed out (after a ball in play that resolved to continue the AB)
+      this._updateOverlay({ visible: true });
+      await this.camera.zoomToAtBat(this.dur(500));
+    } else {
+      this._updateOverlay({ visible: true });
     }
   }
 
   private async _zoomOutToField(durationMs?: number): Promise<void> {
     if (!this.camera || this.skipAnimations) return;
-    // Hide overlay then zoom out
     this._updateOverlay({ visible: false, resultText: '', pitchType: '', pitchSpeedMph: 0 });
-    await this.camera.zoomToField(durationMs ?? this.dur(400));
+    await this.camera.zoomToField(durationMs ?? this.dur(700));
+  }
+
+  // ── Between-pitch ritual ─────────────────────────────────────────────────
+  // Adds a brief pause between pitches representing batter stepping in and
+  // pitcher getting the sign. Skipped on the first pitch of the at-bat.
+
+  private async _betweenPitchRitual(): Promise<void> {
+    if (this._destroyed || this.skipAnimations) return;
+    this._abPitchIndex++;
+    if (this._abPitchIndex <= 1) return; // Skip on first pitch of AB
+
+    // Batter steps in (300ms) + pitcher gets sign (300ms)
+    await delay(this.dur(300));
+    if (this._destroyed) return;
+    await delay(this.dur(300));
+  }
+
+  // ── Batter walkup for new batters ──────────────────────────────────────
+
+  private async _playBatterWalkup(): Promise<void> {
+    if (this._destroyed || this.skipAnimations) return;
+    const ss = this.renderer.getSpriteScene();
+    if (!ss) return;
+    await ss.animateBatterWalkup();
   }
 
   // ── Random pitch speed for flash display ──────────────────────────────────
@@ -684,7 +787,7 @@ export class PlaySequencer {
     if (ss) {
       await ss.animatePitcherWindup();
     } else {
-      await delay(this.dur(600));
+      await delay(this.dur(1000));
     }
   }
 
@@ -702,7 +805,7 @@ export class PlaySequencer {
       y: mid.y + (cfg?.ctrlOffsetY ?? 0),
     };
 
-    await this.renderer.animateBallBezier(start, ctrl, end, this.dur(400));
+    await this.renderer.animateBallBezier(start, ctrl, end, this.dur(650));
   }
 
   // ── Catcher receive frame swap ─────────────────────────────────────────────
@@ -745,53 +848,64 @@ export class PlaySequencer {
       y: Math.max(50, Math.min(450, landing.y)),
     };
 
-    // Ball rolls to fielder (ground ball)
     const fielderCoord = FIELDER_POSITIONS[fielderPos] ?? FIELDER_POSITIONS.SS!;
 
-    await this.renderer.animateBallGround(
-      { x: HOME_X, y: HOME_Y },
-      clampedLanding,
-      this.dur(480),
-    );
+    // Fielder starts running to ball landing point concurrently with ball rolling
+    const fielderMovePromise = ss
+      ? ss.moveFielderTo(fielderPos, clampedLanding.x, clampedLanding.y, this.dur(450))
+      : Promise.resolve();
+
+    await Promise.all([
+      this.renderer.animateBallGround(
+        { x: HOME_X, y: HOME_Y },
+        clampedLanding,
+        this.dur(550),
+      ),
+      fielderMovePromise,
+    ]);
     if (this._destroyed) return;
 
-    // Dust cloud where ball hits the dirt (procedural + sprite overlay)
+    // Dust cloud where ball hits the dirt
     spawnDustCloud(this.renderer.getApp()!, clampedLanding.x, clampedLanding.y, 'medium', this._fx());
     void this._spawnSpriteDust(clampedLanding.x, clampedLanding.y, 'mediumPuff', 350);
 
-    // Fielder animates (field + crow hop + throw) concurrently with ball throw
+    // Fielder catch animation
     const fielderAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
-
     await fielderAnim;
     if (this._destroyed) return;
 
-    // CatchPop when fielder fields it
-    spawnCatchPop(this.renderer.getApp()!, fielderCoord.x, fielderCoord.y, this._fx());
+    spawnCatchPop(this.renderer.getApp()!, clampedLanding.x, clampedLanding.y, this._fx());
+    soundEngine.playBallInGlove();
 
     // Fielder throws to 1B
     if (ss) {
       const throwAnim = ss.animateFielderThrow(fielderPos);
       const ballAnim = this.renderer.animateBallBezier(
-        fielderCoord,
-        { x: (fielderCoord.x + BASE_1_X) / 2, y: (fielderCoord.y + BASE_1_Y) / 2 - 20 },
+        clampedLanding,
+        { x: (clampedLanding.x + BASE_1_X) / 2, y: (clampedLanding.y + BASE_1_Y) / 2 - 20 },
         { x: BASE_1_X, y: BASE_1_Y },
-        this.dur(320),
+        this.dur(380),
       );
       await Promise.all([throwAnim, ballAnim]);
     } else {
       await this.renderer.animateBallBezier(
-        fielderCoord,
-        { x: (fielderCoord.x + BASE_1_X) / 2, y: (fielderCoord.y + BASE_1_Y) / 2 - 20 },
+        clampedLanding,
+        { x: (clampedLanding.x + BASE_1_X) / 2, y: (clampedLanding.y + BASE_1_Y) / 2 - 20 },
         { x: BASE_1_X, y: BASE_1_Y },
-        this.dur(320),
+        this.dur(380),
       );
     }
 
-    // Catch at 1B + light dust from runner's foot sliding in
+    // Catch at 1B
     spawnCatchPop(this.renderer.getApp()!, BASE_1_X, BASE_1_Y, this._fx());
     spawnDustCloud(this.renderer.getApp()!, BASE_1_X, BASE_1_Y, 'light', this._fx());
+    soundEngine.playBallInGlove();
+    soundEngine.playCrowdCheer('light');
 
-    await delay(this.dur(200));
+    // Fire-and-forget: fielder returns to default position
+    if (ss) void ss.resetFielderPosition(fielderPos, this.dur(500));
+
+    await delay(this.dur(350));
   }
 
   // ── Single sub-sequence ───────────────────────────────────────────────────
@@ -811,25 +925,43 @@ export class PlaySequencer {
       y: Math.max(30, Math.min(460, landing.y)),
     };
 
-    // Ball rolls to outfield
-    await this.renderer.animateBallGround(
-      { x: HOME_X, y: HOME_Y },
-      clamped,
-      this.dur(500),
-    );
+    // Pan camera slightly toward where the ball is going
+    if (this.camera) {
+      void this.camera.panToPoint(
+        (HOME_X + clamped.x) / 2,
+        (HOME_Y + clamped.y) / 2,
+        1.15,
+        this.dur(600),
+      );
+    }
+
+    // Outfielder runs to the ball concurrently with ball rolling
+    const fielderMovePromise = ss
+      ? ss.moveFielderTo(fielderPos, clamped.x, clamped.y, this.dur(550))
+      : Promise.resolve();
+
+    await Promise.all([
+      this.renderer.animateBallGround(
+        { x: HOME_X, y: HOME_Y },
+        clamped,
+        this.dur(600),
+      ),
+      fielderMovePromise,
+    ]);
     if (this._destroyed) return;
 
-    // Outfielder runs to ball, runner advances concurrently
+    // Outfielder catches the ball
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
     soundEngine.playBallInGlove();
-    // CatchPop at outfielder
     spawnCatchPop(this.renderer.getApp()!, clamped.x, clamped.y, this._fx());
-    // Light dust as runner arrives at first
     spawnDustCloud(this.renderer.getApp()!, BASE_1_X, BASE_1_Y, 'light', this._fx());
 
+    // Fire-and-forget: fielder returns
+    if (ss) void ss.resetFielderPosition(fielderPos, this.dur(600));
+
     if (this._destroyed) return;
-    await delay(this.dur(200));
+    await delay(this.dur(300));
   }
 
   // ── Extra-base hit (double/triple) ────────────────────────────────────────
@@ -849,34 +981,50 @@ export class PlaySequencer {
       y: Math.max(20, Math.min(470, landing.y)),
     };
 
+    // Pan camera to follow the ball into the gap
+    if (this.camera) {
+      void this.camera.panToPoint(clamped.x, clamped.y, 1.2, this.dur(700));
+    }
+
     // Line drive arc
     const ctrl: Point = {
       x: (HOME_X + clamped.x) / 2,
       y: HOME_Y - 30,
     };
 
-    await this.renderer.animateBallBezier(
-      { x: HOME_X, y: HOME_Y },
-      ctrl,
-      clamped,
-      this.dur(hitType === 'triple' ? 550 : 450),
-    );
+    // Fielder runs deep to retrieve
+    const fielderMovePromise = ss
+      ? ss.moveFielderTo(fielderPos, clamped.x, clamped.y, this.dur(600))
+      : Promise.resolve();
+
+    await Promise.all([
+      this.renderer.animateBallBezier(
+        { x: HOME_X, y: HOME_Y },
+        ctrl,
+        clamped,
+        this.dur(hitType === 'triple' ? 650 : 550),
+      ),
+      fielderMovePromise,
+    ]);
     if (this._destroyed) return;
 
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
+    soundEngine.playBallInGlove();
     if (this._destroyed) return;
 
-    // Slide spray at the destination base — double slides into 2B, triple into 3B
+    // Slide spray at the destination base
     const slideBase = hitType === 'triple'
       ? { x: BASE_3_X, y: BASE_3_Y }
       : { x: BASE_2_X, y: BASE_2_Y };
-    // Determine slide direction based on which side runner comes from
     const slideDir = hitType === 'triple' ? 'right' : 'left';
     spawnSlideSpray(this.renderer.getApp()!, slideBase.x, slideBase.y, slideDir, this._fx());
     spawnDustCloud(this.renderer.getApp()!, slideBase.x, slideBase.y, 'heavy', this._fx());
 
-    await delay(this.dur(250));
+    // Fire-and-forget: fielder returns
+    if (ss) void ss.resetFielderPosition(fielderPos, this.dur(700));
+
+    await delay(this.dur(400));
   }
 
   // ── Flyout sub-sequence ───────────────────────────────────────────────────
@@ -895,25 +1043,44 @@ export class PlaySequencer {
       y: Math.max(20, Math.min(460, landing.y)),
     };
 
-    await this.renderer.animateBallParabolic(
-      { x: HOME_X, y: HOME_Y },
-      clamped,
-      80 + distNorm * 40,
-      this.dur(750),
-    );
+    // Subtle camera pan toward the fielder
+    if (this.camera) {
+      void this.camera.panToPoint(
+        (HOME_X + clamped.x) / 2,
+        (HOME_Y + clamped.y) / 2,
+        1.1,
+        this.dur(600),
+      );
+    }
+
+    // Fielder runs to landing spot concurrently with ball arc
+    const fielderMovePromise = ss
+      ? ss.moveFielderTo(fielderPos, clamped.x, clamped.y, this.dur(650))
+      : Promise.resolve();
+
+    await Promise.all([
+      this.renderer.animateBallParabolic(
+        { x: HOME_X, y: HOME_Y },
+        clamped,
+        80 + distNorm * 40,
+        this.dur(850),
+      ),
+      fielderMovePromise,
+    ]);
     if (this._destroyed) return;
 
+    // Fielder catches — crowd cheers
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
     soundEngine.playBallInGlove();
-    // CatchPop at the fielder's position when they catch it
-    const fCoord = FIELDER_POSITIONS[fielderPos];
-    if (fCoord) {
-      spawnCatchPop(this.renderer.getApp()!, fCoord.x, fCoord.y, this._fx());
-    }
-    if (this._destroyed) return;
+    soundEngine.playCrowdCheer('medium');
+    spawnCatchPop(this.renderer.getApp()!, clamped.x, clamped.y, this._fx());
 
-    await delay(this.dur(200));
+    // Fire-and-forget: fielder returns
+    if (ss) void ss.resetFielderPosition(fielderPos, this.dur(600));
+
+    if (this._destroyed) return;
+    await delay(this.dur(350));
   }
 
   // ── Popout sub-sequence ───────────────────────────────────────────────────
@@ -929,21 +1096,33 @@ export class PlaySequencer {
       y: HOME_Y - 35,
     };
 
-    await this.renderer.animateBallParabolic(
-      { x: HOME_X, y: HOME_Y },
-      popTarget,
-      100,
-      this.dur(900),
-    );
+    // Infielder drifts to the pop-up landing point
+    const fielderMovePromise = ss
+      ? ss.moveFielderTo(fielderPos, popTarget.x, popTarget.y, this.dur(500))
+      : Promise.resolve();
+
+    await Promise.all([
+      this.renderer.animateBallParabolic(
+        { x: HOME_X, y: HOME_Y },
+        popTarget,
+        100,
+        this.dur(1000),
+      ),
+      fielderMovePromise,
+    ]);
     if (this._destroyed) return;
 
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
     soundEngine.playBallInGlove();
+    soundEngine.playCrowdCheer('light');
     spawnCatchPop(this.renderer.getApp()!, popTarget.x, popTarget.y, this._fx());
-    if (this._destroyed) return;
 
-    await delay(this.dur(150));
+    // Fire-and-forget: fielder returns
+    if (ss) void ss.resetFielderPosition(fielderPos, this.dur(400));
+
+    if (this._destroyed) return;
+    await delay(this.dur(300));
   }
 
   // ── Sprite-based home-run celebration overlay ─────────────────────────────

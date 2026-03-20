@@ -92,6 +92,10 @@ export class DiamondRenderer {
   // State
   private fielderLabels: Map<string, Text> = new Map();
   private ballGraphic: Graphics | null = null;
+  private ballGlow: Graphics | null = null;
+  private _trailDots: Graphics[] = [];
+  private _trailPositions: { x: number; y: number }[] = [];
+  private _ballColor = 0xffffff;
 
   private _animating = false;
   // Note: _destroyed is not private so it satisfies the tween guard interface { _destroyed: boolean }
@@ -483,8 +487,30 @@ export class DiamondRenderer {
 
   private _createBall(): void {
     if (!this.ballLayer) return;
+
+    // Trail dots (behind ball, decreasing alpha)
+    const trailAlphas = [0.35, 0.25, 0.18, 0.12, 0.07];
+    for (let i = 0; i < 5; i++) {
+      const dot = new Graphics();
+      dot.circle(0, 0, 3);
+      dot.fill({ color: this._ballColor, alpha: trailAlphas[i] });
+      dot.visible = false;
+      this.ballLayer.addChild(dot);
+      this._trailDots.push(dot);
+      this._trailPositions.push({ x: 0, y: 0 });
+    }
+
+    // Glow ring (behind core ball)
+    const glow = new Graphics();
+    glow.circle(0, 0, 10);
+    glow.fill({ color: 0xffffff, alpha: 0.25 });
+    glow.visible = false;
+    this.ballLayer.addChild(glow);
+    this.ballGlow = glow;
+
+    // Core ball — bigger than before (5px radius)
     const ball = new Graphics();
-    ball.circle(0, 0, 4);
+    ball.circle(0, 0, 5);
     ball.fill({ color: 0xffffff });
     ball.visible = false;
     this.ballLayer.addChild(ball);
@@ -495,12 +521,84 @@ export class DiamondRenderer {
     return this.ballGraphic;
   }
 
+  /** Set the ball glow and trail color for pitch-type differentiation. */
+  setBallColor(color: number): void {
+    this._ballColor = color;
+    // Rebuild glow with new color
+    if (this.ballGlow && !this.ballGlow.destroyed) {
+      this.ballGlow.clear();
+      this.ballGlow.circle(0, 0, 10);
+      this.ballGlow.fill({ color, alpha: 0.25 });
+    }
+    // Rebuild trail dots with new color
+    const trailAlphas = [0.35, 0.25, 0.18, 0.12, 0.07];
+    for (let i = 0; i < this._trailDots.length; i++) {
+      const dot = this._trailDots[i];
+      if (dot && !dot.destroyed) {
+        dot.clear();
+        dot.circle(0, 0, 3);
+        dot.fill({ color, alpha: trailAlphas[i] ?? 0.1 });
+      }
+    }
+  }
+
+  /** Update trail positions — call on each animation tick. */
+  private _updateTrail(x: number, y: number): void {
+    // Shift positions down the ring buffer
+    for (let i = this._trailPositions.length - 1; i > 0; i--) {
+      const prev = this._trailPositions[i - 1];
+      if (prev) this._trailPositions[i] = { x: prev.x, y: prev.y };
+    }
+    if (this._trailPositions.length > 0) {
+      this._trailPositions[0] = { x, y };
+    }
+    // Update dot positions
+    for (let i = 0; i < this._trailDots.length; i++) {
+      const dot = this._trailDots[i];
+      const pos = this._trailPositions[i];
+      if (dot && pos) {
+        dot.x = pos.x;
+        dot.y = pos.y;
+      }
+    }
+    // Sync glow position with ball
+    if (this.ballGlow && !this.ballGlow.destroyed) {
+      this.ballGlow.x = x;
+      this.ballGlow.y = y;
+    }
+  }
+
+  /** Reset trail to a single point (prevents streaking on ball reposition). */
+  private _resetTrail(x: number, y: number): void {
+    for (let i = 0; i < this._trailPositions.length; i++) {
+      this._trailPositions[i] = { x, y };
+    }
+    for (const dot of this._trailDots) {
+      if (dot && !dot.destroyed) {
+        dot.x = x;
+        dot.y = y;
+      }
+    }
+    if (this.ballGlow && !this.ballGlow.destroyed) {
+      this.ballGlow.x = x;
+      this.ballGlow.y = y;
+    }
+  }
+
   showBall(): void {
     if (this.ballGraphic) this.ballGraphic.visible = true;
+    if (this.ballGlow) this.ballGlow.visible = true;
+    for (const dot of this._trailDots) {
+      if (dot) dot.visible = true;
+    }
   }
 
   hideBall(): void {
     if (this.ballGraphic) this.ballGraphic.visible = false;
+    if (this.ballGlow) this.ballGlow.visible = false;
+    for (const dot of this._trailDots) {
+      if (dot) dot.visible = false;
+    }
   }
 
   async fadeBall(duration: number): Promise<void> {
@@ -532,10 +630,32 @@ export class DiamondRenderer {
     ball.y = start.y;
     ball.scale.set(1);
     ball.alpha = 1;
-    ball.visible = true;
+    this._resetTrail(start.x, start.y);
+    this.showBall();
     this._animating = true;
 
-    await tweenBezier(ball, start, control, end, duration, Easing.linear, this);
+    // Use a custom tick callback to update trail during bezier
+    let elapsed = 0;
+    await new Promise<void>((resolve) => {
+      const onTick = (ticker: Ticker) => {
+        if (this._destroyed) {
+          Ticker.shared.remove(onTick);
+          resolve();
+          return;
+        }
+        elapsed += ticker.deltaMS;
+        const rawT = Math.min(elapsed / Math.max(1, duration), 1);
+        const mt = 1 - rawT;
+        ball.x = mt * mt * start.x + 2 * mt * rawT * control.x + rawT * rawT * end.x;
+        ball.y = mt * mt * start.y + 2 * mt * rawT * control.y + rawT * rawT * end.y;
+        this._updateTrail(ball.x, ball.y);
+        if (rawT >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+      Ticker.shared.add(onTick);
+    });
 
     this._animating = false;
   }
@@ -553,11 +673,12 @@ export class DiamondRenderer {
     ball.y = start.y;
     ball.scale.set(1);
     ball.alpha = 1;
-    ball.visible = true;
+    this._resetTrail(start.x, start.y);
+    this.showBall();
     this._animating = true;
 
     const shadow = new Graphics();
-    shadow.ellipse(0, 0, 5, 3);
+    shadow.ellipse(0, 0, 6, 3);
     shadow.fill({ color: 0x000000, alpha: 0.4 });
     shadow.x = start.x;
     shadow.y = start.y + 3;
@@ -576,7 +697,8 @@ export class DiamondRenderer {
         shadow.x = ball.x;
         shadow.y = groundY + 3;
         shadow.scale.set(1 + heightFraction * 0.7);
-        shadow.alpha = Math.max(0.05, 0.35 - heightFraction * 0.2);
+        shadow.alpha = Math.max(0.08, 0.4 - heightFraction * 0.2);
+        this._updateTrail(ball.x, ball.y);
       },
     );
 
@@ -600,10 +722,37 @@ export class DiamondRenderer {
     ball.y = start.y;
     ball.scale.set(1);
     ball.alpha = 1;
-    ball.visible = true;
+    this._resetTrail(start.x, start.y);
+    this.showBall();
     this._animating = true;
 
-    await tweenGround(ball, start, end, duration, exitVelo, this);
+    // Custom ground tween with trail tracking
+    let elapsed = 0;
+    await new Promise<void>((resolve) => {
+      const onTick = (ticker: Ticker) => {
+        if (this._destroyed) {
+          Ticker.shared.remove(onTick);
+          resolve();
+          return;
+        }
+        elapsed += ticker.deltaMS;
+        const t = Math.min(elapsed / Math.max(1, duration), 1);
+        const ease = Easing.easeOutExpo(t);
+        ball.x = start.x + (end.x - start.x) * ease;
+        const speed = Math.min(1, Math.max(0, (exitVelo - 60) / 50));
+        const hopCount = speed > 0.7 ? 1.5 : speed > 0.4 ? 2.5 : 3.5;
+        const amplitude = speed > 0.7 ? 7 : speed > 0.4 ? 4 : 2.5;
+        const decay = 1 - t;
+        const hop = Math.max(0, Math.sin(t * Math.PI * hopCount) * amplitude * decay);
+        ball.y = start.y + (end.y - start.y) * ease - hop;
+        this._updateTrail(ball.x, ball.y);
+        if (t >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+      Ticker.shared.add(onTick);
+    });
 
     this._animating = false;
   }
@@ -627,11 +776,12 @@ export class DiamondRenderer {
     ball.y = start.y;
     ball.scale.set(1);
     ball.alpha = 1;
-    ball.visible = true;
+    this._resetTrail(start.x, start.y);
+    this.showBall();
     this._animating = true;
 
     const shadow = new Graphics();
-    shadow.ellipse(0, 0, 5, 3);
+    shadow.ellipse(0, 0, 6, 3);
     shadow.fill({ color: 0x000000, alpha: 0.4 });
     this.ballLayer?.addChildAt(shadow, 0);
 
@@ -651,15 +801,16 @@ export class DiamondRenderer {
         shadow.x = ball.x;
         shadow.y = groundY + 3;
         shadow.scale.set(1 + heightFraction * 0.8);
-        shadow.alpha = Math.max(0, 0.35 - heightFraction * 0.2);
+        shadow.alpha = Math.max(0.05, 0.4 - heightFraction * 0.2);
+        this._updateTrail(ball.x, ball.y);
 
         if (!apexFlashed && t >= 0.48 && t <= 0.52) {
           apexFlashed = true;
-          this._spawnSparkle(ball.x, ball.y, 0xd4a843, 12);
+          this._spawnSparkle(ball.x, ball.y, 0xd4a843, 16);
         }
         if (!wallFlashed && t >= 0.80) {
           wallFlashed = true;
-          this._showScreenFlash(0xffd700, 0.18);
+          this._showScreenFlash(0xffd700, 0.22);
         }
       },
     );
@@ -673,12 +824,41 @@ export class DiamondRenderer {
 
   showContactFlash(x: number, y: number): void {
     if (!this.ballLayer || this._destroyed) return;
-    this._spawnSparkle(x, y, 0xffffff, 10);
+    this._spawnSparkle(x, y, 0xffffff, 15);
   }
 
   showHomeRunFlash(): void {
     if (this._destroyed) return;
-    this._showScreenFlash(0xffd700, 0.22);
+    this._showScreenFlash(0xffd700, 0.25);
+  }
+
+  /** Screen shake effect — rapidly offsets root container. */
+  screenShake(intensity: number, durationMs: number): void {
+    if (!this.root || this._destroyed) return;
+    const root = this.root;
+    const origX = root.x;
+    const origY = root.y;
+    let elapsed = 0;
+
+    const onTick = (ticker: Ticker) => {
+      if (this._destroyed) {
+        Ticker.shared.remove(onTick);
+        root.x = origX;
+        root.y = origY;
+        return;
+      }
+      elapsed += ticker.deltaMS;
+      if (elapsed >= durationMs) {
+        Ticker.shared.remove(onTick);
+        root.x = origX;
+        root.y = origY;
+        return;
+      }
+      const decay = 1 - elapsed / durationMs;
+      root.x = origX + (Math.random() - 0.5) * 2 * intensity * decay;
+      root.y = origY + (Math.random() - 0.5) * 2 * intensity * decay;
+    };
+    Ticker.shared.add(onTick);
   }
 
   // ── Private effects helpers ───────────────────────────────────────────

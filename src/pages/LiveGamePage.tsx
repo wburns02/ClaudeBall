@@ -12,9 +12,11 @@ import { getNeutralBallpark } from '@/engine/data/ballparks.ts';
 import { InteractiveGameEngine } from '@/engine/core/InteractiveGameEngine.ts';
 import type { GameState, GameEvent } from '@/engine/types/index.ts';
 import type { Team } from '@/engine/types/team.ts';
+import { getLineupPlayer } from '@/engine/types/team.ts';
 import type { SwingType, GamePhaseInteractive } from '@/engine/types/interactive.ts';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.ts';
 import { DiamondView, baseStateToBools } from '@/components/diamond/DiamondView.tsx';
+import { crowdAmbience } from '@/audio/index.ts';
 import type { UserRole } from '@/stores/gameStore.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
@@ -143,7 +145,9 @@ export function LiveGamePage() {
   const [showPlayByPlay, setShowPlayByPlay] = useState(true);
   const [showBoxScore, setShowBoxScore] = useState(false);
   const [wpHistory, setWpHistory] = useState<WPSnapshot[]>([]);
+  const [paText, setPaText] = useState<string | null>(null);
   const lastInningHalfRef = useRef<string>('');
+  const lastBatterRef = useRef<string>('');
 
   const autoPlayRef = useRef(false);
   const engineRef = useRef<InteractiveGameEngine | null>(null);
@@ -184,6 +188,17 @@ export function LiveGamePage() {
       initEngine(locationState.userTeam);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Start/stop crowd ambience with game lifecycle
+  useEffect(() => {
+    if (gameChosen && !gameOver) {
+      crowdAmbience.start();
+      crowdAmbience.setIntensity(4);
+    }
+    return () => {
+      crowdAmbience.stop();
+    };
+  }, [gameChosen, gameOver]);
 
   // Record stats when a franchise game ends
   useEffect(() => {
@@ -282,6 +297,23 @@ export function LiveGamePage() {
     setUserRole(role);
     setCurrentCount({ balls: 0, strikes: 0 });
     setGameState({ ...currentState });
+
+    // PA announcer for new batters
+    if (ab) {
+      const state = eng.getState();
+      const isTop = state.inning.half === 'top';
+      const battingTeam = isTop ? state.away : state.home;
+      const batterIdx = isTop ? state.currentBatterIndex.away : state.currentBatterIndex.home;
+      const batterPlayer = getLineupPlayer(battingTeam, batterIdx);
+      const batterName = batterPlayer
+        ? `${batterPlayer.firstName} ${batterPlayer.lastName}`.trim()
+        : '';
+      if (batterName && batterName !== lastBatterRef.current) {
+        lastBatterRef.current = batterName;
+        setPaText(`Now batting... ${batterName}`);
+        setTimeout(() => setPaText(null), 2200);
+      }
+    }
 
     if (role === 'batting') {
       setPhase('awaiting_swing');
@@ -384,7 +416,7 @@ export function LiveGamePage() {
     if (!isAutoPlaying || gameOver) return;
     autoPlayRef.current = true;
 
-    const delay = Math.max(80, 1200 / speed);
+    const delay = Math.max(200, 2400 / speed);
     const interval = setInterval(() => {
       if (!autoPlayRef.current) { clearInterval(interval); return; }
       const eng = engineRef.current;
@@ -504,6 +536,36 @@ export function LiveGamePage() {
           width={800}
           height={600}
         />
+
+        {/* ── PA ANNOUNCER overlay ── */}
+        {paText && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '15%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 15,
+              background: 'rgba(0,0,0,0.78)',
+              padding: '8px 28px',
+              borderRadius: 6,
+              pointerEvents: 'none',
+              animation: 'fadeInOut 2.2s ease',
+            }}
+          >
+            <span
+              style={{
+                fontFamily: 'Oswald, sans-serif',
+                fontSize: 16,
+                color: '#e8e0d4',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {paText}
+            </span>
+          </div>
+        )}
 
         {/* ── TOP-LEFT: Scoreboard overlay ── */}
         <div

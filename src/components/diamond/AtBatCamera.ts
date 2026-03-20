@@ -35,6 +35,10 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+function easeInOutQuad(t: number): number {
+  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+}
+
 // ── Camera state ──────────────────────────────────────────────────────────────
 
 interface CameraState {
@@ -116,7 +120,7 @@ export class AtBatCamera {
    * the mound so we can see pitcher, batter, catcher, and umpire large.
    * Returns a Promise that resolves when the zoom animation completes.
    */
-  zoomToAtBat(duration = 500): Promise<void> {
+  zoomToAtBat(duration = 700): Promise<void> {
     if (!this.root) return Promise.resolve();
     this._zoomedIn = true;
 
@@ -149,13 +153,13 @@ export class AtBatCamera {
    * Zoom back to full field view.
    * Returns a Promise that resolves when the zoom animation completes.
    */
-  zoomToField(duration = 400): Promise<void> {
+  zoomToField(duration = 800): Promise<void> {
     if (!this.root) return Promise.resolve();
     this._zoomedIn = false;
     return this._tweenTo(
       { scaleX: this.baseScaleX, scaleY: this.baseScaleY, x: this.baseX, y: this.baseY },
       duration,
-      easeOutCubic,
+      easeInOutCubic,
     );
   }
 
@@ -163,7 +167,7 @@ export class AtBatCamera {
    * Zoom slightly toward where the ball was hit (for home-run / fly ball drama).
    * Direction: 'left' | 'right' | 'center'
    */
-  zoomToOutfield(direction: 'left' | 'right' | 'center', duration = 500): Promise<void> {
+  zoomToOutfield(direction: 'left' | 'right' | 'center', duration = 700): Promise<void> {
     if (!this.root) return Promise.resolve();
     this._zoomedIn = false;
 
@@ -188,6 +192,31 @@ export class AtBatCamera {
     const targetY = vpCY - target.y * targetScaleY;
 
     return this._tweenTo({ scaleX: targetScaleX, scaleY: targetScaleY, x: targetX, y: targetY }, duration, easeInOutCubic);
+  }
+
+  /**
+   * Pan to an arbitrary world point at a given zoom level.
+   * Used for following the ball on hits and dramatic camera moves.
+   */
+  panToPoint(worldX: number, worldY: number, zoom: number, duration = 600): Promise<void> {
+    if (!this.root) return Promise.resolve();
+
+    const targetScaleX = this.baseScaleX * zoom;
+    const targetScaleY = this.baseScaleY * zoom;
+
+    const canvasW = WORLD_W * this.baseScaleX + this.baseX * 2;
+    const canvasH = WORLD_H * this.baseScaleY + this.baseY * 2;
+    const vpCX = canvasW / 2;
+    const vpCY = canvasH / 2;
+
+    const targetX = vpCX - worldX * targetScaleX;
+    const targetY = vpCY - worldY * targetScaleY;
+
+    return this._tweenTo(
+      { scaleX: targetScaleX, scaleY: targetScaleY, x: targetX, y: targetY },
+      duration,
+      easeInOutQuad,
+    );
   }
 
   /**

@@ -432,6 +432,142 @@ class SoundEngine {
     src.stop(now + duration + 0.01);
   }
 
+  // ── playCrowdGroan ─────────────────────────────────────────────────────
+  // Short groan on opponent hits: low-freq noise burst, 200ms.
+
+  playCrowdGroan(): void {
+    const ctx = this._getCtx();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const duration = 0.25;
+    const master = this._masterGain();
+
+    const buf = this._makeNoiseBuffer(ctx, 0.3);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 200;
+    lp.Q.value = 0.8;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(master * 0.15, now + 0.03);
+    gain.gain.linearRampToValueAtTime(master * 0.12, now + duration * 0.5);
+    gain.gain.linearRampToValueAtTime(0, now + duration);
+
+    src.connect(lp);
+    lp.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + duration + 0.02);
+  }
+
+  // ── playCrowdOoh ──────────────────────────────────────────────────────
+  // "Ooh" on close calls / foul balls: mid-freq with slight pitch rise.
+
+  playCrowdOoh(): void {
+    const ctx = this._getCtx();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const duration = 0.3;
+    const master = this._masterGain();
+
+    const buf = this._makeNoiseBuffer(ctx, 0.4);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(350, now);
+    bp.frequency.linearRampToValueAtTime(500, now + duration * 0.4);
+    bp.frequency.linearRampToValueAtTime(300, now + duration);
+    bp.Q.value = 0.6;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(master * 0.18, now + 0.04);
+    gain.gain.setValueAtTime(master * 0.15, now + duration * 0.6);
+    gain.gain.linearRampToValueAtTime(0, now + duration);
+
+    src.connect(bp);
+    bp.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + duration + 0.02);
+  }
+
+  // ── playCrowdBuild ────────────────────────────────────────────────────
+  // Gradual crowd swell — volume ramp for tension building (2-strike counts).
+
+  playCrowdBuild(durationMs: number): void {
+    const ctx = this._getCtx();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const durSec = durationMs / 1000;
+    const master = this._masterGain();
+
+    const buf = this._makeNoiseBuffer(ctx, durSec + 0.2);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(180, now);
+    lp.frequency.linearRampToValueAtTime(400, now + durSec);
+    lp.Q.value = 0.5;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(master * 0.03, now);
+    gain.gain.linearRampToValueAtTime(master * 0.25, now + durSec);
+
+    src.connect(lp);
+    lp.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + durSec + 0.1);
+  }
+
+  // ── playCrowdRelease ──────────────────────────────────────────────────
+  // Quick crowd drop-off after tension release.
+
+  playCrowdRelease(): void {
+    const ctx = this._getCtx();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const duration = 0.4;
+    const master = this._masterGain();
+
+    const buf = this._makeNoiseBuffer(ctx, 0.5);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(350, now);
+    lp.frequency.linearRampToValueAtTime(120, now + duration);
+    lp.Q.value = 0.5;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(master * 0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    src.connect(lp);
+    lp.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + duration + 0.05);
+  }
+
   // ── playStrikeoutSwing ───────────────────────────────────────────────────
   // Bat whoosh through air: bandpass noise sweep 400→2000 Hz over 150ms.
 
