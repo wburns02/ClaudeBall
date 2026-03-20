@@ -68,6 +68,7 @@ const TrainingCenterPage = lazy(() => import('@/pages/TrainingCenterPage.tsx').t
 const NewsPage = lazy(() => import('@/pages/NewsPage.tsx').then(m => ({ default: m.NewsPage })));
 const HotColdPage = lazy(() => import('@/pages/HotColdPage.tsx').then(m => ({ default: m.HotColdPage })));
 const FinancesPage = lazy(() => import('@/pages/FinancesPage.tsx').then(m => ({ default: m.FinancesPage })));
+const InboxPage = lazy(() => import('@/pages/InboxPage.tsx').then(m => ({ default: m.InboxPage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -191,6 +192,7 @@ function AppRoutes() {
           <Route path="/franchise/news" element={<FranchiseLayout><NewsPage /></FranchiseLayout>} />
           <Route path="/franchise/hot-cold" element={<FranchiseLayout><HotColdPage /></FranchiseLayout>} />
           <Route path="/franchise/finances" element={<FranchiseLayout><FinancesPage /></FranchiseLayout>} />
+          <Route path="/franchise/inbox" element={<FranchiseLayout><InboxPage /></FranchiseLayout>} />
 
           {/* ── URL alias redirects (common alternative paths) ──────── */}
           <Route path="/franchise/trades" element={<Navigate to="/franchise/trade" replace />} />

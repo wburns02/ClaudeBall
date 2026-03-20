@@ -1,12 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { StatsTable } from '@/components/ui/StatsTable.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useInboxStore } from '@/stores/inboxStore.ts';
+import type { InboxItemType } from '@/stores/inboxStore.ts';
 import { winPct, gamesBehind, streakStr, last10Str, runDifferential } from '@/engine/season/index.ts';
 import type { TeamRecord } from '@/engine/season/index.ts';
 import { cn } from '@/lib/cn.ts';
+
+// Season milestones that generate inbox notifications
+const INBOX_MILESTONES: Array<{
+  day: number; title: string; body: string; urgent?: boolean; linkedUrl?: string;
+}> = [
+  { day: 30,  title: 'April In The Books', body: '30 games played. Review standings and assess your roster needs early.', linkedUrl: '/franchise/standings' },
+  { day: 60,  title: 'Two Months Down', body: 'Season is one-third complete. Check league leaders and identify trade targets.', linkedUrl: '/franchise/leaders' },
+  { day: 90,  title: 'All-Star Break', body: 'First half complete. The All-Star Game is here — review your roster before the second half.', linkedUrl: '/franchise/all-star' },
+  { day: 115, title: 'Trade Deadline In 5 Days', body: 'The trade deadline is approaching. Decide if you\'re buying or selling for the stretch run.', urgent: true, linkedUrl: '/franchise/trade-proposals' },
+  { day: 120, title: 'Trade Deadline Today', body: 'Last chance to make trades this season. All deals must be completed today.', urgent: true, linkedUrl: '/franchise/trade-proposals' },
+  { day: 150, title: 'Final Month', body: 'Only 33 games remain. Watch the standings — every game counts now.', linkedUrl: '/franchise/standings' },
+  { day: 175, title: 'Final Stretch — 8 Days Left', body: 'The regular season ends soon. Make sure your roster is set for the push.', linkedUrl: '/franchise/standings' },
+  { day: 183, title: 'Regular Season Complete', body: 'The regular season is over! Check the standings to see your playoff status.', urgent: true, linkedUrl: '/franchise/standings' },
+];
 
 // Season milestones
 const MILESTONES = [
@@ -70,13 +86,122 @@ function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; tota
 
 export function FranchiseDashboard() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries } = useFranchiseStore();
+  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals } = useFranchiseStore();
+  const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount } = useInboxStore();
   const [showEvents, setShowEvents] = useState(true);
   const [simConfirm, setSimConfirm] = useState<number | null>(null); // days pending confirm
+
+  // Track which lastDayEvents we've already processed to avoid duplicates
+  const prevEventsRef = useRef<typeof lastDayEvents>(null);
+  const prevDayRef = useRef<number>(-1);
 
   useEffect(() => {
     if (!isInitialized) navigate('/franchise/new');
   }, [isInitialized, navigate]);
+
+  // Generate inbox items from day events whenever they change
+  useEffect(() => {
+    if (!lastDayEvents || !season || !userTeamId) return;
+    if (lastDayEvents === prevEventsRef.current) return;
+    prevEventsRef.current = lastDayEvents;
+
+    const items: Parameters<typeof addItems>[0] = [];
+
+    // User team injuries
+    for (const event of lastDayEvents.injuries) {
+      if (event.record.teamId !== userTeamId) continue;
+      const isSevere = event.record.severity === 'severe' || event.record.severity === 'season-ending';
+      items.push({
+        type: 'injury' as InboxItemType,
+        title: `${event.record.playerName} Injured`,
+        body: `${event.record.description} — out ${event.record.daysOut} day${event.record.daysOut !== 1 ? 's' : ''} (${event.record.severity})`,
+        day: season.currentDay,
+        urgent: isSevere,
+        linkedUrl: '/franchise/injuries',
+      });
+    }
+
+    // Player returns from injury for user team
+    for (const event of lastDayEvents.returns) {
+      if (event.record.teamId !== userTeamId) continue;
+      items.push({
+        type: 'return' as InboxItemType,
+        title: `${event.record.playerName} Returns`,
+        body: `${event.record.playerName} has recovered from ${event.record.description} and is available for the lineup.`,
+        day: season.currentDay,
+        urgent: false,
+        linkedUrl: '/franchise/roster',
+      });
+    }
+
+    // Waiver claims/clears (notable)
+    for (const waiver of lastDayEvents.waivers) {
+      if (waiver.type !== 'claim') continue;
+      items.push({
+        type: 'waiver' as InboxItemType,
+        title: 'Waiver Wire Activity',
+        body: waiver.message,
+        day: season.currentDay,
+        urgent: false,
+        linkedUrl: '/franchise/waivers',
+      });
+    }
+
+    // Minor league callups for user team
+    for (const callup of lastDayEvents.callups) {
+      if (callup.teamId !== userTeamId) continue;
+      const name = `${callup.player.firstName} ${callup.player.lastName}`;
+      items.push({
+        type: 'callup' as InboxItemType,
+        title: `Callup: ${name}`,
+        body: `${name} has been called up from the minor leagues. Check the roster.`,
+        day: season.currentDay,
+        urgent: false,
+        linkedUrl: '/franchise/roster',
+      });
+    }
+
+    if (items.length > 0) addItems(items);
+  }, [lastDayEvents, season, userTeamId, addItems]);
+
+  // Season milestone notifications (fire once per day)
+  useEffect(() => {
+    if (!season || !userTeamId) return;
+    if (season.currentDay === prevDayRef.current) return;
+    prevDayRef.current = season.currentDay;
+
+    const milestone = INBOX_MILESTONES.find(m => m.day === season.currentDay);
+    if (milestone) {
+      addItem({
+        type: 'milestone' as InboxItemType,
+        title: milestone.title,
+        body: milestone.body,
+        day: season.currentDay,
+        urgent: milestone.urgent ?? false,
+        linkedUrl: milestone.linkedUrl,
+      });
+    }
+  }, [season?.currentDay, userTeamId, addItem]);
+
+  // New trade proposals notification
+  useEffect(() => {
+    if (!tradeProposals || !season) return;
+    for (const proposal of tradeProposals) {
+      if (proposal.status !== 'pending') continue;
+      if (hasSeenProposal(proposal.id)) continue;
+      markProposalSeen(proposal.id);
+      addItem({
+        type: 'trade_offer' as InboxItemType,
+        title: `Trade Offer from ${proposal.aiTeamName}`,
+        body: `The ${proposal.aiTeamName} have sent you a trade proposal. Review it and respond before the deadline.`,
+        day: proposal.day,
+        urgent: true,
+        linkedUrl: '/franchise/trade-proposals',
+      });
+    }
+  }, [tradeProposals, season, hasSeenProposal, markProposalSeen, addItem]);
+
+  const inboxUnread = getUnreadCount();
 
   if (!season || !engine || !userTeamId) return null;
 
@@ -126,23 +251,43 @@ export function FranchiseDashboard() {
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
-          {userTeam?.city} {userTeam?.name}
-        </h1>
-        <p className="font-mono text-cream-dim text-sm mt-1">
-          {season.currentDay === 0 ? 'Opening Day' : `Day ${season.currentDay}`} of {season.totalDays} — {season.year} Season
-          {' '}
-          <span className={cn(
-            'uppercase text-xs font-bold ml-1 px-1.5 py-0.5 rounded',
-            season.phase === 'regular' && 'bg-green-light/10 text-green-light',
-            season.phase === 'preseason' && 'bg-cream-dim/10 text-cream-dim',
-            season.phase === 'postseason' && 'bg-gold/10 text-gold',
-            season.phase === 'offseason' && 'bg-navy-lighter text-cream-dim',
-          )}>
-            {season.phase}
-          </span>
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
+            {userTeam?.city} {userTeam?.name}
+          </h1>
+          <p className="font-mono text-cream-dim text-sm mt-1">
+            {season.currentDay === 0 ? 'Opening Day' : `Day ${season.currentDay}`} of {season.totalDays} — {season.year} Season
+            {' '}
+            <span className={cn(
+              'uppercase text-xs font-bold ml-1 px-1.5 py-0.5 rounded',
+              season.phase === 'regular' && 'bg-green-light/10 text-green-light',
+              season.phase === 'preseason' && 'bg-cream-dim/10 text-cream-dim',
+              season.phase === 'postseason' && 'bg-gold/10 text-gold',
+              season.phase === 'offseason' && 'bg-navy-lighter text-cream-dim',
+            )}>
+              {season.phase}
+            </span>
+          </p>
+        </div>
+        {/* Inbox button with unread badge */}
+        <button
+          onClick={() => navigate('/franchise/inbox')}
+          className={cn(
+            'relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all cursor-pointer shrink-0',
+            inboxUnread > 0
+              ? 'border-gold/40 bg-gold/10 text-gold hover:bg-gold/20'
+              : 'border-navy-lighter text-cream-dim hover:border-navy-lighter/80 hover:text-cream',
+          )}
+        >
+          <span className="text-base">📬</span>
+          <span className="font-mono text-xs">Inbox</span>
+          {inboxUnread > 0 && (
+            <span className="inline-flex items-center justify-center w-5 h-5 bg-red text-white text-[10px] font-bold rounded-full leading-none">
+              {inboxUnread > 99 ? '99+' : inboxUnread}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* IL Action Banner */}

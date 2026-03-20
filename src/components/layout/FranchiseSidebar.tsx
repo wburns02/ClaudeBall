@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useInboxStore } from '@/stores/inboxStore.ts';
 import { cn } from '@/lib/cn.ts';
 import { winPct, streakStr } from '@/engine/season/index.ts';
 
@@ -57,6 +58,7 @@ const Icons = {
   lineup: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01',
   development: 'M22 12h-4l-3 9L9 3l-3 9H2',
   training: 'M6.5 6.5a5.5 5.5 0 0111 0c0 4-5.5 8-5.5 8S6.5 10.5 6.5 6.5z M12 6.5h.01',
+  inbox: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6',
   news: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z M9 10h6 M9 14h4',
   teamStats: 'M3 3h18v18H3z M7 7h4v4H7z M13 7h4v4h-4z M7 13h4v4H7z M13 13h4v4h-4z',
   hotCold: 'M12 2a5 5 0 015 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 015-5z M12 22l2-4h-4l2 4z',
@@ -81,6 +83,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'HOME',
     items: [
       { label: 'Dashboard', path: '/franchise', icon: 'home' },
+      { label: 'GM Inbox', path: '/franchise/inbox', icon: 'inbox' },
       { label: 'League News', path: '/franchise/news', icon: 'news' },
     ],
   },
@@ -172,6 +175,7 @@ export function FranchiseSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { season, engine, userTeamId } = useFranchiseStore();
+  const inboxUnread = useInboxStore(s => s.getUnreadCount());
 
   // Auto-collapse on small screens
   const [collapsed, setCollapsed] = useState(() => window.innerWidth < 640);
@@ -319,7 +323,16 @@ export function FranchiseSidebar() {
                 >
                   <Icon d={Icons[item.icon]} size={15} />
                   {!collapsed && (
-                    <span className="font-mono text-xs tracking-wide truncate">{item.label}</span>
+                    <span className="font-mono text-xs tracking-wide truncate flex-1">{item.label}</span>
+                  )}
+                  {/* Unread badge for Inbox */}
+                  {item.path === '/franchise/inbox' && inboxUnread > 0 && (
+                    <span className={cn(
+                      'inline-flex items-center justify-center rounded-full font-bold text-white bg-red leading-none shrink-0',
+                      collapsed ? 'w-3.5 h-3.5 text-[8px] absolute top-1 right-1' : 'w-4 h-4 text-[9px]',
+                    )}>
+                      {inboxUnread > 9 ? '9+' : inboxUnread}
+                    </span>
                   )}
                 </button>
               );
