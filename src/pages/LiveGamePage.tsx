@@ -18,6 +18,9 @@ import { DiamondView, baseStateToBools } from '@/components/diamond/DiamondView.
 import type { UserRole } from '@/stores/gameStore.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
+import { WinProbabilityMeter } from '@/components/game/WinProbabilityMeter.tsx';
+import type { WPSnapshot } from '@/engine/stats/WinProbability.ts';
+import { calcWinProbability } from '@/engine/stats/WinProbability.ts';
 
 interface LiveGameLocationState {
   awayTeam?: Team;
@@ -139,6 +142,8 @@ export function LiveGamePage() {
   const [gameChosen, setGameChosen] = useState(false);
   const [showPlayByPlay, setShowPlayByPlay] = useState(true);
   const [showBoxScore, setShowBoxScore] = useState(false);
+  const [wpHistory, setWpHistory] = useState<WPSnapshot[]>([]);
+  const lastInningHalfRef = useRef<string>('');
 
   const autoPlayRef = useRef(false);
   const engineRef = useRef<InteractiveGameEngine | null>(null);
@@ -231,16 +236,42 @@ export function LiveGamePage() {
     if (eng.isGameOver()) {
       setGameOver(true);
       setPhase('game_over');
-      setGameState({ ...eng.getState() });
+      const finalState = eng.getState();
+      // Record final WP snapshot
+      const awayF = finalState.score.away.reduce((a, b) => a + b, 0);
+      const homeF = finalState.score.home.reduce((a, b) => a + b, 0);
+      setWpHistory(h => [...h, {
+        label: 'F',
+        homeWP: homeF > awayF ? 100 : homeF < awayF ? 0 : 50,
+      }]);
+      setGameState({ ...finalState });
       return;
     }
 
     const ab = eng.startNextAtBat();
     // Sync events immediately so any inning_change event added by startNextAtBat is animated
-    setEvents([...eng.getState().events]);
+    const currentState = eng.getState();
+    setEvents([...currentState.events]);
+
+    // Track WP snapshot at each inning change
+    const halfKey = `${currentState.inning.number}-${currentState.inning.half}`;
+    if (halfKey !== lastInningHalfRef.current) {
+      lastInningHalfRef.current = halfKey;
+      const aS = currentState.score.away.reduce((a, b) => a + b, 0);
+      const hS = currentState.score.home.reduce((a, b) => a + b, 0);
+      const runners = [currentState.inning.bases.first, currentState.inning.bases.second, currentState.inning.bases.third].filter(Boolean).length;
+      const wp = calcWinProbability(
+        currentState.inning.number, currentState.inning.half,
+        currentState.inning.outs, hS - aS, runners
+      );
+      setWpHistory(h => [...h, {
+        label: `${currentState.inning.half === 'top' ? 'T' : 'B'}${currentState.inning.number}`,
+        homeWP: wp,
+      }]);
+    }
 
     if (!ab) {
-      setGameState({ ...eng.getState() });
+      setGameState({ ...currentState });
       return;
     }
 
@@ -250,7 +281,7 @@ export function LiveGamePage() {
 
     setUserRole(role);
     setCurrentCount({ balls: 0, strikes: 0 });
-    setGameState({ ...eng.getState() });
+    setGameState({ ...currentState });
 
     if (role === 'batting') {
       setPhase('awaiting_swing');
@@ -554,6 +585,23 @@ export function LiveGamePage() {
             onToggle={() => setShowPlayByPlay(v => !v)}
           />
         </div>
+
+        {/* ── BOTTOM-LEFT: Win Probability Meter ── */}
+        {!gameOver && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 12,
+              left: 12,
+              zIndex: 10,
+            }}
+          >
+            <WinProbabilityMeter
+              game={gameState}
+              history={wpHistory}
+            />
+          </div>
+        )}
 
         {/* ── CENTER phase hint (idle / post_ab / game_over) ── */}
         {(phase === 'idle' || phase === 'post_ab' || phase === 'game_over') && (
