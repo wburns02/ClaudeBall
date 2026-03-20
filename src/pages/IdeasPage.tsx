@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -22,75 +22,139 @@ const CATEGORIES = [
   { id: 'other', label: 'Other', color: 'text-cream-dim' },
 ] as const;
 
-const STORAGE_KEY = 'claudeball-ideas';
-
-function loadIdeas(): Idea[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveIdeas(ideas: Idea[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
-}
+const USERNAME_KEY = 'claudeball-username';
+// Legacy localStorage key — used only for migration on first load
+const LEGACY_STORAGE_KEY = 'claudeball-ideas';
 
 function getUsername(): string {
-  let name = localStorage.getItem('claudeball-username');
+  let name = localStorage.getItem(USERNAME_KEY);
   if (!name) {
     name = prompt('Enter your name (so we know who suggested it):') || 'Anonymous';
-    localStorage.setItem('claudeball-username', name);
+    localStorage.setItem(USERNAME_KEY, name);
   }
   return name;
 }
 
+async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error || `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
 export function IdeasPage() {
   const navigate = useNavigate();
-  const [ideas, setIdeas] = useState<Idea[]>(loadIdeas);
+  const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [newIdea, setNewIdea] = useState('');
   const [category, setCategory] = useState<Idea['category']>('feature');
   const [sortBy, setSortBy] = useState<'votes' | 'newest'>('votes');
   const [filterCat, setFilterCat] = useState<string>('all');
 
-  useEffect(() => { saveIdeas(ideas); }, [ideas]);
+  // Load ideas from API
+  const loadIdeas = useCallback(async () => {
+    try {
+      const data = await apiFetch<Idea[]>('/api/ideas');
+      setIdeas(data);
+      setApiError(null);
+    } catch (err) {
+      console.error('Failed to load ideas from API:', err);
+      // Graceful fallback: try to read from legacy localStorage
+      try {
+        const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+        const local: Idea[] = raw ? JSON.parse(raw) : [];
+        setIdeas(local);
+      } catch {
+        setIdeas([]);
+      }
+      setApiError('Could not reach server — showing cached ideas. Changes will sync when reconnected.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleSubmit = () => {
-    if (!newIdea.trim()) return;
+  useEffect(() => { loadIdeas(); }, [loadIdeas]);
+
+  const handleSubmit = async () => {
+    if (!newIdea.trim() || submitting) return;
     const author = getUsername();
-    const idea: Idea = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      text: newIdea.trim(),
-      author,
-      votes: 1,
-      votedBy: [author],
-      createdAt: new Date().toISOString(),
-      category,
-    };
-    setIdeas(prev => [idea, ...prev]);
-    setNewIdea('');
+    setSubmitting(true);
+    try {
+      const created = await apiFetch<Idea>('/api/ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newIdea.trim(), author, category }),
+      });
+      setIdeas(prev => [created, ...prev]);
+      setNewIdea('');
+      setApiError(null);
+    } catch (err) {
+      console.error('Failed to submit idea:', err);
+      setApiError('Failed to submit — please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleVote = (id: string) => {
-    const username = getUsername();
+  const handleVote = async (id: string) => {
+    const author = getUsername();
+    // Optimistic update
     setIdeas(prev => prev.map(idea => {
       if (idea.id !== id) return idea;
-      if (idea.votedBy.includes(username)) {
-        return { ...idea, votes: idea.votes - 1, votedBy: idea.votedBy.filter(n => n !== username) };
-      }
-      return { ...idea, votes: idea.votes + 1, votedBy: [...idea.votedBy, username] };
+      const hasVoted = idea.votedBy.includes(author);
+      return hasVoted
+        ? { ...idea, votes: idea.votes - 1, votedBy: idea.votedBy.filter(n => n !== author) }
+        : { ...idea, votes: idea.votes + 1, votedBy: [...idea.votedBy, author] };
     }));
+    try {
+      const updated = await apiFetch<Idea>(`/api/ideas/${id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author }),
+      });
+      // Reconcile with server truth
+      setIdeas(prev => prev.map(i => i.id === id ? updated : i));
+      setApiError(null);
+    } catch (err) {
+      console.error('Vote failed:', err);
+      // Revert optimistic update
+      await loadIdeas();
+      setApiError('Vote failed — please try again.');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    const username = getUsername();
-    setIdeas(prev => prev.filter(i => !(i.id === id && i.author === username)));
+  const handleDelete = async (id: string) => {
+    const author = getUsername();
+    // Optimistic remove
+    setIdeas(prev => prev.filter(i => i.id !== id));
+    try {
+      await apiFetch(`/api/ideas/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author }),
+      });
+      setApiError(null);
+    } catch (err) {
+      console.error('Delete failed:', err);
+      // Revert
+      await loadIdeas();
+      setApiError('Delete failed — please try again.');
+    }
   };
 
   const sorted = [...ideas]
     .filter(i => filterCat === 'all' || i.category === filterCat)
-    .sort((a, b) => sortBy === 'votes' ? b.votes - a.votes : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) =>
+      sortBy === 'votes'
+        ? b.votes - a.votes
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 
-  const username = localStorage.getItem('claudeball-username') || '';
+  const username = localStorage.getItem(USERNAME_KEY) || '';
 
   return (
     <div className="min-h-screen p-6 max-w-3xl mx-auto">
@@ -104,6 +168,13 @@ export function IdeasPage() {
         <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Back</Button>
       </div>
 
+      {/* API error banner */}
+      {apiError && (
+        <div className="mb-4 px-3 py-2 bg-red/10 border border-red/30 rounded-md text-red text-xs font-mono">
+          {apiError}
+        </div>
+      )}
+
       {/* Submit new idea */}
       <Panel title="Submit an Idea" className="mb-6">
         <div className="space-y-3">
@@ -113,6 +184,7 @@ export function IdeasPage() {
             placeholder="What should we add, fix, or change?"
             className="w-full bg-navy-lighter border border-navy-lighter rounded-md px-3 py-2 text-cream text-sm font-body placeholder-cream-dim/40 focus:outline-none focus:border-gold/50 resize-none"
             rows={3}
+            disabled={submitting}
           />
           <div className="flex items-center justify-between">
             <div className="flex gap-1">
@@ -131,8 +203,8 @@ export function IdeasPage() {
                 </button>
               ))}
             </div>
-            <Button size="sm" onClick={handleSubmit} disabled={!newIdea.trim()}>
-              Submit
+            <Button size="sm" onClick={handleSubmit} disabled={!newIdea.trim() || submitting}>
+              {submitting ? 'Submitting…' : 'Submit'}
             </Button>
           </div>
         </div>
@@ -185,7 +257,12 @@ export function IdeasPage() {
 
       {/* Ideas list */}
       <div className="space-y-2">
-        {sorted.length === 0 && (
+        {loading && (
+          <div className="text-center py-12 text-cream-dim font-mono text-sm animate-pulse">
+            Loading ideas…
+          </div>
+        )}
+        {!loading && sorted.length === 0 && (
           <div className="text-center py-12 text-cream-dim font-mono text-sm">
             No ideas yet — be the first to suggest something!
           </div>
@@ -245,7 +322,7 @@ export function IdeasPage() {
         <div className="mt-8 text-center">
           <button
             onClick={() => {
-              const text = ideas
+              const text = [...ideas]
                 .sort((a, b) => b.votes - a.votes)
                 .map((i, idx) => `${idx + 1}. [${i.votes} votes] ${i.text} (${i.category}) — ${i.author}`)
                 .join('\n');

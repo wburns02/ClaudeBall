@@ -8,12 +8,14 @@
     "build": "tsc --project tsconfig.app.json --noEmit && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "serve dist -s -l tcp://0.0.0.0:${PORT:-3000}"
+    "start": "node server.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.6",
     "better-sqlite3": "^12.8.0",
+    "express": "^5.2.1",
     "lucide-react": "^0.577.0",
     "pixi.js": "^8.17.1",
     "react": "^19.2.4",
