@@ -429,7 +429,7 @@ export function TeamAnalyticsPage() {
                   <p className="font-mono text-[10px] text-gold/60 uppercase tracking-wider mb-2">Batting</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { label: 'OPS+', value: opsPlus(teamBatting, leagueCtx.leagueOBP, leagueCtx.leagueSLG).toString(), tip: '100 = league avg' },
+                      { label: 'OPS+', value: opsPlus(teamBatting, leagueCtx.avgObp, leagueCtx.avgSlg).toString(), tip: '100 = league avg' },
                       { label: 'wOBA', value: woba(teamBatting).toFixed(3), tip: 'Weighted On-Base Avg' },
                       { label: 'BABIP', value: babip(teamBatting).toFixed(3), tip: 'Batting Avg on Balls in Play' },
                       { label: 'ISO', value: iso(teamBatting).toFixed(3), tip: 'Isolated Power (SLG - AVG)' },
@@ -445,7 +445,7 @@ export function TeamAnalyticsPage() {
                   <p className="font-mono text-[10px] text-gold/60 uppercase tracking-wider mb-2">Pitching</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { label: 'ERA+', value: eraPlus(teamPitching, leagueCtx.leagueERA).toString(), tip: '100 = league avg, higher = better' },
+                      { label: 'ERA+', value: eraPlus(teamPitching, leagueCtx.avgEra).toString(), tip: '100 = league avg, higher = better' },
                       { label: 'FIP', value: fip(teamPitching).toFixed(2), tip: 'Fielding Independent Pitching' },
                       { label: 'K/9', value: k9(teamPitching).toFixed(1), tip: 'Strikeouts per 9 innings' },
                       { label: 'BB/9', value: bb9(teamPitching).toFixed(1), tip: 'Walks per 9 innings' },

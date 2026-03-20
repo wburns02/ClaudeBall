@@ -10,6 +10,7 @@ import { estimateMarketSalary, estimateDesiredYears } from '@/engine/gm/Contract
 import { cn } from '@/lib/cn.ts';
 import type { Player } from '@/engine/types/player.ts';
 import type { ReactElement } from 'react';
+import { useMoraleStore, getMoraleColor } from '@/stores/moraleStore.ts';
 
 type SortKey = 'name' | 'pos' | 'age' | 'ovr' | 'rating';
 type SortDir = 'asc' | 'desc';
@@ -205,6 +206,7 @@ function ExtensionDialog({
 export function RosterPage() {
   const navigate = useNavigate();
   const { engine, userTeamId, teams, getPlayerContract, releasePlayerToWaivers, signExtension, ilRoster, getTeamInjuries, season, sendDownPlayer } = useFranchiseStore();
+  const { playerMorales } = useMoraleStore();
 
   const [sortKey, setSortKey] = useState<SortKey>('ovr');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -281,6 +283,14 @@ export function RosterPage() {
       >
         <td className="px-3 py-2 font-body text-sm">
           <div className="flex items-center gap-1.5">
+            {/* Morale dot */}
+            {playerMorales[p.id] !== undefined && (
+              <span
+                className="w-2 h-2 rounded-full shrink-0 flex-none"
+                style={{ backgroundColor: getMoraleColor(playerMorales[p.id]) }}
+                title={`Morale: ${playerMorales[p.id]}`}
+              />
+            )}
             <span className={cn(
               'group-hover:text-gold group-hover:underline underline-offset-2 transition-colors',
               onIL ? 'text-cream-dim' : 'text-cream',

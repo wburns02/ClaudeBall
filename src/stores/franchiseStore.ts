@@ -23,6 +23,7 @@ import type { TradeProposal } from '@/engine/gm/TradeEngine.ts';
 import { computeFormSummary } from '@/engine/performance/HotColdEngine.ts';
 import { useHistoryStore } from '@/stores/historyStore.ts';
 import type { FranchisePlayerSeasonRecord } from '@/stores/historyStore.ts';
+import { useMoraleStore } from '@/stores/moraleStore.ts';
 
 /** Injured List slot — tracks a player placed on the IL */
 export interface ILSlot {
@@ -143,6 +144,9 @@ interface FranchiseState {
 
   // Hot/cold performance tracking
   refreshHotCold: () => void;
+
+  // Morale tracking
+  refreshMorale: () => void;
 
   // Trade deadline / logs
   isTradeDeadlinePassed: () => boolean;
@@ -295,6 +299,13 @@ export const useFranchiseStore = create<FranchiseState>()(
       lastProspectDevelopment: [],
       teamBudgets,
     });
+    // Initialize morale for all players immediately
+    try {
+      const userTeam = engine.getTeam(userTeamId);
+      if (userTeam) {
+        useMoraleStore.getState().initMorales(userTeam.roster.players);
+      }
+    } catch { /* non-critical */ }
   },
 
   advanceDay: () => {
@@ -361,6 +372,7 @@ export const useFranchiseStore = create<FranchiseState>()(
     }));
     // Update player morale based on recent performance (non-blocking, best-effort)
     try { get().refreshHotCold(); } catch { /* non-critical */ }
+    try { get().refreshMorale(); } catch { /* non-critical */ }
     return userGame;
   },
 
@@ -431,6 +443,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       lastProspectDevelopment: allProspectEvents.length > 0 ? allProspectEvents : s.lastProspectDevelopment,
     }));
     try { get().refreshHotCold(); } catch { /* non-critical */ }
+    try { get().refreshMorale(); } catch { /* non-critical */ }
   },
 
   simGame: (gameId) => {
@@ -909,6 +922,52 @@ export const useFranchiseStore = create<FranchiseState>()(
     const result = engine.contractEngine.signContract(player, teamId, { years, salaryPerYear });
     if (result.success) set(s => ({ season: s.season ? { ...s.season } : s.season }));
     return result;
+  },
+
+  // Morale system — updates moraleStore based on current season state
+  refreshMorale: () => {
+    const { engine, userTeamId, season } = get();
+    if (!engine || !userTeamId || !season) return;
+    const userTeam = engine.getTeam(userTeamId);
+    if (!userTeam) return;
+    const players = userTeam.roster.players;
+    const moraleStore = useMoraleStore.getState();
+
+    moraleStore.initMorales(players);
+
+    const record = season.standings.getRecord(userTeamId);
+    const teamWins = record?.wins ?? 0;
+    const teamLosses = record?.losses ?? 0;
+    const gamesPlayed = teamWins + teamLosses;
+
+    const userGames = season.schedule
+      .filter(g => g.played && (g.awayId === userTeamId || g.homeId === userTeamId))
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 10);
+    const recentWins = userGames.filter(g =>
+      (g.homeId === userTeamId && (g.homeScore ?? 0) > (g.awayScore ?? 0)) ||
+      (g.awayId === userTeamId && (g.awayScore ?? 0) > (g.homeScore ?? 0))
+    ).length;
+    const recentLosses = userGames.length - recentWins;
+
+    const gamesInLineupMap: Record<string, number> = {};
+    for (const p of players) {
+      gamesInLineupMap[p.id] = p.position !== 'P'
+        ? Math.round(gamesPlayed * 0.75)
+        : Math.round(gamesPlayed * 0.3);
+    }
+    const contractYearsMap: Record<string, number> = {};
+    for (const p of players) {
+      const c = engine.contractEngine.getContract(p.id);
+      contractYearsMap[p.id] = c?.yearsRemaining ?? 1;
+    }
+
+    moraleStore.applyDailyUpdate({
+      players, teamWins, teamLosses, recentWins, recentLosses,
+      gamesPlayed, gamesInLineupMap, contractYearsMap,
+      salaryPercDiffMap: {},
+      day: season.currentDay,
+    });
   },
 
   // Hot/cold performance tracking — updates player morale from recent game logs

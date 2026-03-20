@@ -8,6 +8,7 @@ import { useStatsStore } from '@/stores/statsStore.ts';
 import { useInboxStore } from '@/stores/inboxStore.ts';
 import type { InboxItemType } from '@/stores/inboxStore.ts';
 import { useGoalsStore, ownerConfidenceLabel, goalProgressPct } from '@/stores/goalsStore.ts';
+import { useMoraleStore, getMoraleColor } from '@/stores/moraleStore.ts';
 import { winPct, gamesBehind, streakStr, last10Str, runDifferential } from '@/engine/season/index.ts';
 import type { TeamRecord, ScheduledGame } from '@/engine/season/index.ts';
 import { cn } from '@/lib/cn.ts';
@@ -82,6 +83,63 @@ function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; tota
       <p className="font-mono text-xs text-cream-dim/40 text-right mt-0.5">
         {Math.round(pct)}% complete
       </p>
+    </div>
+  );
+}
+
+// ── Morale Widget (compact dashboard card) ──────────────────────────────────
+
+function MoraleWidget() {
+  const navigate = useNavigate();
+  const { teamChemistry, playerMorales } = useMoraleStore();
+  const { engine, userTeamId } = useFranchiseStore();
+
+  const playerCount = useMemo(() => {
+    if (!engine || !userTeamId) return 0;
+    return engine.getTeam(userTeamId)?.roster.players.length ?? 0;
+  }, [engine, userTeamId]);
+
+  if (!teamChemistry || Object.keys(playerMorales).length === 0) return null;
+
+  const color = getMoraleColor(teamChemistry.score);
+  const topFactor = teamChemistry.factors[0];
+
+  return (
+    <div
+      className="mt-4 p-4 rounded-lg border border-navy-lighter/50 bg-navy-lighter/10 cursor-pointer hover:bg-navy-lighter/20 transition-colors"
+      onClick={() => navigate('/franchise/morale')}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex-shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-sm uppercase tracking-wide text-cream-dim/70">Team Chemistry</span>
+              <span className="font-display text-lg font-bold" style={{ color }}>{teamChemistry.score}</span>
+              <span className="font-mono text-xs" style={{ color }}>{teamChemistry.label}</span>
+            </div>
+            {topFactor && (
+              <p className="font-mono text-cream-dim/50 text-xs truncate">
+                {topFactor.impact >= 0 ? '+' : ''}{topFactor.impact} {topFactor.label}
+                {playerCount > 0 && <span className="ml-2">{playerCount} players tracked</span>}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <div className="w-20 h-2 rounded-full bg-navy-lighter/50 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${teamChemistry.score}%`, backgroundColor: color }}
+            />
+          </div>
+          <span className="font-mono text-cream-dim/40 text-xs">→</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -706,6 +764,9 @@ export function FranchiseDashboard() {
           </Panel>
         )}
       </div>
+
+      {/* Team Morale widget */}
+      <MoraleWidget />
 
       {/* Owner's Office widget */}
       <OwnerWidget />

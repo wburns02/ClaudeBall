@@ -78,6 +78,7 @@ const DepthChartPage = lazy(() => import('@/pages/DepthChartPage.tsx').then(m =>
 const GMWarRoomPage = lazy(() => import('@/pages/GMWarRoomPage.tsx').then(m => ({ default: m.GMWarRoomPage })));
 const LeagueScoreboardPage = lazy(() => import('@/pages/LeagueScoreboardPage.tsx').then(m => ({ default: m.LeagueScoreboardPage })));
 const TransactionsPage = lazy(() => import('@/pages/TransactionsPage.tsx').then(m => ({ default: m.TransactionsPage })));
+const MoralePage = lazy(() => import('@/pages/MoralePage.tsx').then(m => ({ default: m.MoralePage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -206,6 +207,7 @@ function AppRoutes() {
           <Route path="/franchise/lineup-editor" element={<FranchiseLayout><LineupEditorPage /></FranchiseLayout>} />
           <Route path="/franchise/development" element={<FranchiseLayout><DevelopmentHubPage /></FranchiseLayout>} />
           <Route path="/franchise/training" element={<FranchiseLayout><TrainingCenterPage /></FranchiseLayout>} />
+          <Route path="/franchise/morale" element={<FranchiseLayout><MoralePage /></FranchiseLayout>} />
           <Route path="/franchise/news" element={<FranchiseLayout><NewsPage /></FranchiseLayout>} />
           <Route path="/franchise/hot-cold" element={<FranchiseLayout><HotColdPage /></FranchiseLayout>} />
           <Route path="/franchise/finances" element={<FranchiseLayout><FinancesPage /></FranchiseLayout>} />
