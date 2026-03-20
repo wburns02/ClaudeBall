@@ -66,6 +66,7 @@ const Icons = {
   compare: 'M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h3 M16 3h3a2 2 0 012 2v14a2 2 0 01-2 2h-3 M12 3v18',
   depthChart: 'M3 3h18v4H3z M3 10h8v4H3z M3 17h8v4H3z M14 10h7v11h-7z',
   warRoom: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18',
+  scoreboard: 'M2 3h20v14H2z M8 21h8 M12 17v4',
 };
 
 interface NavItem {
@@ -141,6 +142,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: 'GAMES',
     items: [
+      { label: 'Scoreboard', path: '/franchise/scoreboard', icon: 'scoreboard' },
       { label: 'Schedule', path: '/franchise/schedule', icon: 'schedule' },
       { label: 'Game Log', path: '/franchise/game-log', icon: 'gameLog' },
       { label: 'All-Star Game', path: '/franchise/all-star', icon: 'allStar' },
