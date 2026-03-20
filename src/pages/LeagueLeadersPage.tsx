@@ -80,7 +80,7 @@ export function LeagueLeadersPage() {
   }, [getBattingLeaders, leagueCtx, engine]);
 
   const pitchingLeaders = useMemo(() => {
-    const leaders = getPitchingLeaders(5);
+    const leaders = getPitchingLeaders(20);
     return leaders.map(ps => {
       const adv = calcPitchingAdvanced(ps.pitching, leagueCtx);
       const teamAbbr = engine?.getTeam(ps.teamId)?.abbreviation ?? ps.teamId.slice(0, 3).toUpperCase();

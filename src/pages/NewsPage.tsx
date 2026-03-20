@@ -395,23 +395,28 @@ export function NewsPage() {
     }
 
     // 6. Statistical milestones from statsStore
+    // Day is estimated by back-calculating from HR pace (~1 HR per 4 games).
+    // A player exactly at the threshold shows today; each HR above it pushes
+    // the item ~4 days into the past, naturally aging it out of the 7-day window.
     const allStats = Object.values(playerStats);
     for (const ps of allStats) {
       const b = ps.batting;
       if (b.hr >= 30) {
+        const daysAgo = Math.floor((b.hr - 30) * 4);
         items.push({
           id: `milestone-hr30-${ps.playerId}`,
           category: 'milestone',
-          day: currentDay,
+          day: Math.max(1, currentDay - daysAgo),
           headline: `${ps.playerName} (${teamAbbr(engine, ps.teamId)}) reaches 30 home runs on the season`,
           isUserTeam: ps.teamId === userTeamId,
         });
       }
       if (b.hr >= 20 && b.hr < 30) {
+        const daysAgo = Math.floor((b.hr - 20) * 4);
         items.push({
           id: `milestone-hr20-${ps.playerId}`,
           category: 'milestone',
-          day: currentDay,
+          day: Math.max(1, currentDay - daysAgo),
           headline: `${ps.playerName} (${teamAbbr(engine, ps.teamId)}) hits 20th home run`,
           isUserTeam: ps.teamId === userTeamId,
         });

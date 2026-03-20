@@ -187,7 +187,7 @@ export function WaiverWirePage() {
                     player={w.player}
                     expiresDay={w.expiresDay}
                     currentDay={currentDay}
-                    claimable={mlbPlayers.length < 26}
+                    claimable={mlbPlayers.length < (currentDay >= 150 ? 40 : 26)}
                     onClaim={() => handleClaim(w.player.id)}
                   />
                 ))}
