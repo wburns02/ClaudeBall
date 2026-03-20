@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -120,11 +119,16 @@ export function PlayoffsPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, isInitialized, startPlayoffs, simPlayoffRound, startOffseason } = useFranchiseStore();
 
-  useEffect(() => {
-    if (!isInitialized) navigate('/franchise/new');
-  }, [isInitialized, navigate]);
-
-  if (!season || !engine) return null;
+  if (!season || !engine || !isInitialized) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Playoffs</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Simulate the postseason bracket once your team qualifies at the end of the regular season.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
+      </div>
+    );
+  }
 
   // If still in regular season / preseason, don't auto-start — show a prompt
   if (season.phase === 'regular' || season.phase === 'preseason') {

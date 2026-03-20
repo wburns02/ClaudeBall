@@ -314,8 +314,11 @@ export function StandingsPage() {
 
   if (!season || !engine) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Standings</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">League standings across all divisions, updated after every simulated game.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

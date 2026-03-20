@@ -39,16 +39,21 @@ export function OffseasonPage() {
   } = useFranchiseStore();
 
   useEffect(() => {
-    if (!isInitialized) navigate('/franchise/new');
-  }, [isInitialized, navigate]);
-
-  useEffect(() => {
-    if (season?.phase === 'postseason' && season.playoffBracket?.isComplete()) {
+    if (isInitialized && season?.phase === 'postseason' && season.playoffBracket?.isComplete()) {
       startOffseason();
     }
-  }, [season?.phase, startOffseason]);
+  }, [isInitialized, season?.phase, startOffseason]);
 
-  if (!season || !engine) return null;
+  if (!season || !engine || !isInitialized) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Offseason</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Manage free agency, the draft, and roster building during the offseason between seasons.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
+      </div>
+    );
+  }
 
   // Guard: only show offseason page when actually in offseason
   if (season.phase !== 'offseason') {

@@ -19,8 +19,11 @@ export function GameLogPage() {
 
   if (!season || !engine || !userTeamId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Game Log</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Browse results for every game your team has played this season.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

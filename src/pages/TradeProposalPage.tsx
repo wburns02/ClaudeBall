@@ -208,8 +208,11 @@ export function TradeProposalPage() {
 
   if (!season || !engine || !userTeamId || !userTeam) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Trade Proposals</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Review incoming trade offers from other teams and negotiate counter-proposals.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

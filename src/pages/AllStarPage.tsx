@@ -80,8 +80,11 @@ export function AllStarPage() {
 
   if (!season || !engine) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">All-Star Game</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Simulate the mid-season All-Star Game between the league's best players.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

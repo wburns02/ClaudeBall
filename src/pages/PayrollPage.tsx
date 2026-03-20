@@ -275,8 +275,11 @@ export function PayrollPage() {
 
   if (!season || !engine || !userTeamId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Payroll</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Manage player contracts, budget allocation, and salary cap compliance.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }
