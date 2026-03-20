@@ -77,6 +77,20 @@ export function IdeasPage() {
     localStorage.setItem(USERNAME_KEY, name);
     setPendingUsername('');
     setShowUsernameInput(false);
+    // Auto-submit the pending idea now that we have a name
+    if (newIdea.trim()) {
+      const created: Idea = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        text: newIdea.trim(),
+        author: name,
+        votes: 1,
+        votedBy: [name],
+        createdAt: new Date().toISOString(),
+        category,
+      };
+      setIdeas(prev => [created, ...prev]);
+      setNewIdea('');
+    }
   };
 
   const handleVote = (id: string) => {

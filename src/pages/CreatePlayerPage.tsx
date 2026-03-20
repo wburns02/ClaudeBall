@@ -147,7 +147,6 @@ export function CreatePlayerPage() {
 
         {/* Header */}
         <div className="text-center space-y-2">
-          <p className="font-mono text-gold-dim text-xs tracking-widest uppercase">Sprint 6</p>
           <h1 className="font-display text-5xl text-gold tracking-tight uppercase">
             Be A Player
           </h1>

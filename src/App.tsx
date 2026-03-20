@@ -200,6 +200,7 @@ function AppRoutes() {
           <Route path="/franchise/league-news" element={<Navigate to="/franchise/news" replace />} />
           <Route path="/franchise/league-leaders" element={<Navigate to="/franchise/leaders" replace />} />
           <Route path="/franchise/career" element={<Navigate to="/career" replace />} />
+          <Route path="/franchise/ideas" element={<Navigate to="/ideas" replace />} />
           <Route path="/franchise/team-stats" element={<TeamStatsRedirect />} />
         </Routes>
       </Suspense>

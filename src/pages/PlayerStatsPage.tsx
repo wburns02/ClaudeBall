@@ -112,12 +112,15 @@ export function PlayerStatsPage() {
   // Auto-scout own players so grades are always available on their profile
   useEffect(() => {
     if (!playerId || !player) return;
-    const teamId = ps?.teamId ?? player.id;
-    const isOwnPlayer = !!(userTeamId && (ps?.teamId === userTeamId));
+    // When ps is null (no stats yet), find team from engine
+    const teamId = ps?.teamId ?? engine?.getAllTeams().find(t =>
+      t.roster.players.some(p => p.id === playerId)
+    )?.id ?? '';
+    const isOwnPlayer = !!(userTeamId && teamId && teamId === userTeamId);
     if (isOwnPlayer && !getReport(playerId)) {
       scoutPlayer(playerId, teamId, true);
     }
-  }, [playerId, player, ps?.teamId, userTeamId, getReport, scoutPlayer]);
+  }, [playerId, player, ps?.teamId, userTeamId, getReport, scoutPlayer, engine]);
 
   const scoutReport = playerId ? getReport(playerId) : null;
 
@@ -127,12 +130,12 @@ export function PlayerStatsPage() {
   }, [playerId, engine]);
 
   if (!ps) {
-    // No in-game stats yet — show ratings if we have the player from the engine
+    // No in-game stats yet — show full ratings + scouting + contract if available
     if (player) {
       const isPitcherRatings = player.position === 'P';
       const ovrRatings = Math.round(evaluatePlayer(player));
       return (
-        <div className="min-h-screen p-6 max-w-4xl mx-auto">
+        <div className="min-h-screen p-6 max-w-6xl mx-auto">
           <div className="flex items-start justify-between mb-6">
             <div>
               <h1 className="font-display text-3xl text-gold tracking-wide uppercase">
@@ -147,37 +150,140 @@ export function PlayerStatsPage() {
             </div>
             <Button size="sm" variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/franchise/roster')}>← Back</Button>
           </div>
-          <Panel title="Player Ratings">
-            <p className="font-mono text-xs text-cream-dim/60 mb-4">No in-game stats yet — ratings shown below.</p>
-            <div className="space-y-2">
-              {isPitcherRatings ? (
-                <>
-                  <RatingBar label="Stuff" value={player.pitching.stuff} />
-                  <RatingBar label="Movement" value={player.pitching.movement} />
-                  <RatingBar label="Control" value={player.pitching.control} />
-                  <RatingBar label="Stamina" value={player.pitching.stamina} />
-                  <RatingBar label="Velocity" value={player.pitching.velocity} />
-                </>
-              ) : (
-                <>
-                  <RatingBar label="Contact L" value={player.batting.contact_L} />
-                  <RatingBar label="Contact R" value={player.batting.contact_R} />
-                  <RatingBar label="Power L" value={player.batting.power_L} />
-                  <RatingBar label="Power R" value={player.batting.power_R} />
-                  <RatingBar label="Eye" value={player.batting.eye} />
-                  <RatingBar label="Speed" value={player.batting.speed} />
-                  <RatingBar label="Gap Power" value={player.batting.gap_power} />
-                  <RatingBar label="Avoid K" value={player.batting.avoid_k} />
-                </>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Left: ratings */}
+            <div className="lg:col-span-2 space-y-4">
+              <Panel title="Player Ratings">
+                <p className="font-mono text-xs text-cream-dim/40 mb-4">No in-game stats yet — play games to unlock season statistics.</p>
+                <div className="space-y-2">
+                  {isPitcherRatings ? (
+                    <>
+                      <RatingBar label="Stuff" value={player.pitching.stuff} />
+                      <RatingBar label="Movement" value={player.pitching.movement} />
+                      <RatingBar label="Control" value={player.pitching.control} />
+                      <RatingBar label="Stamina" value={player.pitching.stamina} />
+                      <RatingBar label="Velocity" value={player.pitching.velocity} />
+                      <RatingBar label="Hold Runners" value={player.pitching.hold_runners} />
+                      <RatingBar label="GB Tendency" value={player.pitching.groundball_pct} />
+                    </>
+                  ) : (
+                    <>
+                      <RatingBar label="Contact (R)" value={player.batting.contact_R} />
+                      <RatingBar label="Contact (L)" value={player.batting.contact_L} />
+                      <RatingBar label="Power (R)" value={player.batting.power_R} />
+                      <RatingBar label="Power (L)" value={player.batting.power_L} />
+                      <RatingBar label="Eye / Discipline" value={player.batting.eye} />
+                      <RatingBar label="Avoid K" value={player.batting.avoid_k} />
+                      <RatingBar label="Gap Power" value={player.batting.gap_power} />
+                      <RatingBar label="Speed" value={player.batting.speed} />
+                    </>
+                  )}
+                  <div className="pt-2 border-t border-navy-lighter mt-3">
+                    <p className="font-mono text-xs text-cream-dim/50 mb-2">Mental</p>
+                    <RatingBar label="Intelligence" value={player.mental.intelligence} />
+                    <RatingBar label="Work Ethic" value={player.mental.work_ethic} />
+                    <RatingBar label="Durability" value={player.mental.durability} />
+                    <RatingBar label="Consistency" value={player.mental.consistency} />
+                    <RatingBar label="Composure" value={player.mental.composure} />
+                  </div>
+                </div>
+              </Panel>
+              {/* Fielding */}
+              {player.fielding.length > 0 && (
+                <Panel title="Fielding Ratings">
+                  <div className="space-y-4">
+                    {player.fielding.map(fi => (
+                      <div key={fi.position}>
+                        <p className="text-gold text-xs font-mono uppercase tracking-wider mb-2">{fi.position}</p>
+                        <div className="space-y-1.5">
+                          <RatingBar label="Range" value={fi.range} />
+                          <RatingBar label="Arm Strength" value={fi.arm_strength} />
+                          <RatingBar label="Arm Accuracy" value={fi.arm_accuracy} />
+                          <RatingBar label="Error Rate" value={100 - fi.error_rate} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Panel>
               )}
-              <div className="pt-2 border-t border-navy-lighter mt-3">
-                <p className="font-mono text-xs text-cream-dim/50 mb-2">Mental</p>
-                <RatingBar label="Work Ethic" value={player.mental.work_ethic} />
-                <RatingBar label="Durability" value={player.mental.durability} />
-                <RatingBar label="Consistency" value={player.mental.consistency} />
-              </div>
             </div>
-          </Panel>
+            {/* Right: scouting + contract */}
+            <div className="space-y-4">
+              {scoutReport && (
+                <Panel title="Scouting Report">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest">
+                      {scoutReport.projectedRole}
+                    </span>
+                    <span className={cn(
+                      'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border',
+                      scoutReport.riskLevel === 'LOW' ? 'text-green-light border-green-light/30 bg-green-light/5'
+                      : scoutReport.riskLevel === 'MED' ? 'text-gold border-gold/30 bg-gold/5'
+                      : 'text-red-400 border-red-400/30 bg-red-400/5'
+                    )}>
+                      {scoutReport.riskLevel} RISK
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {Object.entries(scoutReport.grades).map(([key, grade]) => (
+                      <GradeBar80 key={key} label={key} grade={grade.scoutedGrade} confidence={grade.confidence} />
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-navy-lighter flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-cream-dim/40 uppercase tracking-widest">Overall</span>
+                    <span className={cn('text-sm font-mono font-bold',
+                      scoutReport.overallGrade.scoutedGrade >= 70 ? 'text-gold'
+                      : scoutReport.overallGrade.scoutedGrade >= 60 ? 'text-green-light'
+                      : 'text-cream'
+                    )}>
+                      {scoutReport.overallGrade.scoutedGrade}
+                    </span>
+                  </div>
+                  {scoutReport.scoutNotes.length > 0 && (
+                    <div className="mt-3 pt-2 border-t border-navy-lighter space-y-1">
+                      {scoutReport.scoutNotes.slice(0, 2).map((note, i) => (
+                        <p key={i} className="text-[10px] font-mono text-cream-dim/50 italic">{note}</p>
+                      ))}
+                    </div>
+                  )}
+                </Panel>
+              )}
+              {contract && !contract.isFreeAgent && (
+                <Panel title="Contract">
+                  <div className="space-y-2 font-mono text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-cream-dim text-xs">Salary</span>
+                      <span className="text-gold font-bold">${(contract.salaryPerYear / 1000).toFixed(1)}M / yr</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-cream-dim text-xs">Years Left</span>
+                      <span className="text-cream text-xs">{contract.yearsRemaining} yr{contract.yearsRemaining !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-cream-dim text-xs">Total Remaining</span>
+                      <span className="text-cream-dim text-xs">${((contract.salaryPerYear * contract.yearsRemaining) / 1000).toFixed(1)}M</span>
+                    </div>
+                    {contract.yearsRemaining <= 1 && (
+                      <p className="text-gold/60 text-[10px] text-center pt-1 border-t border-navy-lighter">
+                        Extension candidate — expiring after this season
+                      </p>
+                    )}
+                  </div>
+                </Panel>
+              )}
+              {isPitcherRatings && player.pitching.repertoire.length > 0 && (
+                <Panel title="Pitch Repertoire">
+                  <div className="flex flex-wrap gap-1">
+                    {player.pitching.repertoire.map(pt => (
+                      <span key={pt} className="px-2 py-0.5 bg-navy-lighter rounded text-xs text-cream font-mono capitalize">
+                        {pt}
+                      </span>
+                    ))}
+                  </div>
+                </Panel>
+              )}
+            </div>
+          </div>
         </div>
       );
     }

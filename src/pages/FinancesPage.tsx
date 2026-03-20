@@ -204,7 +204,11 @@ export function FinancesPage() {
     const totalRevM = gateRevM + TV_REVENUE + SPONSOR_REVENUE;
 
     // Projected full-season gate (scale by 81 home games)
-    const projGateM = homeGames.length > 0 ? (gateRevM / homeGames.length) * 81 : 0;
+    // Use neutral avg attendance projection when fewer than 5 games played (avoids Day 1 panic)
+    const NEUTRAL_GATE_M = (22_000 * REVENUE_PER_FAN * 81) / 1000;
+    const projGateM = homeGames.length >= 5
+      ? (gateRevM / homeGames.length) * 81
+      : NEUTRAL_GATE_M;
     const projTotalM = projGateM + TV_REVENUE + SPONSOR_REVENUE;
 
     // Expenses
@@ -321,11 +325,13 @@ export function FinancesPage() {
         />
         <MetricCard
           label="Net Income"
-          value={`${netIncome >= 0 ? '+' : ''}$${(netIncome / 1000).toFixed(0)}M`}
-          sub={homeGamesPlayed < 81
-            ? `Proj. ${projNet >= 0 ? '+' : ''}$${(projNet / 1000).toFixed(0)}M full season`
-            : 'Final'}
-          color={netColor}
+          value={homeGamesPlayed === 0 ? '—' : `${netIncome >= 0 ? '+' : ''}$${(netIncome / 1000).toFixed(0)}M`}
+          sub={homeGamesPlayed === 0
+            ? `Proj. ${projNet >= 0 ? '+' : ''}$${(projNet / 1000).toFixed(0)}M · builds with home games`
+            : homeGamesPlayed < 81
+              ? `Proj. ${projNet >= 0 ? '+' : ''}$${(projNet / 1000).toFixed(0)}M full season`
+              : 'Final'}
+          color={homeGamesPlayed === 0 ? 'text-cream-dim' : netColor}
         />
       </div>
 
