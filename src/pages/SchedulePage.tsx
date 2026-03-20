@@ -294,8 +294,11 @@ export function SchedulePage() {
                           >{abbr}</span>
                         </div>
                         {g.played && (
-                          <div className="font-mono text-[10px] text-cream-dim">
-                            {g.awayScore}-{g.homeScore}
+                          <div
+                            className="font-mono text-[10px] text-cream-dim hover:text-gold cursor-pointer"
+                            onClick={e => { e.stopPropagation(); navigate(`/franchise/box-score/${g.id}`); }}
+                          >
+                            {g.awayScore}-{g.homeScore} <span className="text-cream-dim/30 text-[8px]">BOX</span>
                           </div>
                         )}
                         {!g.played && isFuture && (

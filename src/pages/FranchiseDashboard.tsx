@@ -931,11 +931,15 @@ export function FranchiseDashboard() {
                 const oppTeam = engine.getTeam(opp);
                 const won = isHome ? (g.homeScore ?? 0) > (g.awayScore ?? 0) : (g.awayScore ?? 0) > (g.homeScore ?? 0);
                 return (
-                  <div key={g.id} className="flex justify-between items-center py-1 border-b border-navy-lighter/30">
+                  <button
+                    key={g.id}
+                    onClick={() => navigate(`/franchise/box-score/${g.id}`)}
+                    className="w-full flex justify-between items-center py-1 border-b border-navy-lighter/30 hover:bg-navy-lighter/20 rounded px-1 transition-colors cursor-pointer group"
+                  >
                     <span className={cn(won ? 'text-green-light' : 'text-red', 'font-bold w-4')}>{won ? 'W' : 'L'}</span>
                     <span className="text-cream">{isHome ? 'vs' : '@'} {oppTeam?.abbreviation ?? opp}</span>
-                    <span className="text-cream-dim">{g.awayScore}-{g.homeScore}</span>
-                  </div>
+                    <span className="text-cream-dim group-hover:text-gold transition-colors">{g.awayScore}-{g.homeScore} <span className="text-cream-dim/30 text-xs">BOX</span></span>
+                  </button>
                 );
               })}
             </div>

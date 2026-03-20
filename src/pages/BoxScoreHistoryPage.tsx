@@ -24,7 +24,6 @@ const PITCHER_COLS = [
   { key: 'name', label: 'Pitcher', align: 'left' as const },
   { key: 'dec', label: 'DEC', align: 'center' as const },
   { key: 'ip', label: 'IP', align: 'right' as const },
-  { key: 'h', label: 'H', align: 'right' as const },
   { key: 'r', label: 'R', align: 'right' as const },
   { key: 'er', label: 'ER', align: 'right' as const },
   { key: 'bb', label: 'BB', align: 'right' as const },
@@ -116,45 +115,30 @@ export function BoxScoreHistoryPage() {
     return entries as NonNullable<typeof entries[number]>[];
   }, [playerStats, gameId, game.homeId]);
 
-  const awayPitchers = useMemo(() => {
-    return Object.values(playerStats)
-      .filter(ps => ps.teamId === game.awayId)
+  const buildPitchers = (teamId: string) =>
+    Object.values(playerStats)
+      .filter(ps => ps.teamId === teamId)
       .map(ps => {
         const log = ps.gameLog.find(l => l.gameId === gameId);
         if (!log || !log.ip) return null;
         return {
           name: ps.playerName,
-          dec: log.decision,
+          playerId: ps.playerId,
+          dec: log.decision ?? '—',
           ip: log.ip,
-          h: 0,
+          ipNum: parseFloat(log.ip),
           r: log.er,
           er: log.er,
           bb: log.bbPitching,
           k: log.kPitching,
         };
       })
-      .filter(Boolean) as { name: string; dec: string; ip: string; h: number; r: number; er: number; bb: number; k: number }[];
-  }, [playerStats, gameId, game.awayId]);
+      .filter(Boolean)
+      // Sort by IP desc so starter appears first
+      .sort((a, b) => b!.ipNum - a!.ipNum) as { name: string; playerId: string; dec: string; ip: string; ipNum: number; r: number; er: number; bb: number; k: number }[];
 
-  const homePitchers = useMemo(() => {
-    return Object.values(playerStats)
-      .filter(ps => ps.teamId === game.homeId)
-      .map(ps => {
-        const log = ps.gameLog.find(l => l.gameId === gameId);
-        if (!log || !log.ip) return null;
-        return {
-          name: ps.playerName,
-          dec: log.decision,
-          ip: log.ip,
-          h: 0,
-          r: log.er,
-          er: log.er,
-          bb: log.bbPitching,
-          k: log.kPitching,
-        };
-      })
-      .filter(Boolean) as { name: string; dec: string; ip: string; h: number; r: number; er: number; bb: number; k: number }[];
-  }, [playerStats, gameId, game.homeId]);
+  const awayPitchers = useMemo(() => buildPitchers(game.awayId), [playerStats, gameId, game.awayId]);
+  const homePitchers = useMemo(() => buildPitchers(game.homeId), [playerStats, gameId, game.homeId]);
 
   // Key plays: home runs + notable hitting + W/L pitchers
   const keyPlays = useMemo(() => {
