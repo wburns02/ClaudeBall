@@ -206,6 +206,7 @@ function AppRoutes() {
           <Route path="/franchise/career" element={<Navigate to="/career" replace />} />
           <Route path="/franchise/ideas" element={<Navigate to="/ideas" replace />} />
           <Route path="/franchise/team-stats" element={<TeamStatsRedirect />} />
+          <Route path="/franchise/player-stats" element={<Navigate to="/franchise/roster" replace />} />
         </Routes>
       </Suspense>
     </FadeWrapper>

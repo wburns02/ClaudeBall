@@ -115,6 +115,9 @@ export function AllStarPage() {
 
   // This year's ASG result (if already played)
   const thisYearResult = allStarResults.find(r => r.year === season.year);
+  const ALL_STAR_DAY = 90;
+  const isAllStarTime = season.currentDay >= ALL_STAR_DAY;
+  const daysUntilASG = Math.max(0, ALL_STAR_DAY - season.currentDay);
 
   const handlePlayASG = () => {
     const rng = engine.getRng();
@@ -193,13 +196,22 @@ export function AllStarPage() {
 
       {/* Play Button */}
       {!thisYearResult && !gameResult && (
-        <div className="mb-6 flex items-center gap-4">
-          <Button onClick={handlePlayASG} size="lg">
-            Play All-Star Game
-          </Button>
-          <p className="font-mono text-cream-dim text-sm">
-            {league1Name} vs {league2Name} — best players from each league
-          </p>
+        <div className="mb-6">
+          {isAllStarTime ? (
+            <div className="flex items-center gap-4">
+              <Button onClick={handlePlayASG} size="lg">
+                Play All-Star Game
+              </Button>
+              <p className="font-mono text-cream-dim text-sm">
+                {league1Name} vs {league2Name} — best players from each league
+              </p>
+            </div>
+          ) : (
+            <div className="px-4 py-3 rounded-md border border-navy-lighter bg-navy-light font-mono text-sm text-cream-dim">
+              All-Star Game unlocks at midseason (Day {ALL_STAR_DAY}).{' '}
+              <span className="text-gold">{daysUntilASG} day{daysUntilASG !== 1 ? 's' : ''} remaining.</span>
+            </div>
+          )}
         </div>
       )}
 

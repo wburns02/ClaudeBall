@@ -278,9 +278,12 @@ export function RosterPage() {
         )}
         onClick={() => navigate(`/franchise/player-stats/${p.id}`)}
       >
-        <td className="px-3 py-2 font-body text-sm group-hover:text-gold transition-colors">
+        <td className="px-3 py-2 font-body text-sm">
           <div className="flex items-center gap-1.5">
-            <span className={cn(onIL ? 'text-cream-dim' : 'text-cream')}>{getPlayerName(p)}</span>
+            <span className={cn(
+              'group-hover:text-gold group-hover:underline underline-offset-2 transition-colors',
+              onIL ? 'text-cream-dim' : 'text-cream',
+            )}>{getPlayerName(p)}</span>
             {onIL && (
               <span className="font-mono text-[9px] font-bold uppercase text-red-400 border border-red-500/30 bg-red-950/20 px-1 py-0.5 rounded shrink-0">IL</span>
             )}

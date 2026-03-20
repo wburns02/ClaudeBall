@@ -288,7 +288,10 @@ export function SchedulePage() {
                           <span className={cn('font-mono text-[10px] font-bold', resultColor || 'text-cream')}>
                             {resultLabel || (isHome ? 'vs' : '@')}
                           </span>
-                          <span className="font-mono text-[10px] text-cream truncate">{abbr}</span>
+                          <span
+                            className="font-mono text-[10px] text-cream truncate hover:text-gold hover:underline cursor-pointer"
+                            onClick={e => { e.stopPropagation(); navigate(`/franchise/team-stats/${opp?.id ?? (isHome ? g.awayId : g.homeId)}`); }}
+                          >{abbr}</span>
                         </div>
                         {g.played && (
                           <div className="font-mono text-[10px] text-cream-dim">
@@ -314,7 +317,7 @@ export function SchedulePage() {
                               )}
                               onClick={e => { e.stopPropagation(); handleSimGame(g); }}
                             >
-                              {day === currentDay + 1 ? 'Sim' : `Sim→${day}`}
+                              {day === currentDay + 1 ? 'Sim' : `→D${day}`}
                             </button>
                           </div>
                         )}
