@@ -166,6 +166,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'HISTORY',
     items: [
       { label: 'Franchise History', path: '/franchise/history', icon: 'history' },
+      { label: 'Player Career Stats', path: '/franchise/player-history', icon: 'leaders' },
     ],
   },
   {

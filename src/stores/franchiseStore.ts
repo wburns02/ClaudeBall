@@ -21,6 +21,8 @@ import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
 import type { TrainingAssignment } from '@/engine/player/DevelopmentEngine.ts';
 import type { TradeProposal } from '@/engine/gm/TradeEngine.ts';
 import { computeFormSummary } from '@/engine/performance/HotColdEngine.ts';
+import { useHistoryStore } from '@/stores/historyStore.ts';
+import type { FranchisePlayerSeasonRecord } from '@/stores/historyStore.ts';
 
 /** Injured List slot — tracks a player placed on the IL */
 export interface ILSlot {
@@ -505,6 +507,50 @@ export const useFranchiseStore = create<FranchiseState>()(
   startOffseason: () => {
     const { engine, trainingAssignments } = get();
     if (!engine) return;
+
+    // Snapshot this season's player stats into franchise history before resetting
+    const statsState = useStatsStore.getState();
+    const year = engine.getState().year;
+    const allTeams = engine.getAllTeams();
+    const teamNameMap = new Map(allTeams.map(t => [t.id, `${t.city} ${t.name}`]));
+
+    const records: FranchisePlayerSeasonRecord[] = Object.values(statsState.playerStats)
+      .filter(ps => ps.gamesPlayed > 0)
+      .map(ps => {
+        const b = ps.batting;
+        const p = ps.pitching;
+        // Compute batting rates
+        const avg = b.ab > 0 ? b.h / b.ab : 0;
+        const obp = (b.ab + b.bb + b.hbp + b.sf) > 0 ? (b.h + b.bb + b.hbp) / (b.ab + b.bb + b.hbp + b.sf) : 0;
+        const singles = b.h - b.doubles - b.triples - b.hr;
+        const slg = b.ab > 0 ? (singles + 2 * b.doubles + 3 * b.triples + 4 * b.hr) / b.ab : 0;
+        // Compute pitching rates (ip stored in thirds)
+        const ipDecimal = p.ip / 3;
+        const era = ipDecimal > 0 ? (p.er / ipDecimal) * 9 : 0;
+        const whip = ipDecimal > 0 ? (p.bb + p.h) / ipDecimal : 0;
+        return {
+          playerId: ps.playerId,
+          playerName: ps.playerName,
+          teamId: ps.teamId,
+          teamName: teamNameMap.get(ps.teamId) ?? ps.teamId,
+          year,
+          position: ps.position,
+          gamesPlayed: ps.gamesPlayed,
+          // Batting
+          ab: b.ab, r: b.r, h: b.h, doubles: b.doubles, triples: b.triples,
+          hr: b.hr, rbi: b.rbi, bb: b.bb, so: b.so, sb: b.sb,
+          avg, obp, slg, ops: obp + slg,
+          // Pitching (ip as decimal innings)
+          wins: p.wins, losses: p.losses, saves: p.saves,
+          ip: ipDecimal, h_allowed: p.h, er: p.er, bb_p: p.bb, so_p: p.so,
+          era, whip,
+        };
+      });
+
+    if (records.length > 0) {
+      useHistoryStore.getState().recordFranchisePlayerSeasons(records);
+    }
+
     engine.startOffseason(trainingAssignments);
     const state = engine.getState();
     set({

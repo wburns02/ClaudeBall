@@ -4,6 +4,7 @@ import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useStatsStore } from '@/stores/statsStore.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useHistoryStore } from '@/stores/historyStore.ts';
 import { useScoutingStore } from '@/stores/scoutingStore.ts';
 import {
   battingAvg, onBasePct, slugging, era, whip, formatIP,
@@ -66,6 +67,8 @@ export function PlayerStatsPage() {
   const navigate = useNavigate();
   const { getPlayerStats, leagueTotals } = useStatsStore();
   const { engine } = useFranchiseStore();
+  const franchisePlayerHistory = useHistoryStore(s => s.franchisePlayerHistory);
+  const hasCareerHistory = playerId ? franchisePlayerHistory.some(r => r.playerId === playerId) : false;
 
   const ps = useMemo(() => playerId ? getPlayerStats(playerId) : null, [playerId, getPlayerStats]);
 
@@ -150,6 +153,11 @@ export function PlayerStatsPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              {hasCareerHistory && (
+                <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/player-history?player=${playerId}`)}>
+                  Career History
+                </Button>
+              )}
               <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/compare?p1=${playerId}`)}>Compare</Button>
               <Button size="sm" variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/franchise/roster')}>← Back</Button>
             </div>

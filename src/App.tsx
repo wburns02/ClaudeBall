@@ -60,6 +60,7 @@ const AllStarPage = lazy(() => import('@/pages/AllStarPage.tsx').then(m => ({ de
 const AwardsPage = lazy(() => import('@/pages/AwardsPage.tsx').then(m => ({ default: m.AwardsPage })));
 const TradeProposalPage = lazy(() => import('@/pages/TradeProposalPage.tsx').then(m => ({ default: m.TradeProposalPage })));
 const FranchiseHistoryPage = lazy(() => import('@/pages/FranchiseHistoryPage.tsx').then(m => ({ default: m.FranchiseHistoryPage })));
+const FranchisePlayerHistoryPage = lazy(() => import('@/pages/FranchisePlayerHistoryPage.tsx').then(m => ({ default: m.FranchisePlayerHistoryPage })));
 const ScoutingPage = lazy(() => import('@/pages/ScoutingPage.tsx').then(m => ({ default: m.ScoutingPage })));
 const PayrollPage = lazy(() => import('@/pages/PayrollPage.tsx').then(m => ({ default: m.PayrollPage })));
 const LineupEditorPage = lazy(() => import('@/pages/LineupEditorPage.tsx').then(m => ({ default: m.LineupEditorPage })));
@@ -197,6 +198,7 @@ function AppRoutes() {
           <Route path="/franchise/awards" element={<FranchiseLayout><AwardsPage /></FranchiseLayout>} />
           <Route path="/franchise/trade-proposals" element={<FranchiseLayout><TradeProposalPage /></FranchiseLayout>} />
           <Route path="/franchise/history" element={<FranchiseLayout><FranchiseHistoryPage /></FranchiseLayout>} />
+          <Route path="/franchise/player-history" element={<FranchiseLayout><FranchisePlayerHistoryPage /></FranchiseLayout>} />
           <Route path="/franchise/scouting" element={<FranchiseLayout><ScoutingPage /></FranchiseLayout>} />
           <Route path="/franchise/payroll" element={<FranchiseLayout><PayrollPage /></FranchiseLayout>} />
           <Route path="/franchise/lineup-editor" element={<FranchiseLayout><LineupEditorPage /></FranchiseLayout>} />
