@@ -265,7 +265,7 @@ export function LiveGamePage() {
         currentState.inning.outs, hS - aS, runners
       );
       setWpHistory(h => [...h, {
-        label: `${currentState.inning.half === 'top' ? 'T' : 'B'}${currentState.inning.number}`,
+        label: `${currentState.inning.half === 'top' ? 'T' : 'B'}${currentState.inning.inning}`,
         homeWP: wp,
       }]);
     }
