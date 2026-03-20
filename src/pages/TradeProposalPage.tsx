@@ -347,17 +347,22 @@ export function TradeProposalPage() {
                         );
                       })}
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleSubmitCounter(prop)}
-                        disabled={counterOfferIds.length === 0}
-                      >
-                        Submit Counter
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setCounterTarget(null)}>
-                        Cancel
-                      </Button>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleSubmitCounter(prop)}
+                          disabled={counterOfferIds.length === 0}
+                        >
+                          Submit Counter
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setCounterTarget(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                      {counterOfferIds.length === 0 && (
+                        <p className="font-mono text-xs text-cream-dim/50">Select at least one player to offer</p>
+                      )}
                     </div>
                   </div>
                 )}

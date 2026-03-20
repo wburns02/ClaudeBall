@@ -204,11 +204,12 @@ function ExtensionDialog({
 
 export function RosterPage() {
   const navigate = useNavigate();
-  const { engine, userTeamId, teams, getPlayerContract, releasePlayerToWaivers, signExtension, ilRoster, getTeamInjuries, season } = useFranchiseStore();
+  const { engine, userTeamId, teams, getPlayerContract, releasePlayerToWaivers, signExtension, ilRoster, getTeamInjuries, season, sendDownPlayer } = useFranchiseStore();
 
   const [sortKey, setSortKey] = useState<SortKey>('ovr');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [confirmRelease, setConfirmRelease] = useState<string | null>(null);
+  const [confirmSendDown, setConfirmSendDown] = useState<string | null>(null);
   const [extendingPlayer, setExtendingPlayer] = useState<Player | null>(null);
 
   const userTeam = useMemo(
@@ -284,6 +285,7 @@ export function RosterPage() {
               'group-hover:text-gold group-hover:underline underline-offset-2 transition-colors',
               onIL ? 'text-cream-dim' : 'text-cream',
             )}>{getPlayerName(p)}</span>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-gold/50 text-xs shrink-0">→</span>
             {onIL && (
               <span className="font-mono text-[9px] font-bold uppercase text-red-400 border border-red-500/30 bg-red-950/20 px-1 py-0.5 rounded shrink-0">IL</span>
             )}
@@ -336,6 +338,36 @@ export function RosterPage() {
             >
               Trade
             </Button>
+            {/* Option to AAA */}
+            {confirmSendDown === p.id ? (
+              <>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="!bg-blue-800/60 !border-blue-400/40 !text-blue-200 hover:!bg-blue-700/60"
+                  onClick={() => {
+                    if (userTeamId) sendDownPlayer(userTeamId, p.id);
+                    addToast(`${getPlayerName(p)} optioned to AAA`, 'success');
+                    setConfirmSendDown(null);
+                  }}
+                >
+                  Confirm
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setConfirmSendDown(null)}>
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="!text-blue-400/70 hover:!text-blue-300"
+                onClick={() => setConfirmSendDown(p.id)}
+                title="Option this player to AAA"
+              >
+                AAA
+              </Button>
+            )}
             {confirmRelease === p.id ? (
               <>
                 <Button

@@ -91,6 +91,16 @@ export function TeamStatsPage() {
   const runsPerGame = gamesPlayed === 0 ? 0 : (record?.runsScored ?? 0) / gamesPlayed;
   const raPerGame = gamesPlayed === 0 ? 0 : (record?.runsAllowed ?? 0) / gamesPlayed;
 
+  // Roster with ratings — must be before early return to satisfy Rules of Hooks
+  const rosterWithRatings = useMemo(() => {
+    if (!team) return [];
+    return [...team.roster.players].map(p => ({
+      player: p,
+      ovr: Math.round(evaluatePlayer(p)),
+      ps: playerStats[p.id] ?? null,
+    })).sort((a, b) => b.ovr - a.ovr);
+  }, [team, playerStats]);
+
   if (!team) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -101,15 +111,6 @@ export function TeamStatsPage() {
       </div>
     );
   }
-
-  // Roster with ratings
-  const rosterWithRatings = useMemo(() => {
-    return [...team.roster.players].map(p => ({
-      player: p,
-      ovr: Math.round(evaluatePlayer(p)),
-      ps: playerStats[p.id] ?? null,
-    })).sort((a, b) => b.ovr - a.ovr);
-  }, [team, playerStats]);
 
   const pitchers = rosterWithRatings.filter(r => r.player.position === 'P');
   const posPlayers = rosterWithRatings.filter(r => r.player.position !== 'P');

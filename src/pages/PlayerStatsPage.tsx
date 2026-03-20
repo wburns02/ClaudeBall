@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -6,6 +6,7 @@ import { useStatsStore } from '@/stores/statsStore.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useHistoryStore } from '@/stores/historyStore.ts';
 import { useScoutingStore } from '@/stores/scoutingStore.ts';
+import { addToast } from '@/stores/toastStore.ts';
 import {
   battingAvg, onBasePct, slugging, era, whip, formatIP,
 } from '@/engine/types/stats.ts';
@@ -344,7 +345,17 @@ export function PlayerStatsPage() {
   const ovr = player ? Math.round(evaluatePlayer(player)) : null;
 
   const { getReport, scoutPlayer } = useScoutingStore();
-  const { userTeamId } = useFranchiseStore();
+  const {
+    userTeamId, sendDownPlayer, releasePlayerToWaivers,
+    placeOnIL, activateFromIL, ilRoster, getPlayerContract, signExtension,
+  } = useFranchiseStore();
+
+  // Quick Actions state
+  const [confirmRelease, setConfirmRelease] = useState(false);
+  const [confirmSendDown, setConfirmSendDown] = useState(false);
+  const [showExtend, setShowExtend] = useState(false);
+  const [extYears, setExtYears] = useState(2);
+  const [extSalary, setExtSalary] = useState(5000);
 
   // Auto-scout own players so grades are always available on their profile
   useEffect(() => {
@@ -365,6 +376,208 @@ export function PlayerStatsPage() {
     if (!playerId || !engine) return null;
     return engine.contractEngine.getContract(playerId) ?? null;
   }, [playerId, engine]);
+
+  // Quick Actions helpers
+  const isOwnPlayer = !!(userTeamId && (ps?.teamId === userTeamId ||
+    (!ps && player && engine?.getAllTeams().find(t => t.id === userTeamId)?.roster.players.some(p => p.id === playerId))));
+  const ilSlot = ilRoster.find(s => s.playerId === playerId);
+  const isOnIL = !!ilSlot;
+  const qaContract = playerId ? getPlayerContract(playerId) : undefined;
+
+  const handleSendDown = () => {
+    if (!userTeamId || !playerId) return;
+    const ev = sendDownPlayer(userTeamId, playerId);
+    if (ev) { addToast(ev.message, 'success'); setConfirmSendDown(false); }
+    else { addToast('Could not option player — roster may be at minimum.', 'error'); }
+  };
+
+  const handleRelease = () => {
+    if (!userTeamId || !playerId) return;
+    const ev = releasePlayerToWaivers(userTeamId, playerId);
+    if (ev) { addToast(ev.message, 'success'); navigate('/franchise/roster'); }
+    else { addToast('Release failed.', 'error'); }
+    setConfirmRelease(false);
+  };
+
+  const handlePlaceOnIL = () => {
+    if (!playerId || !player) return;
+    placeOnIL(playerId, `${player.firstName} ${player.lastName}`, player.position, '10-day');
+    addToast(`${player.firstName} ${player.lastName} placed on 10-day IL`, 'success');
+  };
+
+  const handleActivate = () => {
+    if (!playerId) return;
+    activateFromIL(playerId);
+    addToast(`${player?.firstName ?? ''} ${player?.lastName ?? ''} activated from IL`, 'success');
+  };
+
+  const handleExtend = () => {
+    if (!userTeamId || !playerId) return;
+    const result = signExtension(playerId, userTeamId, extYears, extSalary * 1000);
+    if (result.success) {
+      addToast(`Extension signed: ${extYears}yr / $${(extSalary / 1000).toFixed(1)}M per year`, 'success');
+      setShowExtend(false);
+    } else {
+      addToast(result.reason ?? 'Extension rejected', 'error');
+    }
+  };
+
+  // Quick Actions panel — shared between pre-stats and full-stats views
+  const quickActionsPanel = isOwnPlayer ? (
+    <Panel title="Quick Actions">
+      <div className="space-y-1.5">
+        {/* Status badges */}
+        {isOnIL && (
+          <div className="flex items-center gap-2 px-2 py-1.5 bg-red-900/20 border border-red-900/40 rounded mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+            <span className="font-mono text-xs text-red-400">On {ilSlot?.ilType} IL</span>
+          </div>
+        )}
+
+        {/* Trade */}
+        <button
+          onClick={() => navigate('/franchise/trade')}
+          className="w-full flex items-center justify-between px-3 py-2 rounded border border-navy-lighter/40 bg-navy-lighter/10 hover:border-gold/40 hover:bg-gold/5 transition-all group"
+        >
+          <span className="font-mono text-sm text-cream group-hover:text-gold">Trade</span>
+          <span className="font-mono text-xs text-cream-dim/30 group-hover:text-gold/50">→</span>
+        </button>
+
+        {/* Option to AAA / Activate from IL */}
+        {isOnIL ? (
+          <button
+            onClick={handleActivate}
+            className="w-full flex items-center justify-between px-3 py-2 rounded border border-green-500/30 bg-green-900/10 hover:bg-green-900/20 transition-all group"
+          >
+            <span className="font-mono text-sm text-green-light group-hover:text-green-300">Activate from IL</span>
+            <span className="font-mono text-xs text-green-light/30">↑</span>
+          </button>
+        ) : (
+          confirmSendDown ? (
+            <div className="flex gap-1.5">
+              <button
+                onClick={handleSendDown}
+                className="flex-1 px-2 py-1.5 rounded text-xs font-mono bg-blue-800/40 border border-blue-500/40 text-blue-200 hover:bg-blue-700/50 transition-colors"
+              >
+                Confirm AAA
+              </button>
+              <button
+                onClick={() => setConfirmSendDown(false)}
+                className="px-2 py-1.5 rounded text-xs font-mono border border-navy-lighter/40 text-cream-dim hover:text-cream transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmSendDown(true)}
+              className="w-full flex items-center justify-between px-3 py-2 rounded border border-blue-500/20 bg-blue-900/10 hover:border-blue-400/40 hover:bg-blue-900/20 transition-all group"
+            >
+              <span className="font-mono text-sm text-blue-300 group-hover:text-blue-200">Option to AAA</span>
+              <span className="font-mono text-xs text-blue-300/30">↓</span>
+            </button>
+          )
+        )}
+
+        {/* Put on IL */}
+        {!isOnIL && (
+          <button
+            onClick={handlePlaceOnIL}
+            className="w-full flex items-center justify-between px-3 py-2 rounded border border-navy-lighter/30 bg-navy-lighter/10 hover:border-red-400/30 hover:bg-red-900/10 transition-all group"
+          >
+            <span className="font-mono text-sm text-cream-dim group-hover:text-red-300">Place on IL (10-day)</span>
+            <span className="font-mono text-xs text-cream-dim/30">+</span>
+          </button>
+        )}
+
+        {/* Extend Contract */}
+        {qaContract && !qaContract.isFreeAgent && qaContract.yearsRemaining <= 2 && (
+          showExtend ? (
+            <div className="space-y-2 pt-1 pb-0.5 border border-gold/20 bg-gold/5 rounded px-3 py-2">
+              <p className="font-mono text-xs text-gold/70 uppercase tracking-wide">Offer Extension</p>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="font-mono text-[10px] text-cream-dim/50 block mb-0.5">Years</label>
+                  <select
+                    value={extYears}
+                    onChange={e => setExtYears(Number(e.target.value))}
+                    className="w-full bg-navy-lighter border border-navy-lighter/60 rounded px-2 py-1 text-xs font-mono text-cream"
+                  >
+                    {[1, 2, 3, 4, 5].map(y => <option key={y} value={y}>{y} yr</option>)}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="font-mono text-[10px] text-cream-dim/50 block mb-0.5">$/yr (K)</label>
+                  <input
+                    type="number"
+                    value={extSalary}
+                    onChange={e => setExtSalary(Number(e.target.value))}
+                    min={500}
+                    max={50000}
+                    step={500}
+                    className="w-full bg-navy-lighter border border-navy-lighter/60 rounded px-2 py-1 text-xs font-mono text-cream"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={handleExtend}
+                  className="flex-1 px-2 py-1.5 rounded text-xs font-mono bg-gold/15 border border-gold/40 text-gold hover:bg-gold/25 transition-colors"
+                >
+                  Sign Extension
+                </button>
+                <button
+                  onClick={() => setShowExtend(false)}
+                  className="px-2 py-1.5 rounded text-xs font-mono border border-navy-lighter/40 text-cream-dim hover:text-cream transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowExtend(true)}
+              className="w-full flex items-center justify-between px-3 py-2 rounded border border-gold/20 bg-gold/5 hover:border-gold/40 hover:bg-gold/10 transition-all group"
+            >
+              <span className="font-mono text-sm text-gold/80 group-hover:text-gold">Extend Contract</span>
+              <span className="font-mono text-xs text-gold/30">yr {qaContract.yearsRemaining} left</span>
+            </button>
+          )
+        )}
+
+        {/* Release */}
+        <div className="pt-1 border-t border-navy-lighter/30">
+          {confirmRelease ? (
+            <div className="space-y-1.5">
+              <p className="font-mono text-xs text-red-400 text-center">Release to waivers?</p>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={handleRelease}
+                  className="flex-1 px-2 py-1.5 rounded text-xs font-mono bg-red-900/30 border border-red-500/40 text-red-300 hover:bg-red-900/50 transition-colors"
+                >
+                  Confirm Release
+                </button>
+                <button
+                  onClick={() => setConfirmRelease(false)}
+                  className="px-2 py-1.5 rounded text-xs font-mono border border-navy-lighter/40 text-cream-dim hover:text-cream transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmRelease(true)}
+              className="w-full flex items-center justify-between px-3 py-2 rounded border border-red-900/30 bg-red-900/5 hover:border-red-500/30 hover:bg-red-900/10 transition-all group"
+            >
+              <span className="font-mono text-sm text-red-400/70 group-hover:text-red-400">Release to Waivers</span>
+              <span className="font-mono text-xs text-red-400/20">✕</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </Panel>
+  ) : null;
 
   if (!ps) {
     // No in-game stats yet — show full ratings + scouting + contract if available
@@ -455,8 +668,11 @@ export function PlayerStatsPage() {
                 </Panel>
               )}
             </div>
-            {/* Right: career arc + scouting + contract */}
+            {/* Right: quick actions + career arc + scouting + contract */}
             <div className="space-y-4">
+              {/* Quick Actions — own players only */}
+              {quickActionsPanel}
+
               {/* Career Arc — shown first for at-a-glance trajectory */}
               <Panel title="Career Arc">
                 <CareerArcChart
@@ -766,9 +982,12 @@ export function PlayerStatsPage() {
           </Panel>
         </div>
 
-        {/* Right column: ratings */}
+        {/* Right column: quick actions + ratings */}
         {player && (
           <div className="space-y-4">
+
+            {/* Quick Actions — own players only */}
+            {quickActionsPanel}
 
             {/* Career Arc — top of right column for at-a-glance trajectory */}
             <Panel title="Career Arc">

@@ -84,8 +84,13 @@ export function SchedulePage() {
     if (userGame.played) {
       // Navigate directly to box score for played games
       navigate(`/franchise/box-score/${userGame.id}`);
+    } else if (day === currentDay + 1) {
+      // Next scheduled game — play live
+      handlePlayGame(userGame);
+    } else {
+      // Future game — sim up to this day
+      handleSimGame(userGame);
     }
-    // Upcoming games handled by action buttons
   };
 
   const handlePlayGame = async (game: ScheduledGame) => {
