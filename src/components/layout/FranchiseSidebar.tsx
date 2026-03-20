@@ -62,6 +62,7 @@ const Icons = {
   news: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z M9 10h6 M9 14h4',
   teamStats: 'M3 3h18v18H3z M7 7h4v4H7z M13 7h4v4h-4z M7 13h4v4H7z M13 13h4v4h-4z',
   hotCold: 'M12 2a5 5 0 015 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 015-5z M12 22l2-4h-4l2 4z',
+  compare: 'M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h3 M16 3h3a2 2 0 012 2v14a2 2 0 01-2 2h-3 M12 3v18',
 };
 
 interface NavItem {
@@ -109,6 +110,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Standings', path: '/franchise/standings', icon: 'standings' },
       { label: 'Power Rankings', path: '/franchise/power-rankings', icon: 'records' },
       { label: 'Leaders', path: '/franchise/leaders', icon: 'leaders' },
+      { label: 'Compare Players', path: '/franchise/compare', icon: 'compare' },
       { label: 'Records', path: '/franchise/records', icon: 'records' },
       {
         label: 'Team Stats',
