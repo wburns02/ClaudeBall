@@ -289,7 +289,7 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
                 ab: b.ab, h: b.h, doubles: b.doubles, triples: b.triples, r: b.r, rbi: b.rbi, hr: b.hr, bb: b.bb, so: b.so, sb: b.sb,
                 ip: '', er: 0, kPitching: 0, bbPitching: 0, decision: '',
               };
-              ps.gameLog = [...ps.gameLog.slice(-19), logEntry];
+              ps.gameLog = [...ps.gameLog, logEntry];
 
               // Single-game records
               // (updated below via updateRecords)
@@ -332,7 +332,7 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
                 ab: 0, h: 0, doubles: 0, triples: 0, r: 0, rbi: 0, hr: 0, bb: 0, so: 0, sb: 0,
                 ip: p.ip, er: p.er, kPitching: p.so, bbPitching: p.bb, decision: p.decision,
               };
-              ps.gameLog = [...ps.gameLog.slice(-19), logEntry];
+              ps.gameLog = [...ps.gameLog, logEntry];
             }
           };
 

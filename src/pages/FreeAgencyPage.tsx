@@ -220,7 +220,7 @@ export function FreeAgencyPage() {
       {/* In-season notice */}
       {!isOffseason && (
         <div className="mb-4 px-4 py-3 rounded-md font-mono text-sm border border-gold/30 bg-gold/5 text-gold/80">
-          In-season free agency — fringe players available now. Full FA market opens after the season.
+          In-season free agency — showing fringe players (OVR &lt;68). Impact free agents sign during the offseason.
         </div>
       )}
 

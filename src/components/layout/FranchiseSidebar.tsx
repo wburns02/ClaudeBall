@@ -107,6 +107,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'LEAGUE',
     items: [
       { label: 'Standings', path: '/franchise/standings', icon: 'standings' },
+      { label: 'Power Rankings', path: '/franchise/power-rankings', icon: 'records' },
       { label: 'Leaders', path: '/franchise/leaders', icon: 'leaders' },
       { label: 'Records', path: '/franchise/records', icon: 'records' },
       {

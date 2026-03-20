@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -53,7 +53,7 @@ function Pip({ label, value }: { label: string; value: string | number }) {
 
 export function LineupEditorPage() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, reorderLineup, setRotation, setBullpen } = useFranchiseStore();
+  const { season, engine, userTeamId, reorderLineup: _reorderLineup, setRotation: _setRotation, setBullpen: _setBullpen } = useFranchiseStore();
   const { playerStats } = useStatsStore();
 
   const [autoFilledBatting, setAutoFilledBatting] = useState(false);
@@ -62,6 +62,25 @@ export function LineupEditorPage() {
   const [selectedSpot, setSelectedSpot] = useState<number | null>(null);
   const [selectedRotSlot, setSelectedRotSlot] = useState<number | null>(null);
   const [dragSrc, setDragSrc] = useState<DragSource | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flashSaved = useCallback(() => {
+    setSavedAt(Date.now());
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    savedTimerRef.current = setTimeout(() => setSavedAt(null), 2500);
+  }, []);
+
+  // Wrapped save actions that trigger the saved indicator
+  const reorderLineup = useCallback((...args: Parameters<typeof _reorderLineup>) => {
+    _reorderLineup(...args); flashSaved();
+  }, [_reorderLineup, flashSaved]);
+  const setRotation = useCallback((...args: Parameters<typeof _setRotation>) => {
+    _setRotation(...args); flashSaved();
+  }, [_setRotation, flashSaved]);
+  const setBullpen = useCallback((...args: Parameters<typeof _setBullpen>) => {
+    _setBullpen(...args); flashSaved();
+  }, [_setBullpen, flashSaved]);
   const [dragOverLineup, setDragOverLineup] = useState<number | null>(null);
   const [dragOverRotation, setDragOverRotation] = useState<number | null>(null);
 
@@ -220,10 +239,12 @@ export function LineupEditorPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-cream-dim/40 flex items-center gap-1.5">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-light/50" />
-            Auto-saved
-          </span>
+          {savedAt !== null && (
+            <span className="font-mono text-xs text-green-light/70 flex items-center gap-1.5 transition-opacity duration-300">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-light animate-pulse" />
+              Saved
+            </span>
+          )}
           <Button onClick={() => navigate('/franchise/roster')} variant="ghost" size="sm">Roster</Button>
         </div>
       </div>

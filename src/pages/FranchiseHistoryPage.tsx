@@ -3,7 +3,9 @@ import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useHistoryStore } from '@/stores/historyStore.ts';
+import { useInboxStore } from '@/stores/inboxStore.ts';
 import { cn } from '@/lib/cn.ts';
+import type { InboxItem } from '@/stores/inboxStore.ts';
 
 const AWARD_META: Record<string, { label: string; color: string }> = {
   MVP: { label: 'MVP', color: 'text-gold' },
@@ -15,6 +17,7 @@ export function FranchiseHistoryPage() {
   const navigate = useNavigate();
   const { engine, userTeamId, season } = useFranchiseStore();
   const { seasonRecords, champions, awardHistory, allStarResults, tradeHistory, clearHistory } = useHistoryStore();
+  const inboxItems = useInboxStore(s => s.items);
 
   if (!engine) {
     return (
@@ -117,6 +120,88 @@ export function FranchiseHistoryPage() {
             </div>
             <p className="text-xs text-cream-dim/40 mt-3 font-mono">Full history is saved at season end.</p>
           </div>
+        );
+      })()}
+
+      {/* Recent Games (in-season) */}
+      {season && userTeamId && (() => {
+        const recentGames = season.schedule
+          .filter(g => g.played && (g.awayId === userTeamId || g.homeId === userTeamId))
+          .slice(-15)
+          .reverse();
+        if (recentGames.length === 0) return null;
+        return (
+          <Panel title="Recent Games" className="mb-6">
+            <div className="space-y-0.5">
+              {recentGames.map(g => {
+                const isHome = g.homeId === userTeamId;
+                const oppId = isHome ? g.awayId : g.homeId;
+                const oppTeam = engine.getTeam(oppId);
+                const oppName = oppTeam ? `${oppTeam.city} ${oppTeam.name}` : oppId;
+                const userScore = isHome ? g.homeScore! : g.awayScore!;
+                const oppScore = isHome ? g.awayScore! : g.homeScore!;
+                const won = userScore > oppScore;
+                return (
+                  <div key={g.id} className="flex items-center justify-between py-1.5 border-b border-navy-lighter/20 last:border-0 font-mono text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        'w-5 text-center font-bold rounded',
+                        won ? 'text-green-light' : 'text-red',
+                      )}>
+                        {won ? 'W' : 'L'}
+                      </span>
+                      <span className="text-cream-dim/50">D{g.date}</span>
+                      <span className="text-cream-dim text-[10px]">{isHome ? 'vs' : '@'}</span>
+                      <span className="text-cream truncate max-w-[140px]">{oppName}</span>
+                    </div>
+                    <span className={cn('font-bold tabular-nums', won ? 'text-green-light' : 'text-cream-dim')}>
+                      {userScore}–{oppScore}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </Panel>
+        );
+      })()}
+
+      {/* Season Events (in-season inbox items) */}
+      {season && (() => {
+        const EVENT_COLORS: Partial<Record<InboxItem['type'], string>> = {
+          injury: 'text-red',
+          return: 'text-green-light',
+          milestone: 'text-gold',
+          trade_offer: 'text-blue-400',
+          waiver: 'text-cream-dim',
+          callup: 'text-green-light',
+        };
+        const relevantItems = inboxItems
+          .filter(item => item.day > 0)
+          .sort((a, b) => b.day - a.day)
+          .slice(0, 20);
+        if (relevantItems.length === 0) return null;
+        return (
+          <Panel title="Season Events" className="mb-6">
+            <div className="space-y-0.5 max-h-72 overflow-y-auto">
+              {relevantItems.map(item => {
+                const color = EVENT_COLORS[item.type] ?? 'text-cream-dim';
+                return (
+                  <div key={item.id} className="flex items-start gap-3 py-1.5 border-b border-navy-lighter/20 last:border-0">
+                    <span className="font-mono text-[10px] text-cream-dim/40 shrink-0 mt-0.5">D{item.day}</span>
+                    <div className="min-w-0">
+                      <p className={cn('font-mono text-xs font-semibold truncate', color)}>{item.title}</p>
+                      {item.body && (
+                        <p className="font-mono text-[10px] text-cream-dim/60 truncate">{item.body}</p>
+                      )}
+                    </div>
+                    {item.urgent && (
+                      <span className="shrink-0 font-mono text-[9px] text-red uppercase font-bold mt-0.5">!</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </Panel>
         );
       })()}
 

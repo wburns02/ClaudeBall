@@ -310,7 +310,7 @@ type TabMode = 'picture' | 'divisions' | 'wildcard';
 export function StandingsPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId } = useFranchiseStore();
-  const [tab, setTab] = useState<TabMode>('picture');
+  const [tab, setTab] = useState<TabMode>('divisions');
 
   if (!season || !engine) {
     return (
