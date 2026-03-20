@@ -51,9 +51,7 @@ function GameCard({ game, awayAbbr, homeAbbr, awayRecord, homeRecord, isUserTeam
     >
       {/* Away team row */}
       <div className="flex items-center gap-2">
-        <span className={cn(
-          'font-mono text-xs w-4 text-cream-dim/60',
-        )}>@</span>
+        <span className="font-mono text-[9px] text-cream-dim/50 w-8 tracking-wider">AWY</span>
         <span className={cn(
           'font-mono text-xs tracking-wider uppercase flex-1',
           userAway ? 'text-gold font-bold' : 'text-cream',
@@ -79,7 +77,7 @@ function GameCard({ game, awayAbbr, homeAbbr, awayRecord, homeRecord, isUserTeam
 
       {/* Home team row */}
       <div className="flex items-center gap-2 mt-1">
-        <span className="font-mono text-xs w-4 text-cream-dim/60">H</span>
+        <span className="font-mono text-[9px] text-cream-dim/50 w-8 tracking-wider">HME</span>
         <span className={cn(
           'font-mono text-xs tracking-wider uppercase flex-1',
           userHome ? 'text-gold font-bold' : 'text-cream',
@@ -124,8 +122,15 @@ export function LeagueScoreboardPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId } = useFranchiseStore();
 
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  // Default to most recent day with played games, or currentDay
+  const defaultDay = useMemo(() => {
+    const played = season?.schedule.filter(g => g.played).map(g => g.date) ?? [];
+    return played.length > 0 ? Math.max(...played) : (season?.currentDay ?? 1);
+  }, []); // only compute once on mount
 
+  const [selectedDay, setSelectedDay] = useState<number>(defaultDay);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   if (!season || !engine || !userTeamId) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
@@ -140,7 +145,7 @@ export function LeagueScoreboardPage() {
   }
 
   const currentDay = season.currentDay;
-  const activeDay = selectedDay ?? currentDay;
+  const activeDay = selectedDay;
 
   // Build a lookup: teamId → abbreviation
   const teamMap = useMemo(() => {
@@ -291,35 +296,42 @@ export function LeagueScoreboardPage() {
       {/* Season overview strip */}
       {playedDays.length > 0 && (
         <div className="mt-6">
-          <Panel title="Season Results">
+          <Panel title={`Season Results — ${playedDays.length} days played`}>
             <p className="font-mono text-xs text-cream-dim mb-3">
-              {playedDays.length} days played · click a day to view scores
+              Recent results · click to jump to a day
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {allGameDays.map(day => {
-                const isPlayed = playedDays.includes(day);
-                const isActive = day === activeDay;
-                const isCurrent = day === currentDay;
-                return (
-                  <button
-                    key={day}
-                    onClick={() => setSelectedDay(day)}
-                    title={`Day ${day}${isPlayed ? ' — Final' : ''}`}
-                    className={cn(
-                      'w-7 h-7 rounded text-[9px] font-mono transition-all',
-                      isActive
-                        ? 'bg-gold text-navy font-bold'
-                        : isCurrent
-                        ? 'bg-gold/20 text-gold border border-gold/40'
-                        : isPlayed
-                        ? 'bg-navy-lighter/40 text-cream hover:bg-navy-lighter/60'
-                        : 'bg-navy-lighter/10 text-cream-dim/30 hover:bg-navy-lighter/20',
-                    )}
-                  >
-                    {day}
-                  </button>
-                );
-              })}
+              {/* Show last 30 played days + upcoming 7 game days */}
+              {allGameDays
+                .filter(d => {
+                  const recentStart = playedDays.length > 0 ? playedDays[Math.max(0, playedDays.length - 30)] : currentDay;
+                  const upcomingEnd = allGameDays.filter(x => x >= currentDay)[6] ?? currentDay + 7;
+                  return d >= recentStart && d <= upcomingEnd;
+                })
+                .map(day => {
+                  const isPlayed = playedDays.includes(day);
+                  const isActive = day === activeDay;
+                  const isCurrent = day === currentDay;
+                  return (
+                    <button
+                      key={day}
+                      onClick={() => setSelectedDay(day)}
+                      title={`Day ${day}${isPlayed ? ' — Final' : ''}`}
+                      className={cn(
+                        'w-7 h-7 rounded text-[9px] font-mono transition-all',
+                        isActive
+                          ? 'bg-gold text-navy font-bold'
+                          : isCurrent
+                          ? 'bg-gold/20 text-gold border border-gold/40'
+                          : isPlayed
+                          ? 'bg-navy-lighter/40 text-cream hover:bg-navy-lighter/60'
+                          : 'bg-navy-lighter/10 text-cream-dim/30 hover:bg-navy-lighter/20',
+                      )}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
             </div>
           </Panel>
         </div>
