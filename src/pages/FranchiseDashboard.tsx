@@ -558,23 +558,42 @@ export function FranchiseDashboard() {
         {/* Division Standings */}
         {userDiv && (
           <Panel title={`${userDiv.league} ${userDiv.division}`}>
-            <StatsTable
-              columns={[
-                { key: 'team', label: 'Team', align: 'left' },
-                { key: 'w', label: 'W', align: 'right' },
-                { key: 'l', label: 'L', align: 'right' },
-                { key: 'pct', label: 'PCT', align: 'right' },
-                { key: 'gb', label: 'GB', align: 'right' },
-              ]}
-              rows={userDiv.teams.map((t: TeamRecord, i: number) => ({
-                team: (t.teamId === userTeamId ? '► ' : '') + (engine.getTeam(t.teamId)?.abbreviation ?? t.teamId),
-                w: t.wins,
-                l: t.losses,
-                pct: winPct(t),
-                gb: i === 0 ? '—' : gamesBehind(userDiv.teams[0], t),
-              }))}
-              compact
-            />
+            <table className="w-full font-mono text-xs">
+              <thead>
+                <tr className="border-b border-navy-lighter/40 text-cream-dim/50">
+                  <th className="text-left py-1">Team</th>
+                  <th className="text-right py-1">W</th>
+                  <th className="text-right py-1 pl-1">L</th>
+                  <th className="text-right py-1 pl-2">PCT</th>
+                  <th className="text-right py-1 pl-2">GB</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userDiv.teams.map((t: TeamRecord, i: number) => {
+                  const isUser = t.teamId === userTeamId;
+                  const abbr = engine.getTeam(t.teamId)?.abbreviation ?? t.teamId;
+                  const gb = i === 0 ? '—' : gamesBehind(userDiv.teams[0], t);
+                  return (
+                    <tr
+                      key={t.teamId}
+                      onClick={() => navigate(`/franchise/team-stats/${t.teamId}`)}
+                      className={cn(
+                        'border-b border-navy-lighter/20 last:border-0 cursor-pointer transition-colors',
+                        isUser ? 'bg-gold/5 hover:bg-gold/10' : 'hover:bg-navy-lighter/20',
+                      )}
+                    >
+                      <td className={cn('py-1.5', isUser ? 'text-gold font-bold' : 'text-cream')}>
+                        {isUser ? '► ' : ''}{abbr}
+                      </td>
+                      <td className="text-right tabular-nums text-cream py-1.5">{t.wins}</td>
+                      <td className="text-right tabular-nums text-cream py-1.5 pl-1">{t.losses}</td>
+                      <td className="text-right tabular-nums text-cream-dim py-1.5 pl-2">{winPct(t)}</td>
+                      <td className="text-right tabular-nums text-cream-dim/60 py-1.5 pl-2">{gb}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </Panel>
         )}
       </div>

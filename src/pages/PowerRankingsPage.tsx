@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { cn } from '@/lib/cn.ts';
@@ -125,6 +126,7 @@ function RunDiffBar({ rs, ra }: { rs: number; ra: number }) {
 type SortKey = 'rank' | 'wins' | 'pct' | 'pyth' | 'rdiff' | 'odds' | 'form';
 
 export function PowerRankingsPage() {
+  const navigate = useNavigate();
   const { engine, season, userTeamId, teams } = useFranchiseStore();
   const [sortKey, setSortKey] = useState<SortKey>('rank');
   const [sortAsc, setSortAsc] = useState(true);
@@ -395,7 +397,7 @@ export function PowerRankingsPage() {
                       const name = entry.team ? `${entry.team.city} ${entry.team.name}` : entry.rec.teamId;
                       const rd = entry.rec.runsScored - entry.rec.runsAllowed;
                       return (
-                        <tr key={entry.rec.teamId} className={cn('border-b border-navy-lighter/10 last:border-0', isUser && 'bg-gold/5')}>
+                        <tr key={entry.rec.teamId} onClick={() => navigate(`/franchise/team-stats/${entry.rec.teamId}`)} className={cn('border-b border-navy-lighter/10 last:border-0 cursor-pointer hover:bg-navy-lighter/20 transition-colors', isUser && 'bg-gold/5')}>
                           <td className="py-1.5">
                             <div className="flex items-center gap-1.5">
                               <span className="text-cream-dim/30 w-3">{i + 1}</span>
@@ -451,9 +453,10 @@ export function PowerRankingsPage() {
                 return (
                   <tr
                     key={entry.rec.teamId}
+                    onClick={() => navigate(`/franchise/team-stats/${entry.rec.teamId}`)}
                     className={cn(
-                      'border-b border-navy-lighter/20 last:border-0 transition-colors',
-                      isUser ? 'bg-gold/5' : 'hover:bg-navy-lighter/10',
+                      'border-b border-navy-lighter/20 last:border-0 transition-colors cursor-pointer',
+                      isUser ? 'bg-gold/5 hover:bg-gold/10' : 'hover:bg-navy-lighter/20',
                     )}
                   >
                     <td className={cn('py-2 pr-2 font-bold text-sm', rankColor(entry.rank, data.teams.length))}>

@@ -86,14 +86,19 @@ function CategoryBadge({ category }: { category: NewsCategory }) {
 
 // ── Single news card ──────────────────────────────────────────────────────────
 
-function NewsCard({ item }: { item: NewsItem }) {
+function NewsCard({ item, onClick }: { item: NewsItem; onClick?: () => void }) {
+  const isClickable = !!onClick;
   return (
-    <div className={cn(
-      'rounded-lg border px-4 py-3 transition-colors',
-      item.isUserTeam
-        ? 'border-gold/30 bg-gold/5'
-        : 'border-navy-lighter/40 bg-navy-light/20',
-    )}>
+    <div
+      onClick={onClick}
+      className={cn(
+        'rounded-lg border px-4 py-3 transition-colors',
+        item.isUserTeam
+          ? 'border-gold/30 bg-gold/5'
+          : 'border-navy-lighter/40 bg-navy-light/20',
+        isClickable && 'cursor-pointer hover:border-gold/40 hover:bg-navy-lighter/10',
+      )}
+    >
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -101,6 +106,9 @@ function NewsCard({ item }: { item: NewsItem }) {
             <span className="font-mono text-[10px] text-cream-dim/40">Day {item.day}</span>
             {item.isUserTeam && (
               <span className="font-mono text-[10px] text-gold/60 font-bold">★ YOUR TEAM</span>
+            )}
+            {isClickable && (
+              <span className="font-mono text-[10px] text-cream-dim/30 ml-auto">→</span>
             )}
           </div>
           <p className={cn(
@@ -236,6 +244,15 @@ function StandingsSnapshot({
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
+
+function newsItemNav(item: NewsItem): string | null {
+  if (item.playerId) return `/franchise/player-stats/${item.playerId}`;
+  if (item.teamId) return `/franchise/team-stats/${item.teamId}`;
+  if (item.category === 'standings') return '/franchise/standings';
+  if (item.category === 'stats') return '/franchise/leaders';
+  if (item.category === 'game') return '/franchise/game-log';
+  return null;
+}
 
 export function NewsPage() {
   const navigate = useNavigate();
@@ -553,9 +570,10 @@ export function NewsPage() {
             <span className="text-gold">★</span> {userTeam?.city} {userTeam?.name} News
           </p>
           <div className="space-y-2">
-            {userItems.map(item => (
-              <NewsCard key={item.id} item={item} />
-            ))}
+            {userItems.map(item => {
+              const navUrl = newsItemNav(item);
+              return <NewsCard key={item.id} item={item} onClick={navUrl ? () => navigate(navUrl) : undefined} />;
+            })}
           </div>
         </div>
       )}
@@ -582,9 +600,10 @@ export function NewsPage() {
           </Panel>
         ) : (
           <div className="space-y-2">
-            {leagueItems.map(item => (
-              <NewsCard key={item.id} item={item} />
-            ))}
+            {leagueItems.map(item => {
+              const navUrl = newsItemNav(item);
+              return <NewsCard key={item.id} item={item} onClick={navUrl ? () => navigate(navUrl) : undefined} />;
+            })}
           </div>
         )}
       </div>
