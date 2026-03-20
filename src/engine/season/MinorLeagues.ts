@@ -9,6 +9,20 @@ export interface MinorLeagueRoster {
   players: Player[];
 }
 
+export interface MiLBBatterStats {
+  g: number; ab: number; r: number; h: number; doubles: number;
+  triples: number; hr: number; rbi: number; bb: number; k: number; sb: number;
+  avg: number; obp: number; slg: number; ops: number;
+}
+
+export interface MiLBPitcherStats {
+  g: number; gs: number; w: number; l: number; sv: number;
+  ip: number; h: number; er: number; bb: number; k: number;
+  era: number; whip: number;
+}
+
+export type MiLBStats = MiLBBatterStats | MiLBPitcherStats;
+
 export interface CallupEvent {
   type: 'callup' | 'senddown';
   teamId: string;
@@ -362,6 +376,130 @@ export class MinorLeagues {
     }
 
     return events;
+  }
+
+  /**
+   * Simulate AAA statistics for `days` days, accumulating into `existing`.
+   * Returns a new record with updated counting + rate stats for every player.
+   */
+  simulateDayStats(
+    days: number,
+    rng: RandomProvider,
+    existing: Record<string, MiLBStats>,
+  ): Record<string, MiLBStats> {
+    const result: Record<string, MiLBStats> = { ...existing };
+
+    for (const roster of this.affiliates.values()) {
+      for (const player of roster.players) {
+        const isPitcher = player.position === 'P';
+
+        if (isPitcher) {
+          const prev = result[player.id] as MiLBPitcherStats | undefined;
+          const stats: MiLBPitcherStats = prev
+            ? { ...prev }
+            : { g: 0, gs: 0, w: 0, l: 0, sv: 0, ip: 0, h: 0, er: 0, bb: 0, k: 0, era: 0, whip: 0 };
+
+          const isStarter = player.pitching.stamina >= 52;
+          const appearChance = isStarter ? 0.20 : 0.33;
+
+          for (let d = 0; d < days; d++) {
+            if (rng.next() > appearChance) continue;
+
+            stats.g++;
+            if (isStarter) stats.gs++;
+
+            const baseIP = isStarter
+              ? 3.0 + (player.pitching.stamina / 85) * 4.0
+              : 0.3 + (player.pitching.stamina / 85) * 1.2;
+            const ip = Math.max(0.1, baseIP + rng.nextGaussian(0, 0.5));
+            stats.ip += ip;
+
+            const kPerIP = 0.6 + (player.pitching.stuff / 85) * 0.8;
+            stats.k += Math.max(0, Math.round(ip * kPerIP + rng.nextGaussian(0, 1)));
+
+            const bbPerIP = 0.8 - (player.pitching.control / 85) * 0.6;
+            stats.bb += Math.max(0, Math.round(ip * bbPerIP + rng.nextGaussian(0, 0.5)));
+
+            const quality = (player.pitching.stuff + player.pitching.movement + player.pitching.control) / 255;
+            const hPerIP = 1.4 - quality * 0.6;
+            stats.h += Math.max(0, Math.round(ip * hPerIP + rng.nextGaussian(0, 1)));
+
+            const erPerIP = Math.max(0, (1.1 - quality) * 0.9);
+            stats.er += Math.max(0, Math.round(ip * erPerIP + rng.nextGaussian(0, 0.4)));
+
+            if (isStarter && ip >= 5) {
+              const winChance = quality * 0.5 + 0.25;
+              if (rng.next() < winChance) stats.w++; else stats.l++;
+            }
+            if (!isStarter && ip >= 1 && rng.next() < 0.15) stats.sv++;
+          }
+
+          stats.era = stats.ip > 0 ? (stats.er / stats.ip) * 9 : 0;
+          stats.whip = stats.ip > 0 ? (stats.bb + stats.h) / stats.ip : 0;
+          result[player.id] = stats;
+
+        } else {
+          const prev = result[player.id] as MiLBBatterStats | undefined;
+          const stats: MiLBBatterStats = prev
+            ? { ...prev }
+            : { g: 0, ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, k: 0, sb: 0, avg: 0, obp: 0, slg: 0, ops: 0 };
+
+          const contact = (player.batting.contact_L + player.batting.contact_R) / 2;
+          const power = (player.batting.power_L + player.batting.power_R) / 2;
+          const bbRate = 0.04 + (player.batting.eye / 85) * 0.14;
+          const kRate = 0.28 - (player.batting.avoid_k / 85) * 0.18;
+          const hitRate = 0.190 + (contact / 85) * 0.145;
+          const hrChancePerAB = Math.max(0, (power - 30) / 55) * 0.075;
+          const sbRate = (player.batting.steal / 85) * 0.14;
+
+          for (let d = 0; d < days; d++) {
+            if (rng.next() > 0.65) continue;
+
+            stats.g++;
+            const pa = 3 + Math.round(rng.next() * 2);
+
+            for (let i = 0; i < pa; i++) {
+              const roll = rng.next();
+              if (roll < bbRate) {
+                stats.bb++;
+              } else if (roll < bbRate + kRate) {
+                stats.ab++;
+                stats.k++;
+              } else {
+                stats.ab++;
+                if (rng.next() < hitRate) {
+                  stats.h++;
+                  if (rng.next() < hrChancePerAB) {
+                    stats.hr++;
+                    stats.r++;
+                    stats.rbi++;
+                  } else if (rng.next() < 0.22) {
+                    stats.doubles++;
+                  } else if (rng.next() < 0.03) {
+                    stats.triples++;
+                  }
+                  if (rng.next() < 0.28) stats.rbi++;
+                  if (rng.next() < 0.22) stats.r++;
+                }
+              }
+            }
+            if (stats.h > 0 && rng.next() < sbRate) stats.sb++;
+          }
+
+          const pa = stats.ab + stats.bb;
+          stats.avg = stats.ab > 0 ? stats.h / stats.ab : 0;
+          stats.obp = pa > 0 ? (stats.h + stats.bb) / pa : 0;
+          const singles = stats.h - stats.doubles - stats.triples - stats.hr;
+          stats.slg = stats.ab > 0
+            ? (singles + 2 * stats.doubles + 3 * stats.triples + 4 * stats.hr) / stats.ab
+            : 0;
+          stats.ops = stats.obp + stats.slg;
+          result[player.id] = stats;
+        }
+      }
+    }
+
+    return result;
   }
 
   /**

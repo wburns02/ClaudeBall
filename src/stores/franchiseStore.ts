@@ -14,7 +14,7 @@ import { generateFreeAgents, FreeAgentPool } from '@/engine/gm/FreeAgency.ts';
 import { estimateMarketSalary } from '@/engine/gm/ContractEngine.ts';
 import type { InjuryRecord } from '@/engine/season/InjuryEngine.ts';
 import type { AITradeRecord } from '@/engine/season/AITradeManager.ts';
-import type { MinorLeagueRoster, CallupEvent, ProspectDevelopmentEvent } from '@/engine/season/MinorLeagues.ts';
+import type { MinorLeagueRoster, CallupEvent, ProspectDevelopmentEvent, MiLBStats } from '@/engine/season/MinorLeagues.ts';
 import type { WaiverPlayer, WaiverEvent } from '@/engine/gm/WaiverWire.ts';
 import type { PlayerContract } from '@/engine/gm/ContractEngine.ts';
 import type { DevelopmentChange } from '@/engine/season/OffseasonEngine.ts';
@@ -77,6 +77,9 @@ interface FranchiseState {
   lastDevelopmentChanges: DevelopmentChange[] | null;
   prospectDevelopmentLog: ProspectDevelopmentEvent[];
   lastProspectDevelopment: ProspectDevelopmentEvent[];
+
+  // Minor league season stats — accumulated per simmed day
+  minorLeagueStats: Record<string, MiLBStats>;
 
   // Trade proposals (persisted across navigation)
   tradeProposals: StoredTradeProposal[];
@@ -189,6 +192,7 @@ export const useFranchiseStore = create<FranchiseState>()(
   prospectDevelopmentLog: [],
   lastProspectDevelopment: [],
   ilRoster: [],
+  minorLeagueStats: {},
   placeOnIL: (playerId, playerName, position, ilType) => {
     set(s => {
       if (s.ilRoster.some(slot => slot.playerId === playerId)) return {};
@@ -297,6 +301,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       lastDevelopmentChanges: null,
       prospectDevelopmentLog: [],
       lastProspectDevelopment: [],
+      minorLeagueStats: {},
       teamBudgets,
     });
     // Initialize morale for all players immediately
@@ -358,6 +363,12 @@ export const useFranchiseStore = create<FranchiseState>()(
       } catch { /* non-critical */ }
     }
 
+    // Simulate minor league stats for the day
+    let newMinorStats = get().minorLeagueStats;
+    try {
+      newMinorStats = engine.minorLeagues.simulateDayStats(1, engine.getRng(), newMinorStats);
+    } catch { /* non-critical */ }
+
     set(s => ({
       season: { ...engine.getState() },
       lastDayEvents: events,
@@ -369,6 +380,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         ? [...s.prospectDevelopmentLog, ...prospectEvents]
         : s.prospectDevelopmentLog,
       lastProspectDevelopment: prospectEvents,
+      minorLeagueStats: newMinorStats,
     }));
     // Update player morale based on recent performance (non-blocking, best-effort)
     try { get().refreshHotCold(); } catch { /* non-critical */ }
@@ -430,6 +442,12 @@ export const useFranchiseStore = create<FranchiseState>()(
       }
     } catch { /* non-critical */ }
 
+    // Simulate minor league stats for all simmed days
+    let newMinorStats = get().minorLeagueStats;
+    try {
+      newMinorStats = engine.minorLeagues.simulateDayStats(count, engine.getRng(), newMinorStats);
+    } catch { /* non-critical */ }
+
     set(s => ({
       season: { ...engine.getState() },
       injuryLog: engine.injuryEngine.getAllInjuries(),
@@ -441,6 +459,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         ? [...s.prospectDevelopmentLog, ...allProspectEvents]
         : s.prospectDevelopmentLog,
       lastProspectDevelopment: allProspectEvents.length > 0 ? allProspectEvents : s.lastProspectDevelopment,
+      minorLeagueStats: newMinorStats,
     }));
     try { get().refreshHotCold(); } catch { /* non-critical */ }
     try { get().refreshMorale(); } catch { /* non-critical */ }
@@ -760,6 +779,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       ilRoster: [],
       prospectDevelopmentLog: [],
       lastProspectDevelopment: [],
+      minorLeagueStats: {},
     });
   },
 

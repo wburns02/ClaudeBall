@@ -8,7 +8,7 @@ import { getPlayerName } from '@/engine/types/player.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Player } from '@/engine/types/player.ts';
 import type { Team } from '@/engine/types/team.ts';
-import type { ProspectDevelopmentEvent } from '@/engine/season/MinorLeagues.ts';
+import type { ProspectDevelopmentEvent, MiLBBatterStats, MiLBPitcherStats, MiLBStats } from '@/engine/season/MinorLeagues.ts';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -62,6 +62,19 @@ function prospectPotential(ovr: number, age: number): number {
 function posLabel(p: Player): string {
   if (p.position !== 'P') return p.position;
   return p.pitching.stamina >= 52 ? 'SP' : 'RP';
+}
+
+// ─── Stats helpers ────────────────────────────────────────────────────────────
+function formatAvg(val: number): string {
+  if (!isFinite(val) || val === 0) return '.000';
+  return val.toFixed(3).replace(/^0/, '');
+}
+function formatIP(ip: number): string {
+  const whole = Math.floor(ip);
+  const frac = ip - whole;
+  if (frac < 0.167) return `${whole}.0`;
+  if (frac < 0.5) return `${whole}.1`;
+  return `${whole}.2`;
 }
 
 /** Group positions for filter */
@@ -598,15 +611,253 @@ function DevelopmentTab({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
+// ─── AAA Stats Tab ─────────────────────────────────────────────────────────────
+
+interface AffiliateEntry { teamId: string; teamAbbr: string; players: Player[]; }
+interface BatterRow { player: Player; teamId: string; teamAbbr: string; stats: MiLBBatterStats; }
+interface PitcherRow { player: Player; teamId: string; teamAbbr: string; stats: MiLBPitcherStats; }
+
+type BatSortKey = keyof Pick<MiLBBatterStats, 'g' | 'ab' | 'r' | 'h' | 'doubles' | 'hr' | 'rbi' | 'bb' | 'k' | 'sb' | 'avg' | 'obp' | 'slg' | 'ops'>;
+type PitSortKey = keyof Pick<MiLBPitcherStats, 'g' | 'gs' | 'w' | 'l' | 'sv' | 'ip' | 'h' | 'er' | 'bb' | 'k' | 'era' | 'whip'>;
+
+function ThSort({ label, col, active, dir, onSort }: { label: string; col: string; active: boolean; dir: 'asc' | 'desc'; onSort: (c: string) => void }) {
+  return (
+    <th
+      onClick={() => onSort(col)}
+      className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/50 uppercase tracking-wide cursor-pointer select-none hover:text-cream-dim text-right whitespace-nowrap"
+    >
+      {label}{active && (dir === 'desc' ? ' ↓' : ' ↑')}
+    </th>
+  );
+}
+
+function AAAStatsTab({
+  affiliates, minorLeagueStats, userTeamId,
+}: { affiliates: AffiliateEntry[]; minorLeagueStats: Record<string, MiLBStats>; userTeamId: string }) {
+  const [teamFilter, setTeamFilter] = useState<'mine' | 'all'>('mine');
+  const [view, setView] = useState<'batting' | 'pitching'>('batting');
+  const [batSort, setBatSort] = useState<BatSortKey>('ops');
+  const [pitSort, setPitSort] = useState<PitSortKey>('era');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const { batters, pitchers } = useMemo(() => {
+    const playerTeam = new Map<string, string>();
+    const playerTeamAbbr = new Map<string, string>();
+    const playerObj = new Map<string, Player>();
+    for (const aff of affiliates) {
+      for (const p of aff.players) {
+        playerTeam.set(p.id, aff.teamId);
+        playerTeamAbbr.set(p.id, aff.teamAbbr);
+        playerObj.set(p.id, p);
+      }
+    }
+    const batRows: BatterRow[] = [];
+    const pitRows: PitcherRow[] = [];
+    for (const [playerId, stats] of Object.entries(minorLeagueStats)) {
+      const player = playerObj.get(playerId);
+      const teamId = playerTeam.get(playerId);
+      if (!player || !teamId) continue;
+      if (teamFilter === 'mine' && teamId !== userTeamId) continue;
+      const teamAbbr = playerTeamAbbr.get(playerId) ?? teamId.slice(0, 3).toUpperCase();
+      if (player.position === 'P') {
+        pitRows.push({ player, teamId, teamAbbr, stats: stats as MiLBPitcherStats });
+      } else {
+        batRows.push({ player, teamId, teamAbbr, stats: stats as MiLBBatterStats });
+      }
+    }
+    return { batters: batRows, pitchers: pitRows };
+  }, [affiliates, minorLeagueStats, teamFilter, userTeamId]);
+
+  const sortedBatters = useMemo(() => {
+    const mult = sortDir === 'desc' ? -1 : 1;
+    return [...batters].sort((a, b) => (a.stats[batSort] - b.stats[batSort]) * mult);
+  }, [batters, batSort, sortDir]);
+
+  const sortedPitchers = useMemo(() => {
+    const lowerBetter = pitSort === 'era' || pitSort === 'whip' || pitSort === 'er' || pitSort === 'l';
+    const mult = lowerBetter ? (sortDir === 'desc' ? 1 : -1) : (sortDir === 'desc' ? -1 : 1);
+    return [...pitchers].sort((a, b) => (a.stats[pitSort] - b.stats[pitSort]) * mult);
+  }, [pitchers, pitSort, sortDir]);
+
+  const handleBatSort = (col: string) => {
+    const k = col as BatSortKey;
+    if (k === batSort) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
+    else { setBatSort(k); setSortDir('desc'); }
+  };
+  const handlePitSort = (col: string) => {
+    const k = col as PitSortKey;
+    const lowerBetter = k === 'era' || k === 'whip' || k === 'er' || k === 'l';
+    if (k === pitSort) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
+    else { setPitSort(k); setSortDir(lowerBetter ? 'asc' : 'desc'); }
+  };
+
+  const hasStats = Object.keys(minorLeagueStats).length > 0;
+
+  const BAT_COLS: Array<{ col: BatSortKey; label: string }> = [
+    { col: 'g', label: 'G' }, { col: 'ab', label: 'AB' }, { col: 'r', label: 'R' },
+    { col: 'h', label: 'H' }, { col: 'doubles', label: '2B' }, { col: 'hr', label: 'HR' },
+    { col: 'rbi', label: 'RBI' }, { col: 'bb', label: 'BB' }, { col: 'k', label: 'K' },
+    { col: 'sb', label: 'SB' }, { col: 'avg', label: 'AVG' }, { col: 'obp', label: 'OBP' },
+    { col: 'slg', label: 'SLG' }, { col: 'ops', label: 'OPS' },
+  ];
+  const PIT_COLS: Array<{ col: PitSortKey; label: string }> = [
+    { col: 'g', label: 'G' }, { col: 'gs', label: 'GS' }, { col: 'w', label: 'W' },
+    { col: 'l', label: 'L' }, { col: 'sv', label: 'SV' }, { col: 'ip', label: 'IP' },
+    { col: 'h', label: 'H' }, { col: 'er', label: 'ER' }, { col: 'bb', label: 'BB' },
+    { col: 'k', label: 'K' }, { col: 'era', label: 'ERA' }, { col: 'whip', label: 'WHIP' },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Controls row */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex gap-1">
+          {(['mine', 'all'] as const).map(f => (
+            <button key={f} onClick={() => setTeamFilter(f)} className={cn(
+              'font-mono text-xs px-3 py-1.5 rounded-md border transition-colors',
+              teamFilter === f ? 'border-gold text-gold bg-gold/10' : 'border-navy-lighter/50 text-cream-dim/60 hover:text-cream-dim',
+            )}>
+              {f === 'mine' ? 'My AAA' : 'All Teams'}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1 ml-auto">
+          {(['batting', 'pitching'] as const).map(v => (
+            <button key={v} onClick={() => setView(v)} className={cn(
+              'font-mono text-xs px-3 py-1.5 rounded-md border transition-colors',
+              view === v ? 'border-cream-dim/40 text-cream bg-navy-lighter/30' : 'border-transparent text-cream-dim/40 hover:text-cream-dim',
+            )}>
+              {v === 'batting' ? 'Batting' : 'Pitching'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {!hasStats ? (
+        <div className="text-center py-20 border border-dashed border-navy-lighter/40 rounded-xl">
+          <p className="font-mono text-3xl mb-4">📊</p>
+          <p className="font-display text-gold text-xl uppercase tracking-wide mb-2">No Stats Yet</p>
+          <p className="font-mono text-cream-dim/60 text-sm max-w-sm mx-auto leading-relaxed">
+            Stats accumulate as you simulate days. Advance the season to see your AAA players perform.
+          </p>
+        </div>
+      ) : view === 'batting' ? (
+        <div className="overflow-x-auto rounded-lg border border-navy-lighter/40">
+          {sortedBatters.length === 0 ? (
+            <p className="font-mono text-cream-dim/50 text-sm py-8 text-center">No batter stats for this filter.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-navy-lighter/40 bg-navy-lighter/20">
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/40 text-left w-6">#</th>
+                  <th className="px-3 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">NAME</th>
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">TM</th>
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">POS</th>
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">AGE</th>
+                  {BAT_COLS.map(({ col, label }) => (
+                    <ThSort key={col} label={label} col={col} active={batSort === col} dir={sortDir} onSort={handleBatSort} />
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedBatters.map(({ player, teamAbbr, teamId, stats }, i) => {
+                  const isUser = teamId === userTeamId;
+                  return (
+                    <tr key={player.id} className={cn('border-b border-navy-lighter/20 transition-colors text-right', isUser ? 'bg-gold/5 hover:bg-gold/10' : 'hover:bg-navy-lighter/10')}>
+                      <td className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/40 text-center">{i + 1}</td>
+                      <td className="px-3 py-1.5 text-left">
+                        <span className={cn('font-body text-sm', isUser ? 'text-gold font-semibold' : 'text-cream')}>{getPlayerName(player)}</span>
+                      </td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream-dim/60 text-left">{teamAbbr}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream-dim/60 text-left">{player.position}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream-dim/60 text-left">{player.age}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.g}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.ab}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.r}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.h}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.doubles}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.hr}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.rbi}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.bb}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.k}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.sb}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums font-bold', stats.avg >= 0.300 ? 'text-gold' : stats.avg >= 0.260 ? 'text-green-light' : 'text-cream')}>{formatAvg(stats.avg)}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums', stats.obp >= 0.360 ? 'text-gold' : stats.obp >= 0.320 ? 'text-green-light' : 'text-cream')}>{formatAvg(stats.obp)}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums', stats.slg >= 0.480 ? 'text-gold' : stats.slg >= 0.400 ? 'text-green-light' : 'text-cream')}>{formatAvg(stats.slg)}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums font-bold', stats.ops >= 0.850 ? 'text-gold' : stats.ops >= 0.720 ? 'text-green-light' : 'text-cream')}>{formatAvg(stats.ops)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-navy-lighter/40">
+          {sortedPitchers.length === 0 ? (
+            <p className="font-mono text-cream-dim/50 text-sm py-8 text-center">No pitcher stats for this filter.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-navy-lighter/40 bg-navy-lighter/20">
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/40 text-left w-6">#</th>
+                  <th className="px-3 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">NAME</th>
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">TM</th>
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">ROLE</th>
+                  <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/50 text-left">AGE</th>
+                  {PIT_COLS.map(({ col, label }) => (
+                    <ThSort key={col} label={label} col={col} active={pitSort === col} dir={sortDir} onSort={handlePitSort} />
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPitchers.map(({ player, teamAbbr, teamId, stats }, i) => {
+                  const isUser = teamId === userTeamId;
+                  const eraGood = stats.era < 3.50 && stats.ip > 5;
+                  const eraBad = stats.era > 5.50;
+                  return (
+                    <tr key={player.id} className={cn('border-b border-navy-lighter/20 transition-colors text-right', isUser ? 'bg-gold/5 hover:bg-gold/10' : 'hover:bg-navy-lighter/10')}>
+                      <td className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/40 text-center">{i + 1}</td>
+                      <td className="px-3 py-1.5 text-left">
+                        <span className={cn('font-body text-sm', isUser ? 'text-gold font-semibold' : 'text-cream')}>{getPlayerName(player)}</span>
+                      </td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream-dim/60 text-left">{teamAbbr}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream-dim/60 text-left">{posLabel(player)}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream-dim/60 text-left">{player.age}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.g}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.gs}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-green-light tabular-nums">{stats.w}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-red-400/80 tabular-nums">{stats.l}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.sv}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{formatIP(stats.ip)}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.h}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.er}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.bb}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.k}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums font-bold', eraGood ? 'text-gold' : eraBad ? 'text-red-400' : 'text-cream')}>{isFinite(stats.era) ? stats.era.toFixed(2) : '0.00'}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums', stats.whip < 1.20 ? 'text-gold' : stats.whip > 1.60 ? 'text-red-400' : 'text-cream')}>{isFinite(stats.whip) ? stats.whip.toFixed(2) : '0.00'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MinorLeaguePage() {
   const navigate = useNavigate();
   const {
     engine, season, userTeamId,
     getAAATeam, callUpSpecificPlayer, sendDownPlayer, callupLog,
     prospectDevelopmentLog, lastProspectDevelopment,
+    minorLeagueStats,
   } = useFranchiseStore();
 
-  const [tab, setTab] = useState<'prospects' | 'mlb' | 'log' | 'dev'>('prospects');
+  const [tab, setTab] = useState<'prospects' | 'mlb' | 'log' | 'dev' | 'stats'>('prospects');
   const [posFilter, setPosFilter] = useState<PosFilter>('All');
   const [sortKey, setSortKey] = useState<SortKey>('ovr');
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
@@ -623,6 +874,16 @@ export function MinorLeaguePage() {
   const aaaRoster = useMemo(() => getAAATeam(userTeamId ?? ''), [engine, userTeamId, version]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const allTeams = useMemo(() => engine?.getAllTeams() ?? [], [engine, version]);
+
+  const affiliateData = useMemo<AffiliateEntry[]>(() => {
+    if (!engine) return [];
+    return engine.minorLeagues.getAllAffiliates().map(aff => {
+      const team = allTeams.find(t => t.id === aff.teamId);
+      const teamAbbr = (team as Team & { abbreviation?: string })?.abbreviation ?? team?.city?.slice(0, 3).toUpperCase() ?? aff.teamId.slice(0, 3).toUpperCase();
+      return { teamId: aff.teamId, teamAbbr, players: aff.players };
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [engine, allTeams, version]);
 
   const mlbRoster = useMemo(() => [...(userTeam?.roster.players ?? [])]
     .map(p => ({ p, ovr: evaluatePlayer(p) }))
@@ -791,7 +1052,7 @@ export function MinorLeaguePage() {
 
       {/* ── Tabs ── */}
       <div className="flex gap-1 mb-4 border-b border-navy-lighter/40 pb-0 flex-wrap">
-        {(['prospects', 'dev', 'mlb', 'log'] as const).map(t => (
+        {(['prospects', 'stats', 'dev', 'mlb', 'log'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -803,6 +1064,7 @@ export function MinorLeaguePage() {
             )}
           >
             {t === 'prospects' && `Prospects (${aaaCount})`}
+            {t === 'stats' && 'AAA Stats'}
             {t === 'dev' && (
               <span className="flex items-center gap-1">
                 Development
@@ -989,6 +1251,15 @@ export function MinorLeaguePage() {
             )}
           </Panel>
         </div>
+      )}
+
+      {/* ══ TAB: AAA STATS ══ */}
+      {tab === 'stats' && (
+        <AAAStatsTab
+          affiliates={affiliateData}
+          minorLeagueStats={minorLeagueStats}
+          userTeamId={userTeamId}
+        />
       )}
 
       {/* ══ TAB: DEVELOPMENT ══ */}
