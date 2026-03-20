@@ -149,7 +149,10 @@ export function PlayerStatsPage() {
                 <span className="text-cream-dim/40 text-[10px]">engine rating</span>
               </div>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/franchise/roster')}>← Back</Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/compare?p1=${playerId}`)}>Compare</Button>
+              <Button size="sm" variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/franchise/roster')}>← Back</Button>
+            </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Left: ratings */}
@@ -330,6 +333,9 @@ export function PlayerStatsPage() {
               Edit Player
             </Button>
           )}
+          <Button size="sm" variant="secondary" onClick={() => navigate(`/franchise/compare?p1=${playerId}`)}>
+            Compare
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => navigate('/franchise/leaders')}>
             Leaders
           </Button>

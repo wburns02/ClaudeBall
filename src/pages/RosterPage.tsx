@@ -324,6 +324,14 @@ export function RosterPage() {
             <Button
               size="sm"
               variant="secondary"
+              onClick={() => navigate(`/franchise/compare?p1=${p.id}`)}
+              title="Compare this player"
+            >
+              Cmp
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
               onClick={() => navigate(`/franchise/trade?targetPlayer=${p.id}`)}
             >
               Trade

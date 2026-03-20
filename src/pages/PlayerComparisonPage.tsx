@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
@@ -292,10 +292,25 @@ function EdgeBadge({ values }: { values: (number | null)[] }) {
 // ── Main page ────────────────────────────────────────────────
 export function PlayerComparisonPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { engine } = useFranchiseStore();
   const { getPlayerStats, leagueTotals } = useStatsStore();
 
-  const [slots, setSlots] = useState<(string | null)[]>([null, null, null]);
+  // Read initial slots from URL params (?p1=id&p2=id&p3=id)
+  const [slots, setSlots] = useState<(string | null)[]>([
+    searchParams.get('p1'),
+    searchParams.get('p2'),
+    searchParams.get('p3'),
+  ]);
+
+  // Sync slots → URL params
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    if (slots[0]) params.p1 = slots[0];
+    if (slots[1]) params.p2 = slots[1];
+    if (slots[2]) params.p3 = slots[2];
+    setSearchParams(params, { replace: true });
+  }, [slots, setSearchParams]);
 
   const leagueCtx = useMemo(() => {
     const lt = leagueTotals;
