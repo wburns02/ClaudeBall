@@ -190,6 +190,9 @@ export function TradePage() {
     const offering: import('@/engine/gm/TradeEngine.ts').TradePackage = { teamId: userTeam.id, playerIds: userBlock };
     const receiving: import('@/engine/gm/TradeEngine.ts').TradePackage = { teamId: partnerTeam.id, playerIds: theirBlock };
     const allT = teams.length > 0 ? teams : [userTeam, partnerTeam];
+    // Always evaluate so the fairness meter updates
+    const score = evaluateTradePackages(offering, receiving, allT);
+    setEvaluated(score);
     const accepts = checkAIAccepts(partnerTeam, offering, receiving, allT);
 
     if (accepts) {
@@ -201,7 +204,11 @@ export function TradePage() {
       setEvaluated(null);
       setResult('Trade accepted! Rosters updated.');
     } else {
-      setResult('Trade rejected. The AI team declined your offer.');
+      const hint = score < -10 ? ' (Offer heavily favors you — they need more value.)' :
+                   score < -3  ? ' (Offer slightly favors you — try adding depth.)' :
+                   score > 10  ? ' (This heavily favors them — you can negotiate harder.)' :
+                   ' (Values are close — the AI may have other reasons for declining.)';
+      setResult(`Trade rejected. The AI team declined your offer.${hint}`);
     }
   };
 

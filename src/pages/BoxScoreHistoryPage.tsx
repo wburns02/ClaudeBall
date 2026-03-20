@@ -156,17 +156,33 @@ export function BoxScoreHistoryPage() {
       .filter(Boolean) as { name: string; dec: string; ip: string; h: number; r: number; er: number; bb: number; k: number }[];
   }, [playerStats, gameId, game.homeId]);
 
-  // Key plays: home runs
-  const homeRuns = useMemo(() => {
-    const hrs: { name: string; team: string; count: number }[] = [];
+  // Key plays: home runs + notable hitting + W/L pitchers
+  const keyPlays = useMemo(() => {
+    const plays: { icon: string; text: string; color: string }[] = [];
     for (const ps of Object.values(playerStats)) {
       const log = ps.gameLog.find(l => l.gameId === gameId);
-      if (log && log.hr > 0) {
-        const team = ps.teamId === game.awayId ? awayName : homeName;
-        hrs.push({ name: ps.playerName, team, count: log.hr });
+      if (!log) continue;
+      const teamName = ps.teamId === game.awayId ? awayName : homeName;
+      if (log.hr > 0) {
+        plays.push({ icon: '💥', text: `${ps.playerName} — ${log.hr > 1 ? log.hr + '-run HR' : 'HR'}${log.rbi > 1 ? `, ${log.rbi} RBI` : ''} (${teamName})`, color: 'text-gold' });
+      }
+      if (!log.ip && log.h >= 3) {
+        plays.push({ icon: '🔥', text: `${ps.playerName} — ${log.h}H, ${log.rbi} RBI (${teamName})`, color: 'text-green-light' });
       }
     }
-    return hrs;
+    // W/L decisions from pitching logs
+    for (const ps of Object.values(playerStats)) {
+      const log = ps.gameLog.find(l => l.gameId === gameId);
+      if (!log || !log.ip) continue;
+      if (log.decision === 'W') {
+        plays.push({ icon: '⚾', text: `W: ${ps.playerName} ${log.ip} IP, ${log.er} ER, ${log.kPitching} K`, color: 'text-blue-400' });
+      } else if (log.decision === 'L') {
+        plays.push({ icon: '⚾', text: `L: ${ps.playerName} ${log.ip} IP, ${log.er} ER, ${log.kPitching} K`, color: 'text-cream-dim' });
+      } else if (log.decision === 'S') {
+        plays.push({ icon: '🔒', text: `SV: ${ps.playerName} ${log.ip} IP, ${log.kPitching} K`, color: 'text-gold' });
+      }
+    }
+    return plays;
   }, [playerStats, gameId, awayName, homeName, game.awayId]);
 
   const awayWon = (game.awayScore ?? 0) > (game.homeScore ?? 0);
@@ -238,22 +254,22 @@ export function BoxScoreHistoryPage() {
       </Panel>
 
       {/* Key Plays */}
-      {homeRuns.length > 0 && (
-        <Panel title="Key Plays" className="mb-4">
-          <div className="space-y-1">
-            {homeRuns.map((hr, i) => (
-              <div key={i} className="flex items-center gap-3 font-mono text-sm">
-                <span className="text-gold">HR</span>
-                <span className="text-cream">{hr.name}</span>
-                <span className="text-cream-dim text-xs">({hr.team})</span>
-                {hr.count > 1 && (
-                  <span className="text-gold text-xs font-bold">{hr.count}x</span>
-                )}
+      <Panel title="Key Plays" className="mb-4">
+        {keyPlays.length > 0 ? (
+          <div className="space-y-1.5">
+            {keyPlays.map((play, i) => (
+              <div key={i} className="flex items-start gap-2 font-mono text-sm">
+                <span className="shrink-0 mt-0.5">{play.icon}</span>
+                <span className={play.color}>{play.text}</span>
               </div>
             ))}
           </div>
-        </Panel>
-      )}
+        ) : (
+          <p className="font-mono text-xs text-cream-dim/40 py-2">
+            No detailed play data available for this game.
+          </p>
+        )}
+      </Panel>
 
       {/* Box Scores */}
       {noStatsAvailable ? (

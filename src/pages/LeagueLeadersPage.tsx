@@ -48,15 +48,27 @@ const PITCHING_COLS: { key: PitchingSortKey; label: string; format: (v: number) 
   { key: 'war', label: 'WAR', format: (v) => v.toFixed(1) },
 ];
 
+const BAT_POS_FILTERS = ['ALL', 'C', '1B', '2B', '3B', 'SS', 'OF', 'DH'] as const;
+type BatPosFilter = typeof BAT_POS_FILTERS[number];
+const PIT_POS_FILTERS = ['ALL', 'SP', 'RP'] as const;
+type PitPosFilter = typeof PIT_POS_FILTERS[number];
+
 export function LeagueLeadersPage() {
   const navigate = useNavigate();
   const { getBattingLeaders, getPitchingLeaders, leagueTotals, playerStats } = useStatsStore();
-  const { engine } = useFranchiseStore();
+  const { engine, season } = useFranchiseStore();
 
   const [tab, setTab] = useState<Tab>('batting');
   const [battingSort, setBattingSort] = useState<BattingSortKey>('avg');
   const [pitchingSort, setPitchingSort] = useState<PitchingSortKey>('era');
   const [fieldingSort, setFieldingSort] = useState<FieldingSortKey>('ovr');
+  const [batPosFilter, setBatPosFilter] = useState<BatPosFilter>('ALL');
+  const [pitPosFilter, setPitPosFilter] = useState<PitPosFilter>('ALL');
+
+  // Scale qualifying thresholds with season progress (min 20 PA / 10 IP early on)
+  const seasonProgress = season ? Math.min(1, season.currentDay / season.totalDays) : 0;
+  const minPA = Math.max(20, Math.round(502 * seasonProgress * 0.85));
+  const minIP = Math.max(10, Math.round(162 * seasonProgress * 0.85));
 
   // Build league context from accumulated totals
   const leagueCtx = useMemo(() => {
@@ -71,22 +83,36 @@ export function LeagueLeadersPage() {
   }, [leagueTotals]);
 
   const battingLeaders = useMemo(() => {
-    const leaders = getBattingLeaders(20);
-    return leaders.map(ps => {
+    const leaders = getBattingLeaders(minPA);
+    return leaders
+      .filter(ps => {
+        if (batPosFilter === 'ALL') return true;
+        if (batPosFilter === 'OF') return ['LF', 'CF', 'RF'].includes(ps.position);
+        return ps.position === batPosFilter;
+      })
+      .map(ps => {
       const adv = calcBattingAdvanced(ps.batting, leagueCtx, ps.position);
       const teamAbbr = engine?.getTeam(ps.teamId)?.abbreviation ?? ps.teamId.slice(0, 3).toUpperCase();
       return { ps, adv, teamAbbr };
     });
-  }, [getBattingLeaders, leagueCtx, engine]);
+  }, [getBattingLeaders, leagueCtx, engine, minPA, batPosFilter]);
 
   const pitchingLeaders = useMemo(() => {
-    const leaders = getPitchingLeaders(20);
-    return leaders.map(ps => {
+    const leaders = getPitchingLeaders(minIP);
+    return leaders
+      .filter(ps => {
+        if (pitPosFilter === 'ALL') return true;
+        // SP: avg IP/G >= 4 (12 in thirds); RP: less
+        const avgIpPerGame = ps.gamesPlayed > 0 ? (ps.pitching.ip / 3) / ps.gamesPlayed : 0;
+        const isStarter = avgIpPerGame >= 4;
+        return pitPosFilter === 'SP' ? isStarter : !isStarter;
+      })
+      .map(ps => {
       const adv = calcPitchingAdvanced(ps.pitching, leagueCtx);
       const teamAbbr = engine?.getTeam(ps.teamId)?.abbreviation ?? ps.teamId.slice(0, 3).toUpperCase();
       return { ps, adv, teamAbbr };
     });
-  }, [getPitchingLeaders, leagueCtx, engine]);
+  }, [getPitchingLeaders, leagueCtx, engine, minIP, pitPosFilter]);
 
   const fieldingLeaders = useMemo(() => {
     return Object.values(playerStats)
@@ -216,6 +242,27 @@ export function LeagueLeadersPage() {
 
       {hasData && tab === 'batting' && (
         <Panel title="Batting Leaders">
+          {/* Position filter */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="font-mono text-xs text-cream-dim/50 uppercase tracking-wider">Pos:</span>
+            {BAT_POS_FILTERS.map(pos => (
+              <button
+                key={pos}
+                onClick={() => setBatPosFilter(pos)}
+                className={cn(
+                  'px-2 py-0.5 rounded text-xs font-mono uppercase transition-all cursor-pointer',
+                  batPosFilter === pos
+                    ? 'bg-gold text-navy font-bold'
+                    : 'text-cream-dim hover:text-cream bg-navy-lighter/30 hover:bg-navy-lighter/60'
+                )}
+              >
+                {pos}
+              </button>
+            ))}
+            <span className="ml-auto font-mono text-xs text-cream-dim/40">
+              min {minPA} PA
+            </span>
+          </div>
           {/* Sort selector */}
           <div className="flex flex-wrap gap-1 mb-3">
             {BATTING_COLS.map(col => (
@@ -313,7 +360,7 @@ export function LeagueLeadersPage() {
                 {sortedBatting.length === 0 && (
                   <tr>
                     <td colSpan={18} className="px-2 py-8 text-center text-cream-dim">
-                      No qualifying batters yet (min 20 PA).
+                      No qualifying batters yet (min {minPA} PA).
                     </td>
                   </tr>
                 )}
@@ -325,6 +372,27 @@ export function LeagueLeadersPage() {
 
       {hasData && tab === 'pitching' && (
         <Panel title="Pitching Leaders">
+          {/* SP/RP filter */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="font-mono text-xs text-cream-dim/50 uppercase tracking-wider">Role:</span>
+            {PIT_POS_FILTERS.map(f => (
+              <button
+                key={f}
+                onClick={() => setPitPosFilter(f)}
+                className={cn(
+                  'px-2 py-0.5 rounded text-xs font-mono uppercase transition-all cursor-pointer',
+                  pitPosFilter === f
+                    ? 'bg-gold text-navy font-bold'
+                    : 'text-cream-dim hover:text-cream bg-navy-lighter/30 hover:bg-navy-lighter/60'
+                )}
+              >
+                {f}
+              </button>
+            ))}
+            <span className="ml-auto font-mono text-xs text-cream-dim/40">
+              min {minIP} IP
+            </span>
+          </div>
           <div className="flex flex-wrap gap-1 mb-3">
             {PITCHING_COLS.map(col => (
               <button
@@ -415,7 +483,7 @@ export function LeagueLeadersPage() {
                 {sortedPitching.length === 0 && (
                   <tr>
                     <td colSpan={14} className="px-2 py-8 text-center text-cream-dim">
-                      No qualifying pitchers yet (min 5 IP).
+                      No qualifying pitchers yet (min {minIP} IP).
                     </td>
                   </tr>
                 )}

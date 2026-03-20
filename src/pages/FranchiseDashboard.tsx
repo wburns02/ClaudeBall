@@ -205,7 +205,18 @@ export function FranchiseDashboard() {
 
   const inboxUnread = getUnreadCount();
 
-  if (!season || !engine || !userTeamId) return null;
+  if (!season || !engine || !userTeamId) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
+        <div className="text-center">
+          <h2 className="font-display text-2xl text-gold tracking-wide uppercase mb-2">No Franchise Loaded</h2>
+          <p className="font-mono text-cream-dim text-sm">Start a new franchise to begin managing your team.</p>
+        </div>
+        <Button onClick={() => navigate('/franchise/new')}>Create New Franchise</Button>
+        <Button variant="ghost" onClick={() => navigate('/')}>← Main Menu</Button>
+      </div>
+    );
+  }
 
   const userRecord = season.standings.getRecord(userTeamId);
   const userTeam = engine.getTeam(userTeamId);
@@ -325,6 +336,45 @@ export function FranchiseDashboard() {
           )}
         </button>
       </div>
+
+      {/* Upcoming Milestone Banner */}
+      {isRegularSeason && (() => {
+        const cd = season.currentDay;
+        const td = season.totalDays;
+        const milestoneList = [
+          { day: 90,  label: 'All-Star Break',   url: '/franchise/all-star',       icon: '⭐', urgent: false },
+          { day: 120, label: 'Trade Deadline',    url: '/franchise/trade',           icon: '⏰', urgent: true  },
+          { day: td,  label: 'End of Season',     url: '/franchise/standings',       icon: '🏆', urgent: false },
+        ];
+        const next = milestoneList.find(m => m.day > cd);
+        if (!next) return null;
+        const daysLeft = next.day - cd;
+        if (daysLeft > 10) return null; // only show when close
+        return (
+          <div
+            className={cn(
+              'mb-4 px-4 py-2.5 rounded-lg border flex items-center justify-between gap-3 cursor-pointer transition-colors',
+              next.urgent
+                ? 'border-red-500/40 bg-red-950/20 hover:border-red-500/60'
+                : 'border-gold/30 bg-gold/5 hover:border-gold/50',
+            )}
+            onClick={() => navigate(next.url)}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-base">{next.icon}</span>
+              <span className={cn('font-mono text-xs font-bold', next.urgent ? 'text-red-400' : 'text-gold')}>
+                {next.label}
+              </span>
+              <span className="font-mono text-xs text-cream-dim">
+                — {daysLeft === 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft} days`}
+              </span>
+            </div>
+            <span className={cn('font-mono text-xs shrink-0', next.urgent ? 'text-red-400/60' : 'text-gold/60')}>
+              View →
+            </span>
+          </div>
+        );
+      })()}
 
       {/* IL Action Banner */}
       {(unplacedInjuries.length > 0 || healedOnIL.length > 0) && (
