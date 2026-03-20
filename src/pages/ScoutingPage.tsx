@@ -4,6 +4,7 @@ import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useScoutingStore } from '@/stores/scoutingStore.ts';
+import { addToast } from '@/stores/toastStore.ts';
 import { STAFF_TIERS } from '@/engine/gm/ScoutingEngine.ts';
 import type { GradeReport, PlayerScoutingReport } from '@/engine/gm/ScoutingEngine.ts';
 import { cn } from '@/lib/cn.ts';
@@ -686,8 +687,20 @@ export function ScoutingPage() {
     setSelectedPlayerTeam(found?.team ?? null);
   }
 
-  function handleScout(playerId: string, teamId: string) {
+  function handleScout(playerId: string, teamId: string, playerName: string) {
+    const alreadyScouted = getReport(playerId) !== null;
+    if (alreadyScouted) {
+      addToast(`${playerName} is already scouted`, 'info');
+      return;
+    }
     scoutPlayer(playerId, teamId);
+    // Toast after 550ms (slightly after the 500ms scouting delay)
+    setTimeout(() => {
+      const report = useScoutingStore.getState().getReport(playerId);
+      if (report) {
+        addToast(`Scouting complete: ${playerName} — ${report.overallGrade.scoutedGrade ?? '?'} OVR`, 'success');
+      }
+    }, 550);
   }
 
   const POSITIONS = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
@@ -808,7 +821,7 @@ export function ScoutingPage() {
                       isPending={isPending(player.id)}
                       onSelect={handleSelect}
                       selected={selectedPlayer?.id === player.id}
-                      onScout={() => handleScout(player.id, team.id)}
+                      onScout={() => handleScout(player.id, team.id, `${player.firstName} ${player.lastName}`)}
                     />
                   );
                 })}
@@ -842,7 +855,7 @@ export function ScoutingPage() {
                 team={selectedPlayerTeam}
                 isOwnTeam={selectedPlayerTeam.id === userTeamId}
                 report={getReport(selectedPlayer.id)}
-                onScout={() => handleScout(selectedPlayer.id, selectedPlayerTeam.id)}
+                onScout={() => handleScout(selectedPlayer.id, selectedPlayerTeam.id, `${selectedPlayer.firstName} ${selectedPlayer.lastName}`)}
                 isPending={isPending(selectedPlayer.id)}
               />
               <div className="mt-4 pt-3 border-t border-navy-lighter/30 flex gap-2">

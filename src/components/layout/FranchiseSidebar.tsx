@@ -65,6 +65,7 @@ const Icons = {
   hotCold: 'M12 2a5 5 0 015 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 015-5z M12 22l2-4h-4l2 4z',
   compare: 'M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h3 M16 3h3a2 2 0 012 2v14a2 2 0 01-2 2h-3 M12 3v18',
   depthChart: 'M3 3h18v4H3z M3 10h8v4H3z M3 17h8v4H3z M14 10h7v11h-7z',
+  warRoom: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18',
 };
 
 interface NavItem {
@@ -127,6 +128,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: 'GM',
     items: [
+      { label: 'GM War Room', path: '/franchise/war-room', icon: 'warRoom' },
       { label: 'Scouting Hub', path: '/franchise/scouting', icon: 'scouting' },
       { label: 'Finances', path: '/franchise/finances', icon: 'finances' },
       { label: 'Payroll', path: '/franchise/payroll', icon: 'payroll' },
