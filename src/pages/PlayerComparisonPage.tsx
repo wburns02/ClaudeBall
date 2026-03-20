@@ -364,11 +364,11 @@ export function PlayerComparisonPage() {
 
   if (!engine) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="font-mono text-cream-dim mb-4">No franchise loaded.</p>
-          <Button onClick={() => navigate('/')}>Back to Menu</Button>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Compare Players</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Side-by-side statistical comparison of any two players in the league.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

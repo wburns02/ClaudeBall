@@ -666,8 +666,11 @@ export function MinorLeaguePage() {
 
   if (!season || !engine || !userTeamId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-mono text-cream-dim">No franchise loaded.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Minor Leagues</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Manage your farm system — assign players to AAA/AA/A, track development, and call up prospects.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

@@ -155,8 +155,11 @@ export function TradePage() {
 
   if (!userTeam || otherTeams.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-mono text-cream-dim">No franchise loaded.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Trade Center</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Negotiate trades with all 29 other teams. Propose deals, counter-offer, and build your roster.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

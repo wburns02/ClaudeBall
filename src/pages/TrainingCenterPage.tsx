@@ -224,8 +224,11 @@ export function TrainingCenterPage() {
 
   if (!season || !engine || !userTeamId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button onClick={() => navigate('/')}>Back to Menu</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Training Center</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Assign training programs to your players to develop their skills over the season.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

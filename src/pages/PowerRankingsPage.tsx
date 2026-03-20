@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
+import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { cn } from '@/lib/cn.ts';
 import type { TeamRecord } from '@/engine/season/StandingsTracker.ts';
@@ -245,8 +246,11 @@ export function PowerRankingsPage() {
 
   if (!engine || !season) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-mono text-cream-dim">No franchise loaded.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Power Rankings</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Live power rankings based on performance metrics, run differential, and playoff probability.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

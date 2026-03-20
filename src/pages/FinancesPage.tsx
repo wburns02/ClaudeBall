@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/Button.tsx';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar,
@@ -150,6 +152,7 @@ function BreakdownRow({ name, value, total, color }: {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export function FinancesPage() {
+  const navigate = useNavigate();
   const { engine, season, userTeamId, teams, teamBudgets, getTeamPayroll } = useFranchiseStore();
 
   const analysis = useMemo(() => {
@@ -257,8 +260,11 @@ export function FinancesPage() {
 
   if (!engine || !season || !userTeamId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-mono text-cream-dim">No franchise loaded.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Finances</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Manage your team budget, revenue streams, and financial health across the season.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

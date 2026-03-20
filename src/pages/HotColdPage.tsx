@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
+import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
 import { computeFormSummary, FORM_STATUS_CONFIG } from '@/engine/performance/HotColdEngine.ts';
@@ -111,8 +112,11 @@ export function HotColdPage() {
 
   if (!userTeam) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-mono text-cream-dim">No franchise loaded.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="font-display text-gold text-xl">Hot &amp; Cold</p>
+        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">Track which players are on hot streaks and who's slumping based on recent game performance.</p>
+        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
+        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }
