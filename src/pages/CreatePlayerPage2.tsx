@@ -220,7 +220,10 @@ export function CreatePlayerPage2() {
           <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Create Player</h1>
           <p className="font-mono text-cream-dim text-sm mt-1">Build a custom player and add them to any roster</p>
         </div>
-        <Button variant="ghost" onClick={() => navigate(-1)}>Back</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => navigate(-1)}>Back</Button>
+          <Button variant="primary" onClick={handleCreate}>Create Player</Button>
+        </div>
       </div>
 
       {/* Archetypes */}

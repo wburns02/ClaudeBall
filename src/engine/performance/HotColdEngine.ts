@@ -101,7 +101,7 @@ export function computeFormSummary(
     return {
       ...base,
       formScore,
-      status: formScoreToStatus(formScore),
+      status: formScoreToStatus(formScore, Math.round(totalIP)),
       moraleTarget: formScoreToMorale(formScore),
       recentGames: pitcherGames.length,
       recentIP: Math.round(totalIP * 10) / 10,
@@ -152,13 +152,13 @@ export function computeFormSummary(
   }
   if (hitStreak >= 5) streakLabel = `${hitStreak}-Game Hit Streak`;
   else if (hitStreak >= 3) streakLabel = `${hitStreak} In A Row`;
-  else if (slumpAB >= 10 && slumpH === 0) streakLabel = `0-${slumpAB} Slump`;
-  else if (recentBA > 0.350 && recentAB >= 15) streakLabel = `Scorching Hot`;
+  else if (slumpAB >= 12 && slumpH === 0) streakLabel = `0-${slumpAB} Slump`;
+  else if (recentBA > 0.350 && recentAB >= 20) streakLabel = `Scorching Hot`;
 
   return {
     ...base,
     formScore,
-    status: formScoreToStatus(formScore),
+    status: formScoreToStatus(formScore, recentAB),
     moraleTarget: formScoreToMorale(formScore),
     recentGames: batterGames.length,
     recentAB,
@@ -172,11 +172,14 @@ export function computeFormSummary(
   };
 }
 
-function formScoreToStatus(score: number): FormStatus {
-  if (score >= 12) return 'hot';
-  if (score >= 4) return 'warm';
-  if (score <= -12) return 'cold';
-  if (score <= -4) return 'cool';
+function formScoreToStatus(score: number, sampleSize?: number): FormStatus {
+  // Lower thresholds when sample is small so early-season hot/cold streaks register
+  const hotThresh = !sampleSize || sampleSize >= 30 ? 12 : sampleSize >= 15 ? 8 : 5;
+  const warmThresh = !sampleSize || sampleSize >= 30 ? 4 : sampleSize >= 15 ? 3 : 2;
+  if (score >= hotThresh) return 'hot';
+  if (score >= warmThresh) return 'warm';
+  if (score <= -hotThresh) return 'cold';
+  if (score <= -warmThresh) return 'cool';
   return 'neutral';
 }
 

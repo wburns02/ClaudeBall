@@ -17,6 +17,240 @@ import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { cn } from '@/lib/cn.ts';
 import type { ReactElement } from 'react';
 
+// ─── Career Arc Projection ──────────────────────────────────────────────────
+
+function ovrDeltaForAge(age: number, workEthic: number): number {
+  const ethics = workEthic / 100;
+  if (age <= 26) {
+    const growthBase = 6 - (age - 20) * 0.5;
+    return Math.max(0.5, growthBase * 0.7 * ethics + 1);
+  }
+  if (age <= 31) return 0; // peak — flat
+  if (age <= 36) {
+    const declineBase = 1 + (age - 31) * 0.3;
+    return -(declineBase * (1 - ethics * 0.25));
+  }
+  const steep = 2 + (age - 36) * 0.5;
+  return -(steep + 1);
+}
+
+function buildCareerArc(
+  currentAge: number, currentOvr: number, workEthic: number,
+): Array<{ age: number; ovr: number; phase: string }> {
+  const MIN_AGE = Math.max(18, currentAge - 5);
+  const MAX_AGE = Math.min(42, currentAge + 15);
+  const points: Array<{ age: number; ovr: number; phase: string }> = [];
+
+  function phaseFor(age: number): string {
+    if (age <= 26) return 'growth';
+    if (age <= 31) return 'peak';
+    if (age <= 36) return 'decline';
+    return 'steep';
+  }
+
+  // Build forward from current age
+  let ovr = currentOvr;
+  for (let age = currentAge; age <= MAX_AGE; age++) {
+    points.push({ age, ovr: Math.max(20, Math.min(99, Math.round(ovr))), phase: phaseFor(age) });
+    ovr += ovrDeltaForAge(age, workEthic);
+  }
+
+  // Build backward from current age (reverse the deltas)
+  ovr = currentOvr;
+  for (let age = currentAge - 1; age >= MIN_AGE; age--) {
+    ovr -= ovrDeltaForAge(age, workEthic);
+    points.unshift({ age, ovr: Math.max(20, Math.min(99, Math.round(ovr))), phase: phaseFor(age) });
+  }
+
+  return points;
+}
+
+function CareerArcChart({
+  currentAge, currentOvr, workEthic,
+}: { currentAge: number; currentOvr: number; workEthic: number }): ReactElement {
+  const points = useMemo(
+    () => buildCareerArc(currentAge, currentOvr, workEthic),
+    [currentAge, currentOvr, workEthic],
+  );
+
+  const peakPoint = points.reduce((best, p) => p.ovr > best.ovr ? p : best, points[0]);
+  const minOvr = Math.min(...points.map(p => p.ovr));
+  const maxOvr = Math.max(...points.map(p => p.ovr));
+  const ovrRange = Math.max(20, maxOvr - minOvr + 10);
+  const ovrMin = Math.max(20, minOvr - 5);
+
+  // SVG dimensions
+  const W = 280; const H = 130;
+  const PAD = { l: 28, r: 8, t: 8, b: 18 };
+  const innerW = W - PAD.l - PAD.r;
+  const innerH = H - PAD.t - PAD.b;
+  const ages = points.map(p => p.age);
+  const ageMin = ages[0]; const ageMax = ages[ages.length - 1];
+  const ageRange = ageMax - ageMin || 1;
+
+  const xOf = (age: number) => PAD.l + ((age - ageMin) / ageRange) * innerW;
+  const yOf = (ovr: number) => PAD.t + innerH - ((ovr - ovrMin) / ovrRange) * innerH;
+
+  const currentX = xOf(currentAge);
+  const currentY = yOf(currentOvr);
+  const peakX = xOf(peakPoint.age);
+  const peakY = yOf(peakPoint.ovr);
+
+  // Build SVG polyline points
+  const linePoints = points.map(p => `${xOf(p.age).toFixed(1)},${yOf(p.ovr).toFixed(1)}`).join(' ');
+  // Build area fill path (line + bottom)
+  const areaPath = [
+    `M ${xOf(points[0].age).toFixed(1)},${yOf(points[0].ovr).toFixed(1)}`,
+    ...points.slice(1).map(p => `L ${xOf(p.age).toFixed(1)},${yOf(p.ovr).toFixed(1)}`),
+    `L ${xOf(points[points.length - 1].age).toFixed(1)},${(PAD.t + innerH).toFixed(1)}`,
+    `L ${xOf(points[0].age).toFixed(1)},${(PAD.t + innerH).toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  // Phase background bands
+  const phaseBands: Array<{ x1: number; x2: number; color: string }> = [];
+  let bandStart = ageMin;
+  let bandPhase = points[0].phase;
+  for (const p of points) {
+    if (p.phase !== bandPhase || p.age === ageMax) {
+      const endAge = p.phase !== bandPhase ? p.age : ageMax + 1;
+      const color = bandPhase === 'growth' ? '#22c55e18' : bandPhase === 'peak' ? '#d4a84318' : bandPhase === 'decline' ? '#f9731618' : '#ef444418';
+      phaseBands.push({ x1: xOf(bandStart), x2: xOf(Math.min(endAge, ageMax + 1)), color });
+      bandStart = p.age;
+      bandPhase = p.phase;
+    }
+  }
+
+  const isCurrentPeak = peakPoint.age === currentAge;
+  const yearsToRetire = 40 - currentAge;
+  const phase = currentAge <= 26 ? 'growth' : currentAge <= 31 ? 'peak' : currentAge <= 36 ? 'decline' : 'steep';
+  const phaseColor = phase === 'growth' ? 'text-green-light' : phase === 'peak' ? 'text-gold' : phase === 'decline' ? 'text-orange-400' : 'text-red-400';
+  const phaseLabel = phase === 'growth' ? 'Growth' : phase === 'peak' ? 'Prime' : phase === 'decline' ? 'Decline' : 'Steep Decline';
+
+  return (
+    <div>
+      {/* KPI row */}
+      <div className="grid grid-cols-3 gap-2 mb-3 text-center font-mono">
+        <div className="bg-navy-lighter/30 rounded p-2">
+          <p className="text-[10px] text-cream-dim/50 uppercase tracking-wider">Age</p>
+          <p className="text-cream text-sm font-bold">{currentAge}</p>
+          <p className={cn('text-[9px] uppercase font-bold', phaseColor)}>{phaseLabel}</p>
+        </div>
+        <div className="bg-navy-lighter/30 rounded p-2">
+          <p className="text-[10px] text-cream-dim/50 uppercase tracking-wider">Peak OVR</p>
+          <p className={cn('text-sm font-bold', isCurrentPeak ? 'text-gold' : 'text-green-light')}>
+            {peakPoint.ovr}
+          </p>
+          <p className="text-[9px] text-cream-dim/50">Age {peakPoint.age}</p>
+        </div>
+        <div className="bg-navy-lighter/30 rounded p-2">
+          <p className="text-[10px] text-cream-dim/50 uppercase tracking-wider">Prime Yrs</p>
+          <p className="text-cream text-sm font-bold">
+            {Math.max(0, 32 - Math.max(27, currentAge))}
+          </p>
+          <p className="text-[9px] text-cream-dim/50">{yearsToRetire > 0 ? `~${yearsToRetire}y left` : 'Late career'}</p>
+        </div>
+      </div>
+
+      {/* SVG chart */}
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full h-auto"
+        style={{ maxHeight: 130 }}
+      >
+        {/* Phase background bands */}
+        {phaseBands.map((band, i) => (
+          <rect
+            key={i}
+            x={band.x1}
+            y={PAD.t}
+            width={Math.max(0, band.x2 - band.x1)}
+            height={innerH}
+            fill={band.color}
+          />
+        ))}
+
+        {/* Grid lines */}
+        {[50, 60, 70, 80].map(ov => {
+          if (ov < ovrMin || ov > ovrMin + ovrRange) return null;
+          const y = yOf(ov);
+          return (
+            <g key={ov}>
+              <line x1={PAD.l} y1={y} x2={W - PAD.r} y2={y} stroke="#ffffff12" strokeWidth="1" />
+              <text x={PAD.l - 2} y={y + 3} fontSize="8" fill="#ffffff50" textAnchor="end">{ov}</text>
+            </g>
+          );
+        })}
+
+        {/* Area fill */}
+        <path d={areaPath} fill="#d4a84308" />
+
+        {/* Line */}
+        <polyline
+          points={linePoints}
+          fill="none"
+          stroke="#d4a843"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+
+        {/* Current age vertical line */}
+        <line
+          x1={currentX} y1={PAD.t}
+          x2={currentX} y2={PAD.t + innerH}
+          stroke="#d4a843"
+          strokeWidth="1"
+          strokeDasharray="2,2"
+          opacity="0.5"
+        />
+
+        {/* Current position dot */}
+        <circle cx={currentX} cy={currentY} r="3" fill="#d4a843" />
+
+        {/* Peak marker (only if different from current) */}
+        {!isCurrentPeak && peakPoint.age <= ageMax && (
+          <>
+            <circle cx={peakX} cy={peakY} r="2.5" fill="#22c55e" />
+            <text x={peakX} y={peakY - 5} fontSize="6" fill="#22c55e80" textAnchor="middle">↑{peakPoint.ovr}</text>
+          </>
+        )}
+
+        {/* Age axis labels */}
+        {points
+          .filter(p => p.age % 5 === 0)
+          .map(p => (
+            <text key={p.age} x={xOf(p.age)} y={H - 4} fontSize="8" fill="#ffffff55" textAnchor="middle">
+              {p.age}
+            </text>
+          ))}
+      </svg>
+
+      {/* Legend */}
+      <div className="flex items-center gap-3 mt-1 flex-wrap">
+        {[
+          { label: 'Growth', color: 'bg-green-light/40' },
+          { label: 'Prime', color: 'bg-gold/40' },
+          { label: 'Decline', color: 'bg-orange-400/40' },
+        ].map(({ label, color }) => (
+          <div key={label} className="flex items-center gap-1">
+            <div className={cn('w-2 h-2 rounded-sm', color)} />
+            <span className="text-[9px] font-mono text-cream-dim/40">{label}</span>
+          </div>
+        ))}
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-gold" />
+          <span className="text-[9px] font-mono text-cream-dim/40">Now</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-green-light" />
+          <span className="text-[9px] font-mono text-cream-dim/40">Peak</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RatingBar({ label, value, max = 100 }: { label: string; value: number; max?: number }): ReactElement {
   const pct = Math.min(100, Math.round((value / max) * 100));
   const color =
@@ -221,8 +455,16 @@ export function PlayerStatsPage() {
                 </Panel>
               )}
             </div>
-            {/* Right: scouting + contract */}
+            {/* Right: career arc + scouting + contract */}
             <div className="space-y-4">
+              {/* Career Arc — shown first for at-a-glance trajectory */}
+              <Panel title="Career Arc">
+                <CareerArcChart
+                  currentAge={player.age}
+                  currentOvr={ovrRatings}
+                  workEthic={player.mental.work_ethic}
+                />
+              </Panel>
               {scoutReport && (
                 <Panel title="Scouting Report">
                   <div className="flex items-center justify-between mb-3">
@@ -528,6 +770,15 @@ export function PlayerStatsPage() {
         {player && (
           <div className="space-y-4">
 
+            {/* Career Arc — top of right column for at-a-glance trajectory */}
+            <Panel title="Career Arc">
+              <CareerArcChart
+                currentAge={player.age}
+                currentOvr={ovr ?? Math.round(evaluatePlayer(player))}
+                workEthic={player.mental.work_ethic}
+              />
+            </Panel>
+
             {/* Scouting Report — 20-80 grades */}
             {scoutReport && (
               <Panel title="Scouting Report">
@@ -680,10 +931,13 @@ export function PlayerStatsPage() {
               </div>
             </Panel>
 
+
+
             {/* Positional adjustment note */}
             {!isPitcher && (
-              <div className="text-xs font-mono text-cream-dim text-center p-2 bg-navy-lighter/20 rounded">
-                Pos Adj: {posAdj >= 0 ? '+' : ''}{posAdj} runs/162 ({ps.position})
+              <div className="text-xs font-mono text-cream-dim/50 text-center p-2 bg-navy-lighter/10 rounded border border-navy-lighter/20">
+                <span className="text-cream-dim/30 uppercase tracking-wider text-[10px]">Position Adj</span>
+                <span className="ml-2 text-cream-dim">{posAdj >= 0 ? '+' : ''}{posAdj} runs/162 ({ps.position})</span>
               </div>
             )}
           </div>

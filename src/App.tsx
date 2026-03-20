@@ -211,6 +211,7 @@ function AppRoutes() {
           <Route path="/franchise/transactions" element={<FranchiseLayout><TransactionsPage /></FranchiseLayout>} />
 
           {/* ── URL alias redirects (common alternative paths) ──────── */}
+          <Route path="/franchise/dashboard" element={<Navigate to="/franchise" replace />} />
           <Route path="/franchise/trades" element={<Navigate to="/franchise/trade" replace />} />
           <Route path="/franchise/lineup" element={<Navigate to="/franchise/lineup-editor" replace />} />
           <Route path="/franchise/minor-leagues" element={<Navigate to="/franchise/minors" replace />} />

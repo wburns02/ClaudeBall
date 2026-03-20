@@ -8,7 +8,7 @@ import { useStatsStore } from '@/stores/statsStore.ts';
 import { useInboxStore } from '@/stores/inboxStore.ts';
 import type { InboxItemType } from '@/stores/inboxStore.ts';
 import { winPct, gamesBehind, streakStr, last10Str, runDifferential } from '@/engine/season/index.ts';
-import type { TeamRecord } from '@/engine/season/index.ts';
+import type { TeamRecord, ScheduledGame } from '@/engine/season/index.ts';
 import { cn } from '@/lib/cn.ts';
 
 // Season milestones that generate inbox notifications
@@ -95,6 +95,15 @@ export function FranchiseDashboard() {
   const [simConfirm, setSimConfirm] = useState<number | null>(null);
   const [simFromDay, setSimFromDay] = useState<number | null>(null);
   const [simFromRecord, setSimFromRecord] = useState<{ wins: number; losses: number } | null>(null); // days pending confirm
+  const [pendingUserGame, setPendingUserGame] = useState<ScheduledGame | null>(null);
+
+  // Close game-choice modal on Escape
+  useEffect(() => {
+    if (!pendingUserGame) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPendingUserGame(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [pendingUserGame]);
 
   // Track which lastDayEvents we've already processed to avoid duplicates
   const prevEventsRef = useRef<typeof lastDayEvents>(null);
@@ -245,17 +254,43 @@ export function FranchiseDashboard() {
   });
 
   const handleAdvance = () => {
-    const prevDay = season.currentDay;
-    const rec = season.standings.getRecord(userTeamId);
-    setShowEvents(true);
-    setRecapTab('summary');
-    const userGame = advanceDay();
-    if (userGame) {
-      navigate(`/game/live?gameId=${userGame.id}`);
+    // Peek at the NEXT day's schedule before advancing
+    const nextDay = season.currentDay + 1;
+    const nextUserGame = season.schedule.find(
+      g => g.date === nextDay && !g.played && (g.awayId === userTeamId || g.homeId === userTeamId)
+    );
+    if (nextUserGame) {
+      // User has a game next day — show Play Live / Auto-Sim choice
+      setPendingUserGame(nextUserGame);
     } else {
+      // No user game scheduled — just advance and recap
+      const prevDay = season.currentDay;
+      const rec = season.standings.getRecord(userTeamId);
+      setShowEvents(true);
+      setRecapTab('summary');
+      advanceDay();
       setSimFromDay(prevDay);
       setSimFromRecord(rec ? { wins: rec.wins, losses: rec.losses } : null);
     }
+  };
+
+  const handlePlayLive = () => {
+    setPendingUserGame(null);
+    const userGame = advanceDay();
+    if (userGame) {
+      navigate(`/game/live?gameId=${userGame.id}`);
+    }
+  };
+
+  const handleAutoSim = () => {
+    const prevDay = season.currentDay;
+    const rec = season.standings.getRecord(userTeamId);
+    setPendingUserGame(null);
+    setShowEvents(true);
+    setRecapTab('summary');
+    simDays(1);
+    setSimFromDay(prevDay);
+    setSimFromRecord(rec ? { wins: rec.wins, losses: rec.losses } : null);
   };
 
   const doSim = (days: number) => {
@@ -1008,6 +1043,39 @@ export function FranchiseDashboard() {
           )}
         </Panel>
       </div>
+
+      {/* Play Live / Auto-Sim choice modal */}
+      {pendingUserGame && (() => {
+        const isHome = pendingUserGame.homeId === userTeamId;
+        const oppId = isHome ? pendingUserGame.awayId : pendingUserGame.homeId;
+        const oppTeam = engine.getTeam(oppId);
+        const oppRecord = season.standings.getRecord(oppId);
+        const recStr = oppRecord ? `${oppRecord.wins}-${oppRecord.losses}` : '';
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="bg-navy-light border border-gold/30 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+              <h3 className="font-display text-lg text-gold uppercase tracking-wider mb-1">
+                Game Day — Day {pendingUserGame.date}
+              </h3>
+              <p className="text-cream-dim text-sm mb-4">
+                {isHome ? 'vs' : '@'} {oppTeam?.name ?? oppId}
+                {recStr && <span className="text-cream-dim/60 ml-1">({recStr})</span>}
+              </p>
+              <div className="space-y-2">
+                <Button className="w-full" onClick={handlePlayLive}>
+                  ▶ Play Live
+                </Button>
+                <Button className="w-full" variant="secondary" onClick={handleAutoSim}>
+                  ⚡ Auto-Sim
+                </Button>
+                <Button className="w-full" variant="ghost" size="sm" onClick={() => setPendingUserGame(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
