@@ -31,7 +31,15 @@ interface LiveGameLocationState {
 }
 
 // ── Team selector — full-page TV style ────────────────────────────────────────
-function TeamSelector({ onStart }: { onStart: (userTeam: 'home' | 'away') => void }) {
+function TeamSelector({
+  onStart,
+  awayName,
+  homeName,
+}: {
+  onStart: (userTeam: 'home' | 'away') => void;
+  awayName?: string;
+  homeName?: string;
+}) {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-8"
@@ -81,7 +89,7 @@ function TeamSelector({ onStart }: { onStart: (userTeam: 'home' | 'away') => voi
           }}
         >
           <div className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-2">Visiting</div>
-          <div className="font-display text-3xl text-gold uppercase tracking-wide">Away Team</div>
+          <div className="font-display text-3xl text-gold uppercase tracking-wide">{awayName ?? 'Away Team'}</div>
           <div className="font-mono text-xs text-cream-dim mt-3">Bats first (top innings)</div>
         </button>
 
@@ -107,7 +115,7 @@ function TeamSelector({ onStart }: { onStart: (userTeam: 'home' | 'away') => voi
           }}
         >
           <div className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-2">Home Field</div>
-          <div className="font-display text-3xl text-gold uppercase tracking-wide">Home Team</div>
+          <div className="font-display text-3xl text-gold uppercase tracking-wide">{homeName ?? 'Home Team'}</div>
           <div className="font-mono text-xs text-cream-dim mt-3">Bats last (bottom innings)</div>
         </button>
       </div>
@@ -505,7 +513,13 @@ export function LiveGamePage() {
   // ── Show team selector if not chosen ─────────────────────────────────────
 
   if (!gameChosen) {
-    return <TeamSelector onStart={initEngine} />;
+    return (
+      <TeamSelector
+        onStart={initEngine}
+        awayName={locationState?.awayTeam ? `${locationState.awayTeam.city} ${locationState.awayTeam.name}` : undefined}
+        homeName={locationState?.homeTeam ? `${locationState.homeTeam.city} ${locationState.homeTeam.name}` : undefined}
+      />
+    );
   }
 
   if (!gameState) return null;

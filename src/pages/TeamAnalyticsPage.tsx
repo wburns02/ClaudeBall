@@ -7,7 +7,10 @@ import {
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useStatsStore } from '@/stores/statsStore.ts';
 import { winPct } from '@/engine/season/index.ts';
+import { battingAvg, onBasePct, slugging, era as calcEra } from '@/engine/types/stats.ts';
+import { woba, wrcPlus, opsPlus, babip, iso, fip, k9, bb9, eraPlus, deriveLeagueContext, DEFAULT_LEAGUE_CONTEXT } from '@/engine/stats/AdvancedStats.ts';
 import { cn } from '@/lib/cn.ts';
 
 const GOLD = '#d4a843';
@@ -188,6 +191,52 @@ export function TeamAnalyticsPage() {
   const userRecord = season.standings.getRecord(userTeamId);
   const gamesPlayed = userGames.length;
   const hasData = gamesPlayed > 0;
+
+  // ── Advanced sabermetrics ─────────────────────────────────────────────────
+  const { playerStats, leagueTotals } = useStatsStore();
+
+  const teamPlayerStats = useMemo(
+    () => Object.values(playerStats).filter(ps => ps.teamId === userTeamId),
+    [playerStats, userTeamId],
+  );
+
+  const teamBatting = useMemo(() => {
+    const agg = { pa: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, bb: 0, so: 0, hbp: 0, sb: 0, sf: 0, rbi: 0, r: 0, cs: 0, sh: 0, gidp: 0 };
+    for (const ps of teamPlayerStats.filter(p => p.position !== 'P')) {
+      agg.pa += ps.batting.pa; agg.ab += ps.batting.ab; agg.h += ps.batting.h;
+      agg.doubles += ps.batting.doubles; agg.triples += ps.batting.triples;
+      agg.hr += ps.batting.hr; agg.bb += ps.batting.bb; agg.so += ps.batting.so;
+      agg.hbp += ps.batting.hbp; agg.sb += ps.batting.sb; agg.sf += ps.batting.sf;
+      agg.rbi += ps.batting.rbi; agg.r += ps.batting.r;
+    }
+    return agg;
+  }, [teamPlayerStats]);
+
+  const teamPitching = useMemo(() => {
+    const agg = { ip: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, wins: 0, losses: 0, saves: 0, bf: 0, pitchCount: 0, holds: 0 };
+    for (const ps of teamPlayerStats.filter(p => p.pitching.ip > 0)) {
+      agg.ip += ps.pitching.ip; agg.er += ps.pitching.er; agg.bb += ps.pitching.bb;
+      agg.so += ps.pitching.so; agg.hr += ps.pitching.hr; agg.h += ps.pitching.h;
+      agg.r += ps.pitching.r; agg.wins += ps.pitching.wins; agg.losses += ps.pitching.losses;
+    }
+    return agg;
+  }, [teamPlayerStats]);
+
+  const leagueCtx = useMemo(() => {
+    const lt = leagueTotals;
+    if (lt.gamesPlayed === 0) return DEFAULT_LEAGUE_CONTEXT;
+    return deriveLeagueContext(
+      lt.totalAB, lt.totalPA, lt.totalH, lt.totalDoubles, lt.totalTriples,
+      lt.totalHR, lt.totalBB, lt.totalHBP, lt.totalSF, lt.totalSO,
+      lt.totalRuns, lt.gamesPlayed, lt.totalER, lt.totalIP,
+      (lt as typeof lt & { totalGameRuns?: number }).totalGameRuns,
+    );
+  }, [leagueTotals]);
+
+  // Pythagorean expected W-L
+  const pythExp = avgRS ** 2 / (avgRS ** 2 + avgRA ** 2 + 0.001);
+  const pythW = Math.round(pythExp * gamesPlayed);
+  const pythL = gamesPlayed - pythW;
 
   // Chart domain: clamp to 0.3..0.8 range with .500 line prominent
   const minPct = Math.max(0.2, Math.min(...rollingData.map(d => d.winPct)) - 0.05);
@@ -371,6 +420,67 @@ export function TeamAnalyticsPage() {
               )}
             </div>
           </Panel>
+
+          {/* Team Sabermetrics */}
+          {teamBatting.pa > 0 && (
+            <Panel title="Team Sabermetrics">
+              <div className="space-y-4">
+                <div>
+                  <p className="font-mono text-[10px] text-gold/60 uppercase tracking-wider mb-2">Batting</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { label: 'OPS+', value: opsPlus(teamBatting, leagueCtx.leagueOBP, leagueCtx.leagueSLG).toString(), tip: '100 = league avg' },
+                      { label: 'wOBA', value: woba(teamBatting).toFixed(3), tip: 'Weighted On-Base Avg' },
+                      { label: 'BABIP', value: babip(teamBatting).toFixed(3), tip: 'Batting Avg on Balls in Play' },
+                      { label: 'ISO', value: iso(teamBatting).toFixed(3), tip: 'Isolated Power (SLG - AVG)' },
+                    ].map(s => (
+                      <div key={s.label} className="bg-navy-lighter/30 rounded-lg px-3 py-2" title={s.tip}>
+                        <p className="font-mono text-[9px] text-cream-dim/50 uppercase tracking-wider">{s.label}</p>
+                        <p className="font-mono text-lg font-bold text-cream">{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="font-mono text-[10px] text-gold/60 uppercase tracking-wider mb-2">Pitching</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { label: 'ERA+', value: eraPlus(teamPitching, leagueCtx.leagueERA).toString(), tip: '100 = league avg, higher = better' },
+                      { label: 'FIP', value: fip(teamPitching).toFixed(2), tip: 'Fielding Independent Pitching' },
+                      { label: 'K/9', value: k9(teamPitching).toFixed(1), tip: 'Strikeouts per 9 innings' },
+                      { label: 'BB/9', value: bb9(teamPitching).toFixed(1), tip: 'Walks per 9 innings' },
+                    ].map(s => (
+                      <div key={s.label} className="bg-navy-lighter/30 rounded-lg px-3 py-2" title={s.tip}>
+                        <p className="font-mono text-[9px] text-cream-dim/50 uppercase tracking-wider">{s.label}</p>
+                        <p className="font-mono text-lg font-bold text-cream">{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="font-mono text-[10px] text-gold/60 uppercase tracking-wider mb-2">Expected</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="bg-navy-lighter/30 rounded-lg px-3 py-2" title="Expected W-L from run differential (Pythagorean)">
+                      <p className="font-mono text-[9px] text-cream-dim/50 uppercase tracking-wider">Pyth W-L</p>
+                      <p className="font-mono text-lg font-bold text-cream">{pythW}-{pythL}</p>
+                    </div>
+                    <div className="bg-navy-lighter/30 rounded-lg px-3 py-2" title="Actual minus expected wins">
+                      <p className="font-mono text-[9px] text-cream-dim/50 uppercase tracking-wider">Luck</p>
+                      <p className={cn('font-mono text-lg font-bold', (userRecord ? userRecord.wins - pythW : 0) >= 0 ? 'text-green-light' : 'text-red-400')}>
+                        {userRecord ? (userRecord.wins - pythW >= 0 ? '+' : '') + (userRecord.wins - pythW) : '—'}
+                      </p>
+                    </div>
+                    <div className="bg-navy-lighter/30 rounded-lg px-3 py-2" title="Run differential per game">
+                      <p className="font-mono text-[9px] text-cream-dim/50 uppercase tracking-wider">RD/G</p>
+                      <p className={cn('font-mono text-lg font-bold', (avgRS - avgRA) >= 0 ? 'text-green-light' : 'text-red-400')}>
+                        {(avgRS - avgRA >= 0 ? '+' : '')}{(avgRS - avgRA).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Panel>
+          )}
         </div>
       )}
 

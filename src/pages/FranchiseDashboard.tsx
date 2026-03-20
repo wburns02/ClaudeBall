@@ -344,7 +344,11 @@ export function FranchiseDashboard() {
     setPendingUserGame(null);
     const userGame = advanceDay();
     if (userGame) {
-      navigate(`/game/live?gameId=${userGame.id}`);
+      const awayTeam = engine?.getTeam(userGame.awayId) ?? null;
+      const homeTeam = engine?.getTeam(userGame.homeId) ?? null;
+      navigate(`/game/live?gameId=${userGame.id}`, {
+        state: { awayTeam, homeTeam },
+      });
     }
   };
 

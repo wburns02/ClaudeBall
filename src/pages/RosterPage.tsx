@@ -295,21 +295,21 @@ export function RosterPage() {
           </div>
         </td>
         <td className="px-3 py-2 font-mono text-xs text-gold text-center">{p.position}</td>
-        <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.bats}/{p.throws}</td>
+        <td className="hidden sm:table-cell px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.bats}/{p.throws}</td>
         <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">{p.age}</td>
         <td className="px-3 py-2">
           {ratingBar(ovr)}
         </td>
-        <td className="px-3 py-2 font-mono text-xs text-cream-dim text-center">
+        <td className="hidden sm:table-cell px-3 py-2 font-mono text-xs text-cream-dim text-center">
           {isPitcher
             ? `${p.pitching.stuff}/${p.pitching.movement}/${p.pitching.control}`
             : `${p.batting.contact_R}/${p.batting.power_R}/${p.batting.eye}`}
         </td>
-        <td className="px-3 py-2 font-mono text-xs text-center">
+        <td className="hidden sm:table-cell px-3 py-2 font-mono text-xs text-center">
           <span className="text-gold">{salary}</span>
           <span className="text-cream-dim/50 ml-1">{contractYrs}</span>
         </td>
-        <td className="px-3 py-2" onClick={e => e.stopPropagation()}>
+        <td className="hidden sm:table-cell px-3 py-2" onClick={e => e.stopPropagation()}>
           <div className="flex gap-1 flex-wrap">
             {/* Extend button — shown for players in their last year */}
             {contract && contract.yearsRemaining <= 1 && !contract.isFreeAgent && (
@@ -404,12 +404,12 @@ export function RosterPage() {
     <tr className="border-b border-navy-lighter">
       <th className="px-3 py-2 text-left cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('name')}><SortHeader col="name" label="Name" /></th>
       <th className="px-3 py-2 text-center cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('pos')}><SortHeader col="pos" label="Pos" /></th>
-      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">B/T</th>
+      <th className="hidden sm:table-cell px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">B/T</th>
       <th className="px-3 py-2 text-center cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('age')}><SortHeader col="age" label="Age" /></th>
       <th className="px-3 py-2 text-left cursor-pointer hover:bg-navy-lighter/20 transition-colors" onClick={() => handleSort('ovr')}><SortHeader col="ovr" label="OVR" /></th>
-      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider" title="Key ratings: Contact/Power/Eye for batters · Stuff/Move/Ctrl for pitchers">Key Stats</th>
-      <th className="px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">Salary</th>
-      <th className="px-3 py-2 text-left text-gold-dim text-xs font-semibold uppercase tracking-wider">Actions</th>
+      <th className="hidden sm:table-cell px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider" title="Key ratings: Contact/Power/Eye for batters · Stuff/Move/Ctrl for pitchers">Key Stats</th>
+      <th className="hidden sm:table-cell px-3 py-2 text-center text-gold-dim text-xs font-semibold uppercase tracking-wider">Salary</th>
+      <th className="hidden sm:table-cell px-3 py-2 text-left text-gold-dim text-xs font-semibold uppercase tracking-wider">Actions</th>
     </tr>
   );
 

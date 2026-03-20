@@ -231,13 +231,16 @@ function AppRoutes() {
 }
 
 function App() {
-  const [splashDone, setSplashDone] = useState(false);
+  // Skip splash if franchise data already exists (returning user / page refresh)
+  const hasFranchise = !!localStorage.getItem('claudeball-franchise');
+  const [splashDone, setSplashDone] = useState(hasFranchise);
 
-  // Preload has already started by the time we render; give splash 1.2s
+  // Only show splash on first-ever load (no saved franchise)
   useEffect(() => {
+    if (hasFranchise) return;
     const t = setTimeout(() => setSplashDone(true), 1200);
     return () => clearTimeout(t);
-  }, []);
+  }, [hasFranchise]);
 
   return (
     <>
