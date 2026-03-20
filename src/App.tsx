@@ -58,6 +58,7 @@ const GameLogPage = lazy(() => import('@/pages/GameLogPage.tsx').then(m => ({ de
 const BoxScoreHistoryPage = lazy(() => import('@/pages/BoxScoreHistoryPage.tsx').then(m => ({ default: m.BoxScoreHistoryPage })));
 const AllStarPage = lazy(() => import('@/pages/AllStarPage.tsx').then(m => ({ default: m.AllStarPage })));
 const AwardsPage = lazy(() => import('@/pages/AwardsPage.tsx').then(m => ({ default: m.AwardsPage })));
+const GoalsPage = lazy(() => import('@/pages/GoalsPage.tsx').then(m => ({ default: m.GoalsPage })));
 const TradeProposalPage = lazy(() => import('@/pages/TradeProposalPage.tsx').then(m => ({ default: m.TradeProposalPage })));
 const FranchiseHistoryPage = lazy(() => import('@/pages/FranchiseHistoryPage.tsx').then(m => ({ default: m.FranchiseHistoryPage })));
 const FranchisePlayerHistoryPage = lazy(() => import('@/pages/FranchisePlayerHistoryPage.tsx').then(m => ({ default: m.FranchisePlayerHistoryPage })));
@@ -196,6 +197,7 @@ function AppRoutes() {
           <Route path="/franchise/box-score/:gameId" element={<FranchiseLayout><BoxScoreHistoryPage /></FranchiseLayout>} />
           <Route path="/franchise/all-star" element={<FranchiseLayout><AllStarPage /></FranchiseLayout>} />
           <Route path="/franchise/awards" element={<FranchiseLayout><AwardsPage /></FranchiseLayout>} />
+          <Route path="/franchise/goals" element={<FranchiseLayout><GoalsPage /></FranchiseLayout>} />
           <Route path="/franchise/trade-proposals" element={<FranchiseLayout><TradeProposalPage /></FranchiseLayout>} />
           <Route path="/franchise/history" element={<FranchiseLayout><FranchiseHistoryPage /></FranchiseLayout>} />
           <Route path="/franchise/player-history" element={<FranchiseLayout><FranchisePlayerHistoryPage /></FranchiseLayout>} />

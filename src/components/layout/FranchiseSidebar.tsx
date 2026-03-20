@@ -63,6 +63,7 @@ const Icons = {
   news: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z M9 10h6 M9 14h4',
   teamStats: 'M3 3h18v18H3z M7 7h4v4H7z M13 7h4v4h-4z M7 13h4v4H7z M13 13h4v4h-4z',
   hotCold: 'M12 2a5 5 0 015 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 015-5z M12 22l2-4h-4l2 4z',
+  goals: 'M12 22a10 10 0 100-20 10 10 0 000 20z M12 6v6l4 2',
   compare: 'M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h3 M16 3h3a2 2 0 012 2v14a2 2 0 01-2 2h-3 M12 3v18',
   depthChart: 'M3 3h18v4H3z M3 10h8v4H3z M3 17h8v4H3z M14 10h7v11h-7z',
   warRoom: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18',
@@ -152,6 +153,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: 'SEASON',
     items: [
+      { label: "Owner's Office", path: '/franchise/goals', icon: 'goals' },
       { label: 'Hot & Cold', path: '/franchise/hot-cold', icon: 'hotCold' },
       { label: 'Awards', path: '/franchise/awards', icon: 'awards' },
       { label: 'Trade Proposals', path: '/franchise/trade-proposals', icon: 'tradeProposals' },

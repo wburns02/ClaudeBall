@@ -7,6 +7,7 @@ import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
 import { useInboxStore } from '@/stores/inboxStore.ts';
 import type { InboxItemType } from '@/stores/inboxStore.ts';
+import { useGoalsStore, ownerConfidenceLabel, goalProgressPct } from '@/stores/goalsStore.ts';
 import { winPct, gamesBehind, streakStr, last10Str, runDifferential } from '@/engine/season/index.ts';
 import type { TeamRecord, ScheduledGame } from '@/engine/season/index.ts';
 import { cn } from '@/lib/cn.ts';
@@ -81,6 +82,71 @@ function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; tota
       <p className="font-mono text-xs text-cream-dim/40 text-right mt-0.5">
         {Math.round(pct)}% complete
       </p>
+    </div>
+  );
+}
+
+// ── Owner Widget (compact dashboard card) ────────────────────────────────────
+
+function OwnerWidget() {
+  const navigate = useNavigate();
+  const { goals, owner } = useGoalsStore();
+  if (!owner || goals.length === 0) return null;
+  const { label, color } = ownerConfidenceLabel(owner.confidence);
+  const primaryGoal = goals.find(g => g.priority === 'primary');
+  const metCount = goals.filter(g => g.met).length;
+
+  return (
+    <div
+      className="mt-4 p-4 rounded-xl border border-navy-lighter bg-navy-light/30 cursor-pointer hover:border-gold/30 transition-all"
+      onClick={() => navigate('/franchise/goals')}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-full bg-navy-lighter/60 border border-gold/20 flex items-center justify-center shrink-0">
+            <span className="font-display text-sm text-gold">
+              {owner.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-display text-cream text-sm tracking-wide truncate">{owner.name}</span>
+              <span className={cn('font-mono text-xs font-bold shrink-0', color)}>{label}</span>
+            </div>
+            {primaryGoal && (
+              <p className="font-mono text-xs text-cream-dim/60 truncate">
+                {primaryGoal.icon} {primaryGoal.description}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {/* Mini goal dots */}
+          <div className="flex gap-1">
+            {goals.map(g => (
+              <div
+                key={g.id}
+                className={cn(
+                  'w-2 h-2 rounded-full',
+                  g.met ? 'bg-green-light' : g.failed ? 'bg-red-400/60' : 'bg-navy-lighter',
+                )}
+              />
+            ))}
+          </div>
+          <span className="font-mono text-xs text-cream-dim/50">{metCount}/{goals.length}</span>
+          {/* Confidence bar */}
+          <div className="w-20 h-1.5 bg-navy-lighter/40 rounded-full overflow-hidden">
+            <div
+              className={cn('h-full rounded-full transition-all',
+                owner.confidence >= 70 ? 'bg-green-light' :
+                owner.confidence >= 45 ? 'bg-gold' : 'bg-red-400'
+              )}
+              style={{ width: `${owner.confidence}%` }}
+            />
+          </div>
+          <span className="font-mono text-xs text-cream-dim/40">→</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -636,6 +702,9 @@ export function FranchiseDashboard() {
           </Panel>
         )}
       </div>
+
+      {/* Owner's Office widget */}
+      <OwnerWidget />
 
       {/* Postseason / Offseason banners */}
       {isPostseason && season.playoffBracket && (

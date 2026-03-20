@@ -6,10 +6,12 @@ import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Award } from '@/engine/season/index.ts';
 
-const AWARD_LABELS = {
+const AWARD_LABELS: Record<string, string> = {
   MVP: 'Most Valuable Player',
   CyYoung: 'Cy Young Award',
   ROY: 'Rookie of the Year',
+  SilverSlugger: 'Silver Slugger',
+  GoldGlove: 'Gold Glove',
 };
 
 function AwardCard({ award, getTeamName }: { award: Award; getTeamName: (id: string) => string }) {

@@ -7,7 +7,7 @@ import { DevelopmentEngine } from '../player/DevelopmentEngine.ts';
 import type { TrainingAssignment } from '../player/DevelopmentEngine.ts';
 import { evaluatePlayer } from '../gm/TradeEngine.ts';
 
-export type AwardType = 'MVP' | 'CyYoung' | 'ROY';
+export type AwardType = 'MVP' | 'CyYoung' | 'ROY' | 'SilverSlugger' | 'GoldGlove';
 
 export interface Award {
   type: AwardType;
@@ -16,6 +16,7 @@ export interface Award {
   playerName: string;
   teamId: string;
   value: number; // the stat that won the award (WAR-ish for MVP, ERA for CY, etc.)
+  position?: string; // for positional awards (SilverSlugger, GoldGlove)
 }
 
 export interface RetirementInfo {

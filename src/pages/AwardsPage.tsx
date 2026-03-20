@@ -6,26 +6,50 @@ import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useHistoryStore } from '@/stores/historyStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
 import { cn } from '@/lib/cn.ts';
+import { ops } from '@/engine/types/stats.ts';
+import { getFieldingForPosition } from '@/engine/types/player.ts';
+import type { Position } from '@/engine/types/enums.ts';
 import type { Award } from '@/engine/season/index.ts';
 
 const AWARD_META: Record<string, { label: string; icon: string; color: string; valueLabel: string }> = {
   MVP: { label: 'Most Valuable Player', icon: '★', color: 'text-gold', valueLabel: 'HR+RBI' },
   CyYoung: { label: 'Cy Young Award', icon: '⚾', color: 'text-blue-400', valueLabel: 'ERA' },
   ROY: { label: 'Rookie of the Year', icon: '🔰', color: 'text-green-light', valueLabel: 'HR+RBI' },
+  SilverSlugger: { label: 'Silver Slugger', icon: '🥈', color: 'text-cream', valueLabel: 'OPS' },
+  GoldGlove: { label: 'Gold Glove', icon: '🥇', color: 'text-gold', valueLabel: 'DEF' },
 };
+
+const SS_POSITIONS = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+const GG_POSITIONS = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
 
 function AwardCard({
   award,
   year,
   teamName,
   isUserTeam,
+  compact = false,
 }: {
   award: Award;
   year: number;
   teamName: string;
   isUserTeam: boolean;
+  compact?: boolean;
 }) {
   const meta = AWARD_META[award.type] ?? { label: award.type, icon: '·', color: 'text-cream' };
+  if (compact) {
+    return (
+      <div className={cn(
+        'p-2 rounded border flex items-center gap-2',
+        isUserTeam ? 'border-gold/40 bg-gold/5' : 'border-navy-lighter bg-navy-light/20',
+      )}>
+        <span className="font-mono text-xs text-cream-dim/60 w-7 shrink-0">{award.position}</span>
+        <span className="font-display text-cream text-sm tracking-wide truncate flex-1">{award.playerName}</span>
+        <span className={cn('font-mono text-xs font-bold shrink-0', meta.color)}>
+          {award.type === 'SilverSlugger' ? award.value.toFixed(3) : Math.round(award.value)}
+        </span>
+      </div>
+    );
+  }
   return (
     <div className={cn(
       'p-4 rounded-lg border transition-all',
@@ -138,6 +162,61 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
           calculated: true,
         });
       }
+
+      // Silver Slugger: best OPS per position (min 30 PA)
+      const allPlayers = allTeams.flatMap(t => t.roster.players);
+      for (const pos of SS_POSITIONS) {
+        const posStats = leagueStats.filter(ps =>
+          ps.position === pos && ps.batting.pa >= 30
+        );
+        if (posStats.length === 0) continue;
+        const winner = posStats.reduce((best, ps) =>
+          ops(ps.batting) > ops(best.batting) ? ps : best, posStats[0]!
+        );
+        awards.push({
+          type: 'SilverSlugger',
+          league,
+          playerId: winner.playerId,
+          playerName: winner.playerName,
+          teamId: winner.teamId,
+          value: ops(winner.batting),
+          position: pos,
+          calculated: true,
+        });
+      }
+
+      // Gold Glove: best fielding score per position among starters (min 20 games)
+      // fielding score = range + arm_strength + arm_accuracy + turn_dp + (100 - error_rate)
+      const fieldingScore = (player: ReturnType<typeof allPlayers[0]['fielding']['find']>) => {
+        if (!player) return 0;
+        return player.range + player.arm_strength + player.arm_accuracy +
+               player.turn_dp + (100 - player.error_rate);
+      };
+      for (const pos of GG_POSITIONS) {
+        const posStats = leagueStats.filter(ps =>
+          ps.position === pos && ps.gamesPlayed >= 10
+        );
+        if (posStats.length === 0) continue;
+        const winner = posStats.reduce((best, ps) => {
+          const pPlayer = allPlayers.find(p => p.id === ps.playerId);
+          const bPlayer = allPlayers.find(p => p.id === best.playerId);
+          const pFs = fieldingScore(pPlayer ? getFieldingForPosition(pPlayer, pos as Position) : undefined);
+          const bFs = fieldingScore(bPlayer ? getFieldingForPosition(bPlayer, pos as Position) : undefined);
+          return pFs > bFs ? ps : best;
+        }, posStats[0]!);
+        const winnerPlayer = allPlayers.find(p => p.id === winner.playerId);
+        const winnerFs = fieldingScore(winnerPlayer ? getFieldingForPosition(winnerPlayer, pos as Position) : undefined);
+        awards.push({
+          type: 'GoldGlove',
+          league,
+          playerId: winner.playerId,
+          playerName: winner.playerName,
+          teamId: winner.teamId,
+          value: winnerFs,
+          position: pos,
+          calculated: true,
+        });
+      }
     }
 
     return awards;
@@ -161,14 +240,19 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
 
   return (
     <div className="space-y-6">
-      {leagueNames.map(league => (
+      {leagueNames.map(league => {
+        const leagueAwards = awards.filter(a => a.league === league);
+        const mainAwards = leagueAwards.filter(a => ['MVP', 'CyYoung', 'ROY'].includes(a.type));
+        const silverSluggers = leagueAwards.filter(a => a.type === 'SilverSlugger');
+        const goldGloves = leagueAwards.filter(a => a.type === 'GoldGlove');
+        return (
         <div key={league}>
           <h3 className="font-display text-cream text-lg tracking-wide uppercase mb-3">
             {league} League
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {awards
-              .filter(a => a.league === league)
+          {/* Main awards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+            {mainAwards
               .sort((a, b) => {
                 const order = ['MVP', 'CyYoung', 'ROY'];
                 return order.indexOf(a.type) - order.indexOf(b.type);
@@ -183,8 +267,52 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
                 />
               ))}
           </div>
+          {/* Positional awards */}
+          {(silverSluggers.length > 0 || goldGloves.length > 0) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {silverSluggers.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-widest text-cream mb-2">🥈 Silver Slugger</p>
+                  <div className="space-y-1">
+                    {silverSluggers
+                      .sort((a, b) => (SS_POSITIONS.indexOf(a.position ?? '') - SS_POSITIONS.indexOf(b.position ?? '')))
+                      .map(a => (
+                        <AwardCard
+                          key={`${a.league}-${a.type}-${a.position}`}
+                          award={a}
+                          year={season.year}
+                          teamName={getTeamName(a.teamId)}
+                          isUserTeam={a.teamId === userTeamId}
+                          compact
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+              {goldGloves.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-widest text-gold mb-2">🥇 Gold Glove</p>
+                  <div className="space-y-1">
+                    {goldGloves
+                      .sort((a, b) => (GG_POSITIONS.indexOf(a.position ?? '') - GG_POSITIONS.indexOf(b.position ?? '')))
+                      .map(a => (
+                        <AwardCard
+                          key={`${a.league}-${a.type}-${a.position}`}
+                          award={a}
+                          year={season.year}
+                          teamName={getTeamName(a.teamId)}
+                          isUserTeam={a.teamId === userTeamId}
+                          compact
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      ))}
+        );
+      })}
       {calculatedAwards.length > 0 && !season.offseasonAwards?.length && (
         <p className="font-mono text-xs text-cream-dim/50 italic">
           * Live projections based on current stats. Final awards determined at season end.
