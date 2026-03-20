@@ -133,14 +133,14 @@ function PlayerSlot({
         </div>
       ) : (
         <div>
-          <p className="font-mono text-xs text-cream-dim/50 mb-1.5 uppercase tracking-wider">Player {idx + 1}</p>
+          <p className="font-mono text-xs text-cream-dim mb-1.5 uppercase tracking-wider">Player {idx + 1} — type to search</p>
           <input
             value={query}
             onChange={e => { setQuery(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
             placeholder="Search by name, position, or team…"
-            className="w-full bg-navy-lighter/30 border border-navy-lighter/50 rounded px-2 py-1 font-mono text-xs text-cream placeholder-cream-dim/30 focus:outline-none focus:border-gold/40"
+            className="w-full bg-navy-lighter/30 border border-navy-lighter/50 rounded px-2 py-1 font-mono text-xs text-cream placeholder-cream-dim/70 focus:outline-none focus:border-gold/40"
           />
           {open && filtered.length > 0 && (
             <div className="absolute left-0 right-0 top-full z-20 mt-1 border border-navy-lighter bg-navy rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">

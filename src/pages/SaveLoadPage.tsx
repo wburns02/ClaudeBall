@@ -171,7 +171,7 @@ function SaveNameModal({ onConfirm, onCancel, defaultName = '' }: SaveNameModalP
             className={cn(
               'w-full px-3 py-2 rounded-md',
               'bg-[#0d1625] border border-navy-lighter',
-              'font-mono text-sm text-cream placeholder-cream-dim/30',
+              'font-mono text-sm text-cream placeholder-cream-dim/70',
               'focus:outline-none focus:border-gold/60',
             )}
             autoFocus

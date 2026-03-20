@@ -302,12 +302,13 @@ export function SchedulePage() {
                           >{abbr}</span>
                         </div>
                         {g.played && (
-                          <div
-                            className="font-mono text-[10px] text-cream-dim hover:text-gold cursor-pointer"
+                          <button
+                            className="font-mono text-[10px] text-cream-dim hover:text-gold cursor-pointer bg-transparent border-0 p-0 text-left"
                             onClick={e => { e.stopPropagation(); navigate(`/franchise/box-score/${g.id}`); }}
+                            title="View box score"
                           >
-                            {g.awayScore}-{g.homeScore} <span className="text-cream-dim/30 text-[8px]">BOX</span>
-                          </div>
+                            {g.awayScore}-{g.homeScore} <span className="text-gold/60 text-[8px] font-bold">BOX</span>
+                          </button>
                         )}
                         {!g.played && isFuture && (
                           <div className="flex gap-1 mt-0.5">

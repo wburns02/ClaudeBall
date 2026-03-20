@@ -6,7 +6,7 @@ const ALL_ROUTES = [
   '/franchise/training', '/franchise/lineup-editor', '/franchise/player-stats/th-rf',
   '/franchise/compare', '/franchise/standings', '/franchise/power-rankings',
   '/franchise/team-analytics', '/franchise/leaders', '/franchise/records',
-  '/franchise/team-stats/thk', '/franchise/war-room', '/franchise/scouting',
+  '/franchise/team-stats/thunderhawks', '/franchise/war-room', '/franchise/scouting',
   '/franchise/finances', '/franchise/payroll', '/franchise/trade',
   '/franchise/free-agency', '/franchise/draft', '/franchise/roster-manager',
   '/franchise/scoreboard', '/franchise/schedule', '/franchise/game-log',

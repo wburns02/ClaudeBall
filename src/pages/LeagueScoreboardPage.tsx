@@ -38,24 +38,17 @@ function GameCard({ game, awayAbbr, homeAbbr, awayRecord, homeRecord, isUserTeam
   const userHome = isUserTeam(game.homeId);
   const hasUser = userAway || userHome;
 
-  return (
-    <div
-      onClick={played && onClick ? onClick : undefined}
-      className={cn(
-        'rounded-lg border px-3 py-2.5 transition-all',
-        played && onClick ? 'cursor-pointer hover:border-cream/40' : '',
-        hasUser
-          ? 'border-gold/40 bg-gold/5'
-          : 'border-navy-lighter/40 bg-navy-lighter/10',
-      )}
-    >
+  const cardClass = cn(
+    'rounded-lg border px-3 py-2.5 transition-all',
+    played && onClick ? 'cursor-pointer hover:border-cream/40' : '',
+    hasUser ? 'border-gold/40 bg-gold/5' : 'border-navy-lighter/40 bg-navy-lighter/10',
+  );
+  const inner = (
+    <>
       {/* Away team row */}
       <div className="flex items-center gap-2">
         <span className="font-mono text-[9px] text-cream-dim/50 w-8 tracking-wider">AWY</span>
-        <span className={cn(
-          'font-mono text-xs tracking-wider uppercase flex-1',
-          userAway ? 'text-gold font-bold' : 'text-cream',
-        )}>
+        <span className={cn('font-mono text-xs tracking-wider uppercase flex-1', userAway ? 'text-gold font-bold' : 'text-cream')}>
           {awayAbbr}
         </span>
         {awayRecord && (
@@ -64,10 +57,7 @@ function GameCard({ game, awayAbbr, homeAbbr, awayRecord, homeRecord, isUserTeam
           </span>
         )}
         {played ? (
-          <span className={cn(
-            'font-mono text-sm w-6 text-right tabular-nums',
-            scoreColor(game.awayScore!, game.homeScore!),
-          )}>
+          <span className={cn('font-mono text-sm w-6 text-right tabular-nums', scoreColor(game.awayScore!, game.homeScore!))}>
             {game.awayScore}
           </span>
         ) : (
@@ -78,10 +68,7 @@ function GameCard({ game, awayAbbr, homeAbbr, awayRecord, homeRecord, isUserTeam
       {/* Home team row */}
       <div className="flex items-center gap-2 mt-1">
         <span className="font-mono text-[9px] text-cream-dim/50 w-8 tracking-wider">HME</span>
-        <span className={cn(
-          'font-mono text-xs tracking-wider uppercase flex-1',
-          userHome ? 'text-gold font-bold' : 'text-cream',
-        )}>
+        <span className={cn('font-mono text-xs tracking-wider uppercase flex-1', userHome ? 'text-gold font-bold' : 'text-cream')}>
           {homeAbbr}
         </span>
         {homeRecord && (
@@ -90,10 +77,7 @@ function GameCard({ game, awayAbbr, homeAbbr, awayRecord, homeRecord, isUserTeam
           </span>
         )}
         {played ? (
-          <span className={cn(
-            'font-mono text-sm w-6 text-right tabular-nums',
-            scoreColor(game.homeScore!, game.awayScore!),
-          )}>
+          <span className={cn('font-mono text-sm w-6 text-right tabular-nums', scoreColor(game.homeScore!, game.awayScore!))}>
             {game.homeScore}
           </span>
         ) : (
@@ -112,8 +96,13 @@ function GameCard({ game, awayAbbr, homeAbbr, awayRecord, homeRecord, isUserTeam
           <span className="font-mono text-[9px] text-gold/60 uppercase tracking-wider">Box Score →</span>
         )}
       </div>
-    </div>
+    </>
   );
+
+  if (played && onClick) {
+    return <button onClick={onClick} className={cn(cardClass, 'text-left w-full')} title="View box score">{inner}</button>;
+  }
+  return <div className={cardClass}>{inner}</div>;
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
