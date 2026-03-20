@@ -15,10 +15,9 @@ function gbFloat(leader: TeamRecord, team: TeamRecord): number {
   return ((leader.wins - team.wins) + (team.losses - leader.losses)) / 2;
 }
 
-/** Approximate games remaining using total days and current day. */
-function approxGamesLeft(currentDay: number, totalDays: number, gamesPlayed: number): number {
-  const pace = gamesPlayed > 0 ? gamesPlayed / currentDay : 1;
-  return Math.max(0, Math.round((totalDays - currentDay) * pace));
+/** Games remaining per team based on standard 162-game schedule. */
+function approxGamesLeft(_currentDay: number, _totalDays: number, gamesPlayed: number): number {
+  return Math.max(0, 162 - gamesPlayed);
 }
 
 /**

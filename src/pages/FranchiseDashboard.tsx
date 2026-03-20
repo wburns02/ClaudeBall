@@ -88,7 +88,7 @@ function SeasonProgressBar({ currentDay, totalDays }: { currentDay: number; tota
 export function FranchiseDashboard() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals } = useFranchiseStore();
-  const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount } = useInboxStore();
+  const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount, items: inboxItems } = useInboxStore();
   const playerStats = useStatsStore(s => s.playerStats);
   const [showEvents, setShowEvents] = useState(true);
   const [recapTab, setRecapTab] = useState<'summary' | 'scores' | 'performers'>('summary');
@@ -177,16 +177,20 @@ export function FranchiseDashboard() {
 
     const milestone = INBOX_MILESTONES.find(m => m.day === season.currentDay);
     if (milestone) {
-      addItem({
-        type: 'milestone' as InboxItemType,
-        title: milestone.title,
-        body: milestone.body,
-        day: season.currentDay,
-        urgent: milestone.urgent ?? false,
-        linkedUrl: milestone.linkedUrl,
-      });
+      // Prevent duplicate notifications when component remounts on same day
+      const alreadySent = inboxItems.some(i => i.type === 'milestone' && i.day === season.currentDay);
+      if (!alreadySent) {
+        addItem({
+          type: 'milestone' as InboxItemType,
+          title: milestone.title,
+          body: milestone.body,
+          day: season.currentDay,
+          urgent: milestone.urgent ?? false,
+          linkedUrl: milestone.linkedUrl,
+        });
+      }
     }
-  }, [season?.currentDay, userTeamId, addItem]);
+  }, [season?.currentDay, userTeamId, addItem, inboxItems]);
 
   // New trade proposals notification
   useEffect(() => {

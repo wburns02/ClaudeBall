@@ -132,7 +132,7 @@ export function PlayoffsPage() {
 
   // If still in regular season / preseason, don't auto-start — show a prompt
   if (season.phase === 'regular' || season.phase === 'preseason') {
-    const gamesLeft = season.schedule.filter(g => !g.played).length;
+    const gamesLeft = season.schedule.filter(g => !g.played && (g.homeId === userTeamId || g.awayId === userTeamId)).length;
     return (
       <div className="min-h-screen p-6 max-w-5xl mx-auto flex items-center justify-center">
         <Panel className="text-center space-y-4 max-w-md">

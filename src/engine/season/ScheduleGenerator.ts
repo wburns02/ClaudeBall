@@ -108,18 +108,49 @@ export class ScheduleGenerator {
       }
     }
 
-    // Shuffle and assign dates (183 day season, ~15 games per day across league)
-    const shuffled = matchups.sort(() => rng.next() - 0.5);
-    const gamesPerDay = Math.ceil(shuffled.length / 183);
+    // Shuffle matchups randomly
+    const shuffled = [...matchups].sort(() => rng.next() - 0.5);
 
-    const schedule: ScheduledGame[] = shuffled.map((m, i) => ({
-      id: `game-${i}`,
-      gameNumber: i + 1,
-      awayId: m.away,
-      homeId: m.home,
-      date: Math.min(183, Math.floor(i / gamesPerDay) + 1),
-      played: false,
-    }));
+    // Build conflict-free "rounds": each round assigns at most 1 game per team per day
+    // Greedy pass: scan remaining games, add to current round if neither team is used
+    const rounds: Array<Array<{ away: string; home: string }>> = [];
+    let remaining = [...shuffled];
+    while (remaining.length > 0) {
+      const round: Array<{ away: string; home: string }> = [];
+      const usedTeams = new Set<string>();
+      const leftover: Array<{ away: string; home: string }> = [];
+      for (const m of remaining) {
+        if (!usedTeams.has(m.home) && !usedTeams.has(m.away)) {
+          round.push(m);
+          usedTeams.add(m.home);
+          usedTeams.add(m.away);
+        } else {
+          leftover.push(m);
+        }
+      }
+      rounds.push(round);
+      remaining = leftover;
+    }
+
+    // Spread rounds proportionally across 183 calendar days
+    // This ensures games appear across the full season with proper off-days
+    const numDays = 183;
+    const schedule: ScheduledGame[] = [];
+    let gameIdx = 0;
+    rounds.forEach((round, ri) => {
+      const day = Math.min(numDays, Math.floor(ri * numDays / rounds.length) + 1);
+      for (const m of round) {
+        schedule.push({
+          id: `game-${gameIdx}`,
+          gameNumber: gameIdx + 1,
+          awayId: m.away,
+          homeId: m.home,
+          date: day,
+          played: false,
+        });
+        gameIdx++;
+      }
+    });
 
     return schedule;
   }
