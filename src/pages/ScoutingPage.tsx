@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useScoutingStore } from '@/stores/scoutingStore.ts';
 import { addToast } from '@/stores/toastStore.ts';
+import { usePlayerModal } from '@/stores/playerModalStore.ts';
 import { STAFF_TIERS } from '@/engine/gm/ScoutingEngine.ts';
 import type { GradeReport, PlayerScoutingReport } from '@/engine/gm/ScoutingEngine.ts';
 import { cn } from '@/lib/cn.ts';
@@ -617,6 +618,7 @@ type SortMode = 'overall' | 'age' | 'position' | 'name';
 
 export function ScoutingPage() {
   const navigate = useNavigate();
+  const openPlayer = usePlayerModal(s => s.openPlayer);
   const { season, engine, userTeamId } = useFranchiseStore();
   const { getReport, isPending, scoutPlayer, scoutOwnRoster } = useScoutingStore();
 
@@ -870,7 +872,7 @@ export function ScoutingPage() {
                   variant="secondary"
                   size="sm"
                   className="flex-1"
-                  onClick={() => navigate(`/franchise/player-stats/${selectedPlayer.id}`)}
+                  onClick={() => { openPlayer(selectedPlayer.id); setSelectedPlayer(null); }}
                 >
                   View Full Profile
                 </Button>

@@ -11,6 +11,7 @@ import { cn } from '@/lib/cn.ts';
 import type { Player } from '@/engine/types/player.ts';
 import type { ReactElement } from 'react';
 import { useMoraleStore, getMoraleColor } from '@/stores/moraleStore.ts';
+import { usePlayerModal } from '@/stores/playerModalStore.ts';
 
 type SortKey = 'name' | 'pos' | 'age' | 'ovr' | 'rating';
 type SortDir = 'asc' | 'desc';
@@ -205,6 +206,7 @@ function ExtensionDialog({
 
 export function RosterPage() {
   const navigate = useNavigate();
+  const openPlayer = usePlayerModal(s => s.openPlayer);
   const { engine, userTeamId, teams, getPlayerContract, releasePlayerToWaivers, signExtension, ilRoster, getTeamInjuries, season, sendDownPlayer } = useFranchiseStore();
   const { playerMorales } = useMoraleStore();
 
@@ -279,7 +281,7 @@ export function RosterPage() {
           'group border-b border-navy-lighter/50 hover:bg-navy-lighter/20 transition-colors cursor-pointer',
           onIL && 'opacity-75',
         )}
-        onClick={() => navigate(`/franchise/player-stats/${p.id}`)}
+        onClick={() => openPlayer(p.id)}
       >
         <td className="px-3 py-2 font-body text-sm">
           <div className="flex items-center gap-1.5">

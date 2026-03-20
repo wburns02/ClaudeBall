@@ -4,6 +4,7 @@ import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
+import { usePlayerModal } from '@/stores/playerModalStore.ts';
 import { computeFormSummary, FORM_STATUS_CONFIG } from '@/engine/performance/HotColdEngine.ts';
 import type { FormSummary, FormStatus } from '@/engine/performance/HotColdEngine.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
@@ -49,6 +50,7 @@ type FilterMode = 'all' | 'hot' | 'cold' | 'batters' | 'pitchers';
 
 export function HotColdPage() {
   const navigate = useNavigate();
+  const openPlayer = usePlayerModal(s => s.openPlayer);
   const { engine, userTeamId, teams, isOnIL } = useFranchiseStore();
   const playerStats = useStatsStore(s => s.playerStats);
 
@@ -242,7 +244,7 @@ export function HotColdPage() {
                   return (
                     <tr
                       key={form.playerId}
-                      onClick={() => navigate(`/franchise/player-stats/${form.playerId}`)}
+                      onClick={() => openPlayer(form.playerId)}
                       className={cn(
                         'border-b border-navy-lighter/30 cursor-pointer transition-colors',
                         i % 2 === 0 ? 'bg-navy-lighter/5' : 'bg-transparent',

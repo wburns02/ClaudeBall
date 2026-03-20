@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
+import { usePlayerModal } from '@/stores/playerModalStore.ts';
 import { winPct, gamesBehind } from '@/engine/season/index.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Player } from '@/engine/types/player.ts';
@@ -154,6 +155,7 @@ function AssetCard({ player, tier, onClick }: { player: Player; tier: string; on
 
 export function GMWarRoomPage() {
   const navigate = useNavigate();
+  const openPlayer = usePlayerModal(s => s.openPlayer);
   const { engine, season, userTeamId, teams, getTeamPayroll, getTeamInjuries, teamBudgets } = useFranchiseStore();
   const userTeam = engine && userTeamId ? engine.getTeam(userTeamId) : null;
 
@@ -493,7 +495,7 @@ export function GMWarRoomPage() {
                       {seller.topPlayers.map(p => (
                         <button
                           key={p.id}
-                          onClick={() => navigate(`/franchise/player-stats/${p.id}`)}
+                          onClick={() => openPlayer(p.id)}
                           className="w-full flex items-center gap-2 px-2 py-1 rounded hover:bg-navy-lighter/30 transition-colors text-left cursor-pointer group"
                         >
                           <span className="font-mono text-xs text-gold/60 w-8 shrink-0">{p.position}</span>
@@ -544,7 +546,7 @@ export function GMWarRoomPage() {
                           key={p.id}
                           player={p}
                           tier={key}
-                          onClick={() => navigate(`/franchise/player-stats/${p.id}`)}
+                          onClick={() => openPlayer(p.id)}
                         />
                       ))}
                     </div>
