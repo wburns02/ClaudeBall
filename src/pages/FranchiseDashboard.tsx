@@ -89,7 +89,9 @@ export function FranchiseDashboard() {
   const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals } = useFranchiseStore();
   const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount } = useInboxStore();
   const [showEvents, setShowEvents] = useState(true);
-  const [simConfirm, setSimConfirm] = useState<number | null>(null); // days pending confirm
+  const [simConfirm, setSimConfirm] = useState<number | null>(null);
+  const [simFromDay, setSimFromDay] = useState<number | null>(null);
+  const [simFromRecord, setSimFromRecord] = useState<{ wins: number; losses: number } | null>(null); // days pending confirm
 
   // Track which lastDayEvents we've already processed to avoid duplicates
   const prevEventsRef = useRef<typeof lastDayEvents>(null);
@@ -232,8 +234,16 @@ export function FranchiseDashboard() {
     }
   };
 
-  const handleSimWeek = () => { setShowEvents(true); simDays(7); };
-  const handleSimConfirm = (days: number) => { setShowEvents(true); simDays(days); setSimConfirm(null); };
+  const doSim = (days: number) => {
+    const rec = season.standings.getRecord(userTeamId);
+    setSimFromDay(season.currentDay);
+    setSimFromRecord(rec ? { wins: rec.wins, losses: rec.losses } : null);
+    setShowEvents(true);
+    simDays(days);
+  };
+
+  const handleSimWeek = () => doSim(7);
+  const handleSimConfirm = (days: number) => { doSim(days); setSimConfirm(null); };
 
   const isRegularSeason = season.phase === 'regular' || season.phase === 'preseason';
   const isPostseason = season.phase === 'postseason';
@@ -247,6 +257,31 @@ export function FranchiseDashboard() {
   const regularSeasonComplete =
     season.phase === 'postseason' ||
     (season.currentDay >= season.totalDays && season.schedule.every(g => g.played));
+
+  // Sim recap computed values
+  const simGames = simFromDay !== null
+    ? season.schedule.filter(g =>
+        g.played &&
+        g.date > simFromDay && g.date <= season.currentDay &&
+        (g.homeId === userTeamId || g.awayId === userTeamId)
+      )
+    : [];
+  const simWins = simGames.filter(g => {
+    const isHome = g.homeId === userTeamId;
+    return isHome
+      ? (g.homeScore ?? 0) > (g.awayScore ?? 0)
+      : (g.awayScore ?? 0) > (g.homeScore ?? 0);
+  }).length;
+  const simLosses = simGames.length - simWins;
+  const divRank = userDiv ? userDiv.teams.findIndex(t => t.teamId === userTeamId) + 1 : 0;
+  const divLeader = userDiv?.teams[0];
+  const gamesBack = divRank > 1 && divLeader && userRecord
+    ? ((divLeader.wins - divLeader.losses) - (userRecord.wins - userRecord.losses)) / 2
+    : 0;
+  const ordinal = (n: number) => {
+    if (n % 100 >= 11 && n % 100 <= 13) return `${n}th`;
+    return `${n}${(['', 'st', 'nd', 'rd'] as const)[n % 10] ?? 'th'}`;
+  };
 
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto">
@@ -363,27 +398,27 @@ export function FranchiseDashboard() {
                 <Button className="w-full" variant="secondary" onClick={handleSimWeek}>
                   Sim 7 Days
                 </Button>
-                <Button className="w-full" variant="secondary" onClick={() => { setShowEvents(true); simDays(30); }}>
+                <Button className="w-full" variant="secondary" onClick={() => doSim(30)}>
                   Sim 30 Days
                 </Button>
                 {/* Sim-to-milestone shortcuts */}
                 {season.currentDay < 90 && (
-                  <Button className="w-full" variant="ghost" size="sm" onClick={() => { setShowEvents(true); simDays(90 - season.currentDay); }}>
+                  <Button className="w-full" variant="ghost" size="sm" onClick={() => doSim(90 - season.currentDay)}>
                     → Sim to All-Star Break (Day 90)
                   </Button>
                 )}
                 {season.currentDay >= 90 && season.currentDay < 120 && (
-                  <Button className="w-full" variant="ghost" size="sm" onClick={() => { setShowEvents(true); simDays(120 - season.currentDay); }}>
+                  <Button className="w-full" variant="ghost" size="sm" onClick={() => doSim(120 - season.currentDay)}>
                     → Sim to Trade Deadline (Day 120)
                   </Button>
                 )}
                 {season.currentDay >= 120 && season.currentDay < season.totalDays - 5 && (
-                  <Button className="w-full" variant="ghost" size="sm" onClick={() => { setShowEvents(true); simDays(season.totalDays - season.currentDay); }}>
+                  <Button className="w-full" variant="ghost" size="sm" onClick={() => doSim(season.totalDays - season.currentDay)}>
                     → Sim to End of Season
                   </Button>
                 )}
                 {season.currentDay >= season.totalDays - 5 && (
-                  <Button className="w-full" variant="secondary" onClick={() => { setShowEvents(true); simDays(183); }}>
+                  <Button className="w-full" variant="secondary" onClick={() => doSim(183)}>
                     Finish Season
                   </Button>
                 )}
@@ -473,45 +508,177 @@ export function FranchiseDashboard() {
         </div>
       )}
 
-      {/* Day Events Summary */}
-      {showEvents && lastDayEvents && (lastDayEvents.injuries.length + lastDayEvents.returns.length + lastDayEvents.callups.length + lastDayEvents.aiTrades.length) > 0 && (
-        <div className="mt-4 p-4 rounded-lg border border-navy-lighter bg-navy-light/40">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-display text-sm text-cream uppercase tracking-wider">Last Sim Summary</h3>
+      {/* Sim Recap */}
+      {showEvents && lastDayEvents && simFromDay !== null && (
+        <div className="mt-4 rounded-lg border border-navy-lighter bg-navy-light/40 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-navy-lighter/50 bg-navy-light/60">
+            <div className="flex items-center gap-3">
+              <span className="font-display text-sm text-gold uppercase tracking-wider">Sim Recap</span>
+              <span className="font-mono text-xs text-cream-dim">
+                Day {simFromDay} → Day {season.currentDay}
+              </span>
+              <span className="font-mono text-[10px] text-cream-dim/40">
+                ({season.currentDay - simFromDay} days)
+              </span>
+            </div>
             <button
-              onClick={() => setShowEvents(false)}
+              onClick={() => { setShowEvents(false); setSimFromDay(null); setSimFromRecord(null); }}
               className="font-mono text-xs text-cream-dim/60 hover:text-cream border border-cream-dim/20 hover:border-cream-dim/50 px-2 py-0.5 rounded transition-all cursor-pointer"
             >
               ✕ Dismiss
             </button>
           </div>
-          <div className="flex flex-wrap gap-3 text-xs font-mono">
-            {lastDayEvents.injuries.map((e, i) => (
-              <span key={`inj-${i}`} className="px-2 py-1 bg-red/10 border border-red/20 rounded text-red-400">
-                🩹 {e.record.playerName} injured ({e.record.daysOut}d)
-              </span>
-            ))}
-            {lastDayEvents.returns.map((e, i) => (
-              <span key={`ret-${i}`} className="px-2 py-1 bg-green-900/20 border border-green-light/20 rounded text-green-light">
-                ✓ {e.record.playerName} returned
-              </span>
-            ))}
-            {lastDayEvents.callups.map((e, i) => (
-              <span key={`cup-${i}`} className={cn(
-                'px-2 py-1 rounded border',
-                e.type === 'callup'
-                  ? 'bg-gold/10 border-gold/20 text-gold'
-                  : 'bg-navy-lighter/30 border-navy-lighter text-cream-dim',
+
+          {/* Quick Stats Row */}
+          <div className="grid grid-cols-3 divide-x divide-navy-lighter/50 border-b border-navy-lighter/50">
+            <div className="px-4 py-3 text-center">
+              <p className="font-mono text-[10px] text-cream-dim/60 uppercase tracking-wider mb-1">This Period</p>
+              <p className={cn(
+                'font-mono text-2xl font-bold',
+                simWins > simLosses ? 'text-green-light' : simWins < simLosses ? 'text-red' : 'text-cream',
               )}>
-                {e.type === 'callup' ? '↑' : '↓'} {e.message}
-              </span>
-            ))}
-            {lastDayEvents.aiTrades.map((e, i) => (
-              <span key={`trd-${i}`} className="px-2 py-1 bg-blue-900/20 border border-blue-400/20 rounded text-blue-400">
-                🔄 Trade: {e.description ?? 'AI teams swapped players'}
-              </span>
-            ))}
+                {simWins}-{simLosses}
+              </p>
+              <p className="font-mono text-[10px] text-cream-dim/40">
+                {simGames.length} game{simGames.length !== 1 ? 's' : ''}
+                {simFromRecord && userRecord && (simFromRecord.wins > 0 || simFromRecord.losses > 0) && (
+                  <span className="ml-1 text-cream-dim/40">
+                    ({simFromRecord.wins}-{simFromRecord.losses} before)
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="px-4 py-3 text-center">
+              <p className="font-mono text-[10px] text-cream-dim/60 uppercase tracking-wider mb-1">Season Record</p>
+              <p className="font-mono text-2xl font-bold text-cream">
+                {userRecord?.wins ?? 0}-{userRecord?.losses ?? 0}
+              </p>
+              <p className="font-mono text-[10px] text-cream-dim/40">
+                {userRecord ? winPct(userRecord) : '.000'}
+              </p>
+            </div>
+            <div className="px-4 py-3 text-center">
+              <p className="font-mono text-[10px] text-cream-dim/60 uppercase tracking-wider mb-1">Division</p>
+              <p className={cn(
+                'font-mono text-2xl font-bold',
+                divRank === 1 ? 'text-gold' : 'text-cream',
+              )}>
+                {divRank > 0 ? ordinal(divRank) : '—'}
+              </p>
+              <p className="font-mono text-[10px] text-cream-dim/40">
+                {divRank === 1 ? 'Division Leader' : divRank > 0 && gamesBack > 0 ? `${gamesBack.toFixed(1)} GB` : divRank > 1 ? 'Tied' : '—'}
+              </p>
+            </div>
           </div>
+
+          {/* Recent Game Results */}
+          {simGames.length > 0 && (
+            <div className="px-4 py-3 border-b border-navy-lighter/50">
+              <p className="font-mono text-[10px] text-cream-dim/60 uppercase tracking-wider mb-2">Results</p>
+              <div className="flex flex-wrap gap-1.5">
+                {simGames.slice(-8).map(g => {
+                  const isHome = g.homeId === userTeamId;
+                  const opp = isHome ? g.awayId : g.homeId;
+                  const oppTeam = engine.getTeam(opp);
+                  const won = isHome
+                    ? (g.homeScore ?? 0) > (g.awayScore ?? 0)
+                    : (g.awayScore ?? 0) > (g.homeScore ?? 0);
+                  const myScore = isHome ? (g.homeScore ?? 0) : (g.awayScore ?? 0);
+                  const theirScore = isHome ? (g.awayScore ?? 0) : (g.homeScore ?? 0);
+                  return (
+                    <div key={g.id} className={cn(
+                      'flex items-center gap-1 px-2 py-0.5 rounded font-mono text-xs border',
+                      won
+                        ? 'bg-green-900/20 border-green-light/20 text-green-light'
+                        : 'bg-red-950/20 border-red/20 text-red-400',
+                    )}>
+                      <span className="font-bold">{won ? 'W' : 'L'}</span>
+                      <span className="text-[10px] opacity-60">{isHome ? 'vs' : '@'}</span>
+                      <span>{oppTeam?.abbreviation ?? opp.slice(0, 3)}</span>
+                      <span className="text-[10px] opacity-60">{myScore}-{theirScore}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Events */}
+          {(lastDayEvents.injuries.length + lastDayEvents.returns.length + lastDayEvents.callups.length + lastDayEvents.aiTrades.length) > 0 && (() => {
+            const myInjuries = lastDayEvents.injuries.filter(e => e.record.teamId === userTeamId);
+            const otherInjuries = lastDayEvents.injuries.filter(e => e.record.teamId !== userTeamId);
+            const myReturns = lastDayEvents.returns.filter(e => e.record.teamId === userTeamId);
+            const myCallups = lastDayEvents.callups.filter(e => e.teamId === userTeamId);
+            return (
+              <div className="px-4 py-3">
+                <p className="font-mono text-[10px] text-cream-dim/60 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  Events
+                  {myInjuries.length > 0 && (
+                    <span className="text-red-400">· {myInjuries.length} injury{myInjuries.length !== 1 ? 'ies' : 'y'}</span>
+                  )}
+                  {lastDayEvents.aiTrades.length > 0 && (
+                    <span className="text-blue-400">· {lastDayEvents.aiTrades.length} trade{lastDayEvents.aiTrades.length !== 1 ? 's' : ''}</span>
+                  )}
+                  {lastDayEvents.callups.length > 0 && (
+                    <span className="text-gold">· {lastDayEvents.callups.length} roster move{lastDayEvents.callups.length !== 1 ? 's' : ''}</span>
+                  )}
+                </p>
+                <div className="space-y-1.5">
+                  {/* User team injuries */}
+                  {myInjuries.map((e, i) => (
+                    <div key={`my-inj-${i}`} className="flex items-center gap-2 text-xs font-mono">
+                      <span className="text-red-400 shrink-0 w-4">🩹</span>
+                      <span className="text-red-400 font-bold">{e.record.playerName}</span>
+                      <span className="text-cream-dim">{e.record.description}</span>
+                      <span className="text-red-400/60">({e.record.daysOut}d)</span>
+                      <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-red/10 text-red-400 border border-red/20 shrink-0">YOUR TEAM</span>
+                    </div>
+                  ))}
+                  {/* User team returns */}
+                  {myReturns.map((e, i) => (
+                    <div key={`my-ret-${i}`} className="flex items-center gap-2 text-xs font-mono">
+                      <span className="text-green-light shrink-0 w-4">✓</span>
+                      <span className="text-green-light font-bold">{e.record.playerName}</span>
+                      <span className="text-cream-dim">returned from IL</span>
+                      <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-green-900/10 text-green-light border border-green-light/20 shrink-0">ACTIVE</span>
+                    </div>
+                  ))}
+                  {/* User team callups/optioned */}
+                  {myCallups.map((e, i) => (
+                    <div key={`my-cup-${i}`} className="flex items-center gap-2 text-xs font-mono">
+                      <span className={cn('shrink-0 w-4', e.type === 'callup' ? 'text-gold' : 'text-cream-dim')}>
+                        {e.type === 'callup' ? '↑' : '↓'}
+                      </span>
+                      <span className={e.type === 'callup' ? 'text-gold' : 'text-cream-dim'}>{e.message}</span>
+                    </div>
+                  ))}
+                  {/* AI trades */}
+                  {lastDayEvents.aiTrades.slice(0, 4).map((e, i) => (
+                    <div key={`trd-${i}`} className="flex items-center gap-2 text-xs font-mono">
+                      <span className="text-blue-400 shrink-0 w-4">⇄</span>
+                      <span className="text-cream-dim">{e.description ?? 'AI teams completed a trade'}</span>
+                    </div>
+                  ))}
+                  {lastDayEvents.aiTrades.length > 4 && (
+                    <p className="text-cream-dim/30 text-xs font-mono pl-6">+{lastDayEvents.aiTrades.length - 4} more trades</p>
+                  )}
+                  {/* Other league injuries (dimmed) */}
+                  {otherInjuries.slice(0, 2).map((e, i) => (
+                    <div key={`oth-inj-${i}`} className="flex items-center gap-2 text-xs font-mono opacity-40">
+                      <span className="text-red-400 shrink-0 w-4">🩹</span>
+                      <span className="text-cream-dim">{e.record.playerName}</span>
+                      <span className="text-cream-dim/60">({engine.getTeam(e.record.teamId)?.abbreviation ?? '?'})</span>
+                      <span className="text-cream-dim/40">{e.record.description}, {e.record.daysOut}d</span>
+                    </div>
+                  ))}
+                  {otherInjuries.length > 2 && (
+                    <p className="text-cream-dim/30 text-xs font-mono pl-6">+{otherInjuries.length - 2} more league injuries</p>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
