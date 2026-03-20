@@ -223,10 +223,10 @@ export function GameLogPage() {
                   {/* Box score quick link */}
                   {isUserGame && (
                     <button
-                      className="font-mono text-[10px] text-cream-dim/50 hover:text-gold border border-navy-lighter/50 hover:border-gold/40 rounded px-1.5 py-0.5 transition-colors shrink-0 cursor-pointer"
+                      className="font-mono text-[10px] text-gold/70 hover:text-gold border border-gold/25 hover:border-gold/60 hover:bg-gold/8 rounded px-2 py-0.5 transition-all shrink-0 cursor-pointer"
                       onClick={e => { e.stopPropagation(); navigate(`/franchise/box-score/${g.id}`); }}
                     >
-                      BOX
+                      BOX ↗
                     </button>
                   )}
 

@@ -244,10 +244,13 @@ export function TradePage() {
         <select
           value={partnerId}
           onChange={e => { setPartnerId(e.target.value); setTheirBlock([]); setEvaluated(null); setResult(null); }}
-          className="bg-navy-light border border-navy-lighter rounded-md px-3 py-1.5 font-mono text-sm text-cream focus:outline-none focus:border-gold/50"
+          className="bg-navy-light border border-navy-lighter rounded-md px-3 py-1.5 font-mono text-sm text-cream focus:outline-none focus:border-gold/50 appearance-none cursor-pointer pr-8"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d4a843' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
         >
           {otherTeams.map(t => (
-            <option key={t.id} value={t.id}>{t.city} {t.name}</option>
+            <option key={t.id} value={t.id} style={{ background: '#0f1829', color: '#e8e0d4' }}>
+              {t.city} {t.name}
+            </option>
           ))}
         </select>
       </div>
