@@ -453,8 +453,9 @@ export function StandingsPage() {
                         return (
                           <tr
                             key={t.teamId}
+                            onClick={() => navigate(`/franchise/team-stats/${t.teamId}`)}
                             className={cn(
-                              'border-b border-navy-lighter/30 transition-colors',
+                              'border-b border-navy-lighter/30 transition-colors cursor-pointer',
                               isUser ? 'bg-gold/5 hover:bg-gold/10' : 'hover:bg-navy-lighter/20',
                               eliminated && 'opacity-40',
                             )}

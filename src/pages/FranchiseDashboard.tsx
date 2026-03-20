@@ -518,7 +518,7 @@ export function FranchiseDashboard() {
                 )}
                 {season.currentDay >= 120 && season.currentDay < season.totalDays - 5 && (
                   <Button className="w-full" variant="ghost" size="sm" onClick={() => doSim(season.totalDays - season.currentDay)}>
-                    → Sim to End of Season
+                    → Sim to Playoffs (Day {season.totalDays})
                   </Button>
                 )}
                 {season.currentDay >= season.totalDays - 5 && (
@@ -957,11 +957,17 @@ export function FranchiseDashboard() {
                 const isHome = g.homeId === userTeamId;
                 const opp = isHome ? g.awayId : g.homeId;
                 const oppTeam = engine.getTeam(opp);
+                const oppRecord = season.standings.getRecord(opp);
                 const isNext = idx === 0;
                 return (
                   <div key={g.id} className="flex justify-between items-center py-1 border-b border-navy-lighter/30">
                     <span className="text-cream-dim">Day {g.date}</span>
-                    <span className="text-cream">{isHome ? 'vs' : '@'} {oppTeam?.abbreviation ?? opp}</span>
+                    <span className="text-cream">
+                      {isHome ? 'vs' : '@'} {oppTeam?.abbreviation ?? opp}
+                      {oppRecord && (
+                        <span className="text-cream-dim/50 text-xs ml-1">({oppRecord.wins}-{oppRecord.losses})</span>
+                      )}
+                    </span>
                     {isNext && isRegularSeason ? (
                       <button
                         onClick={handleAdvance}

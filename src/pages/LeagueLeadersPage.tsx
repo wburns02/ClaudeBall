@@ -325,19 +325,17 @@ export function LeagueLeadersPage() {
                   return (
                     <tr
                       key={ps.playerId}
+                      onClick={() => navigate(`/franchise/player-stats/${ps.playerId}`)}
                       className={cn(
-                        'border-b border-navy-lighter/50 hover:bg-navy-lighter/30 transition-colors',
+                        'border-b border-navy-lighter/50 hover:bg-navy-lighter/30 transition-colors cursor-pointer',
                         i % 2 === 1 && 'bg-navy-lighter/10'
                       )}
                     >
                       <td className="px-2 py-1.5 text-cream-dim text-xs">{i + 1}</td>
                       <td className="px-2 py-1.5">
-                        <button
-                          onClick={() => navigate(`/franchise/player-stats/${ps.playerId}`)}
-                          className="text-cream hover:text-gold transition-colors text-left font-body"
-                        >
+                        <span className="text-cream hover:text-gold transition-colors text-left font-body">
                           {ps.playerName}
-                        </button>
+                        </span>
                       </td>
                       <td className="px-2 py-1.5 text-center text-cream-dim text-xs">{teamAbbr}</td>
                       <td className="px-2 py-1.5 text-center text-gold text-xs">{ps.position}</td>
@@ -450,19 +448,17 @@ export function LeagueLeadersPage() {
                   return (
                     <tr
                       key={ps.playerId}
+                      onClick={() => navigate(`/franchise/player-stats/${ps.playerId}`)}
                       className={cn(
-                        'border-b border-navy-lighter/50 hover:bg-navy-lighter/30 transition-colors',
+                        'border-b border-navy-lighter/50 hover:bg-navy-lighter/30 transition-colors cursor-pointer',
                         i % 2 === 1 && 'bg-navy-lighter/10'
                       )}
                     >
                       <td className="px-2 py-1.5 text-cream-dim text-xs">{i + 1}</td>
                       <td className="px-2 py-1.5">
-                        <button
-                          onClick={() => navigate(`/franchise/player-stats/${ps.playerId}`)}
-                          className="text-cream hover:text-gold transition-colors text-left font-body"
-                        >
+                        <span className="text-cream hover:text-gold transition-colors text-left font-body">
                           {ps.playerName}
-                        </button>
+                        </span>
                       </td>
                       <td className="px-2 py-1.5 text-center text-cream-dim text-xs">{teamAbbr}</td>
                       <td className="px-2 py-1.5 text-center text-cream">{ps.gamesPlayed}</td>
@@ -530,19 +526,17 @@ export function LeagueLeadersPage() {
                 {sortedFielding.map(({ ps, fi, teamAbbr, range, arm, errorRate, ovr }, i) => (
                   <tr
                     key={ps.playerId}
+                    onClick={() => navigate(`/franchise/player-stats/${ps.playerId}`)}
                     className={cn(
-                      'border-b border-navy-lighter/50 hover:bg-navy-lighter/30 transition-colors',
+                      'border-b border-navy-lighter/50 hover:bg-navy-lighter/30 transition-colors cursor-pointer',
                       i % 2 === 1 && 'bg-navy-lighter/10'
                     )}
                   >
                     <td className="px-2 py-1.5 text-cream-dim text-xs">{i + 1}</td>
                     <td className="px-2 py-1.5">
-                      <button
-                        onClick={() => navigate(`/franchise/player-stats/${ps.playerId}`)}
-                        className="text-cream hover:text-gold transition-colors text-left font-body"
-                      >
+                      <span className="text-cream hover:text-gold transition-colors font-body">
                         {ps.playerName}
-                      </button>
+                      </span>
                     </td>
                     <td className="px-2 py-1.5 text-center text-cream-dim text-xs">{teamAbbr}</td>
                     <td className="px-2 py-1.5 text-center text-gold text-xs">{fi?.position ?? ps.position}</td>
