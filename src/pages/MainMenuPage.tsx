@@ -78,6 +78,9 @@ export function MainMenuPage() {
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/settings')}>
                 Settings
               </Button>
+              <Button variant="secondary" size="md" className="w-64 border-gold/30 hover:border-gold/60" onClick={() => navigate('/ideas')}>
+                Ideas & Feedback
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

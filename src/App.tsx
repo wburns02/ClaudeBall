@@ -29,6 +29,7 @@ const PlayoffsPage = lazy(() => import('@/pages/PlayoffsPage.tsx').then(m => ({ 
 const OffseasonPage = lazy(() => import('@/pages/OffseasonPage.tsx').then(m => ({ default: m.OffseasonPage })));
 const DraftPage = lazy(() => import('@/pages/DraftPage.tsx').then(m => ({ default: m.DraftPage })));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage.tsx').then(m => ({ default: m.SettingsPage })));
+const IdeasPage = lazy(() => import('@/pages/IdeasPage.tsx').then(m => ({ default: m.IdeasPage })));
 const SaveLoadPage = lazy(() => import('@/pages/SaveLoadPage.tsx').then(m => ({ default: m.SaveLoadPage })));
 const CreatePlayerPage = lazy(() => import('@/pages/CreatePlayerPage.tsx').then(m => ({ default: m.CreatePlayerPage })));
 const CreatePlayerPage2 = lazy(() => import('@/pages/CreatePlayerPage2.tsx').then(m => ({ default: m.CreatePlayerPage2 })));
@@ -134,6 +135,7 @@ function AppRoutes() {
           <Route path="/historical/draft" element={<MainLayout><FantasyDraftPage /></MainLayout>} />
           <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
           <Route path="/saves" element={<MainLayout><SaveLoadPage /></MainLayout>} />
+          <Route path="/ideas" element={<MainLayout><IdeasPage /></MainLayout>} />
 
           {/* ── Live game routes (minimal GameLayout) ───────────────── */}
           <Route path="/game/live" element={<GameLayout><LiveGamePage /></GameLayout>} />

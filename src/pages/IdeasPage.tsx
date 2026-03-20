@@ -1,0 +1,274 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Panel } from '@/components/ui/Panel.tsx';
+import { Button } from '@/components/ui/Button.tsx';
+import { cn } from '@/lib/cn.ts';
+
+interface Idea {
+  id: string;
+  text: string;
+  author: string;
+  votes: number;
+  votedBy: string[];
+  createdAt: string;
+  category: 'gameplay' | 'graphics' | 'feature' | 'bug' | 'other';
+}
+
+const CATEGORIES = [
+  { id: 'gameplay', label: 'Gameplay', color: 'text-green-light' },
+  { id: 'graphics', label: 'Graphics', color: 'text-blue' },
+  { id: 'feature', label: 'Feature', color: 'text-gold' },
+  { id: 'bug', label: 'Bug Report', color: 'text-red' },
+  { id: 'other', label: 'Other', color: 'text-cream-dim' },
+] as const;
+
+const STORAGE_KEY = 'claudeball-ideas';
+
+function loadIdeas(): Idea[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveIdeas(ideas: Idea[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
+}
+
+function getUsername(): string {
+  let name = localStorage.getItem('claudeball-username');
+  if (!name) {
+    name = prompt('Enter your name (so we know who suggested it):') || 'Anonymous';
+    localStorage.setItem('claudeball-username', name);
+  }
+  return name;
+}
+
+export function IdeasPage() {
+  const navigate = useNavigate();
+  const [ideas, setIdeas] = useState<Idea[]>(loadIdeas);
+  const [newIdea, setNewIdea] = useState('');
+  const [category, setCategory] = useState<Idea['category']>('feature');
+  const [sortBy, setSortBy] = useState<'votes' | 'newest'>('votes');
+  const [filterCat, setFilterCat] = useState<string>('all');
+
+  useEffect(() => { saveIdeas(ideas); }, [ideas]);
+
+  const handleSubmit = () => {
+    if (!newIdea.trim()) return;
+    const author = getUsername();
+    const idea: Idea = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      text: newIdea.trim(),
+      author,
+      votes: 1,
+      votedBy: [author],
+      createdAt: new Date().toISOString(),
+      category,
+    };
+    setIdeas(prev => [idea, ...prev]);
+    setNewIdea('');
+  };
+
+  const handleVote = (id: string) => {
+    const username = getUsername();
+    setIdeas(prev => prev.map(idea => {
+      if (idea.id !== id) return idea;
+      if (idea.votedBy.includes(username)) {
+        return { ...idea, votes: idea.votes - 1, votedBy: idea.votedBy.filter(n => n !== username) };
+      }
+      return { ...idea, votes: idea.votes + 1, votedBy: [...idea.votedBy, username] };
+    }));
+  };
+
+  const handleDelete = (id: string) => {
+    const username = getUsername();
+    setIdeas(prev => prev.filter(i => !(i.id === id && i.author === username)));
+  };
+
+  const sorted = [...ideas]
+    .filter(i => filterCat === 'all' || i.category === filterCat)
+    .sort((a, b) => sortBy === 'votes' ? b.votes - a.votes : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const username = localStorage.getItem('claudeball-username') || '';
+
+  return (
+    <div className="min-h-screen p-6 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Ideas & Feedback</h1>
+          <p className="font-mono text-cream-dim text-xs mt-1">
+            Suggest features, report bugs, vote on what matters
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Back</Button>
+      </div>
+
+      {/* Submit new idea */}
+      <Panel title="Submit an Idea" className="mb-6">
+        <div className="space-y-3">
+          <textarea
+            value={newIdea}
+            onChange={e => setNewIdea(e.target.value)}
+            placeholder="What should we add, fix, or change?"
+            className="w-full bg-navy-lighter border border-navy-lighter rounded-md px-3 py-2 text-cream text-sm font-body placeholder-cream-dim/40 focus:outline-none focus:border-gold/50 resize-none"
+            rows={3}
+          />
+          <div className="flex items-center justify-between">
+            <div className="flex gap-1">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategory(cat.id as Idea['category'])}
+                  className={cn(
+                    'px-2 py-1 text-xs rounded font-mono cursor-pointer transition-colors',
+                    category === cat.id
+                      ? 'bg-gold/20 text-gold border border-gold/40'
+                      : 'text-cream-dim hover:text-cream border border-transparent',
+                  )}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <Button size="sm" onClick={handleSubmit} disabled={!newIdea.trim()}>
+              Submit
+            </Button>
+          </div>
+        </div>
+      </Panel>
+
+      {/* Filters + Sort */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex gap-1">
+          <button
+            onClick={() => setFilterCat('all')}
+            className={cn(
+              'px-2 py-1 text-xs rounded font-mono cursor-pointer',
+              filterCat === 'all' ? 'bg-gold/20 text-gold' : 'text-cream-dim hover:text-cream',
+            )}
+          >
+            All ({ideas.length})
+          </button>
+          {CATEGORIES.map(cat => {
+            const count = ideas.filter(i => i.category === cat.id).length;
+            if (count === 0) return null;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setFilterCat(cat.id)}
+                className={cn(
+                  'px-2 py-1 text-xs rounded font-mono cursor-pointer',
+                  filterCat === cat.id ? 'bg-gold/20 text-gold' : 'text-cream-dim hover:text-cream',
+                )}
+              >
+                {cat.label} ({count})
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex gap-1">
+          {(['votes', 'newest'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setSortBy(s)}
+              className={cn(
+                'px-2 py-1 text-xs rounded font-mono cursor-pointer',
+                sortBy === s ? 'bg-navy-lighter text-cream' : 'text-cream-dim hover:text-cream',
+              )}
+            >
+              {s === 'votes' ? 'Top' : 'New'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Ideas list */}
+      <div className="space-y-2">
+        {sorted.length === 0 && (
+          <div className="text-center py-12 text-cream-dim font-mono text-sm">
+            No ideas yet — be the first to suggest something!
+          </div>
+        )}
+        {sorted.map(idea => {
+          const catInfo = CATEGORIES.find(c => c.id === idea.category);
+          const hasVoted = idea.votedBy.includes(username);
+          const isAuthor = idea.author === username;
+          const timeAgo = getTimeAgo(idea.createdAt);
+          return (
+            <div
+              key={idea.id}
+              className="flex gap-3 bg-navy-light border border-navy-lighter rounded-lg p-3 hover:border-navy-lighter/80 transition-colors"
+            >
+              {/* Vote button */}
+              <button
+                onClick={() => handleVote(idea.id)}
+                className={cn(
+                  'flex flex-col items-center justify-center w-12 shrink-0 rounded-md cursor-pointer transition-colors',
+                  hasVoted
+                    ? 'bg-gold/15 text-gold'
+                    : 'bg-navy-lighter text-cream-dim hover:text-gold hover:bg-gold/10',
+                )}
+              >
+                <span className="text-xs">▲</span>
+                <span className="text-sm font-bold font-mono">{idea.votes}</span>
+              </button>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <p className="text-cream text-sm">{idea.text}</p>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className={cn('text-[10px] font-mono uppercase tracking-wider', catInfo?.color || 'text-cream-dim')}>
+                    {catInfo?.label}
+                  </span>
+                  <span className="text-cream-dim/30">·</span>
+                  <span className="text-cream-dim/50 text-[10px] font-mono">{idea.author}</span>
+                  <span className="text-cream-dim/30">·</span>
+                  <span className="text-cream-dim/50 text-[10px] font-mono">{timeAgo}</span>
+                  {isAuthor && (
+                    <button
+                      onClick={() => handleDelete(idea.id)}
+                      className="text-red/50 hover:text-red text-[10px] font-mono cursor-pointer ml-auto"
+                    >
+                      delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Export for sharing */}
+      {ideas.length > 0 && (
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => {
+              const text = ideas
+                .sort((a, b) => b.votes - a.votes)
+                .map((i, idx) => `${idx + 1}. [${i.votes} votes] ${i.text} (${i.category}) — ${i.author}`)
+                .join('\n');
+              navigator.clipboard.writeText(text);
+              alert('Ideas copied to clipboard!');
+            }}
+            className="text-cream-dim/50 hover:text-cream text-xs font-mono cursor-pointer underline underline-offset-4"
+          >
+            Copy all ideas to clipboard
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getTimeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
