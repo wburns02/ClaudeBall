@@ -482,6 +482,9 @@ export function RosterPage() {
         </div>
       )}
 
+      {/* Click hint */}
+      <p className="font-mono text-[10px] text-cream-dim/40 mb-3">Click any player row to view quick stats</p>
+
       {/* Position Players */}
       <Panel title={`Position Players (${positionPlayers.length})`} className="mb-4">
         <div className="overflow-x-auto">
