@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useStatsStore } from '@/stores/statsStore.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useScoutingStore } from '@/stores/scoutingStore.ts';
 import {
   battingAvg, onBasePct, slugging, era, whip, formatIP,
 } from '@/engine/types/stats.ts';
@@ -29,6 +30,24 @@ function RatingBar({ label, value, max = 100 }: { label: string; value: number; 
         <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
       </div>
       <span className="w-8 text-right text-cream text-xs">{value}</span>
+    </div>
+  );
+}
+
+function GradeBar80({ label, grade, confidence }: { label: string; grade: number; confidence?: number }): ReactElement {
+  const pct = ((grade - 20) / 60) * 100;
+  const color = grade >= 70 ? 'bg-gold' : grade >= 60 ? 'bg-green-light' : grade >= 50 ? 'bg-cream-dim' : grade >= 40 ? 'bg-cream-dim/50' : 'bg-red/60';
+  const textColor = grade >= 70 ? 'text-gold' : grade >= 60 ? 'text-green-light' : grade >= 50 ? 'text-cream' : grade >= 40 ? 'text-cream-dim' : 'text-red-400';
+  const lbl = grade >= 80 ? 'ELITE' : grade >= 70 ? 'PLUS+' : grade >= 60 ? 'PLUS' : grade >= 50 ? 'AVG' : grade >= 40 ? 'BLW' : 'POOR';
+  const opacity = confidence !== undefined ? Math.max(0.45, confidence / 100) : 1;
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] font-mono text-cream-dim/50 w-14 shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-navy-lighter/30 rounded-full overflow-hidden">
+        <div className={cn('h-full rounded-full transition-all duration-500', color)} style={{ width: `${pct}%`, opacity }} />
+      </div>
+      <span className={cn('text-xs font-mono font-bold w-5 text-right', textColor)}>{grade}</span>
+      <span className="text-[9px] font-mono text-cream-dim/30 w-8">{lbl}</span>
     </div>
   );
 }
@@ -86,6 +105,26 @@ export function PlayerStatsPage() {
   }, [ps, leagueCtx]);
 
   const ovr = player ? Math.round(evaluatePlayer(player)) : null;
+
+  const { getReport, scoutPlayer } = useScoutingStore();
+  const { userTeamId } = useFranchiseStore();
+
+  // Auto-scout own players so grades are always available on their profile
+  useEffect(() => {
+    if (!playerId || !player) return;
+    const teamId = ps?.teamId ?? player.id;
+    const isOwnPlayer = !!(userTeamId && (ps?.teamId === userTeamId));
+    if (isOwnPlayer && !getReport(playerId)) {
+      scoutPlayer(playerId, teamId, true);
+    }
+  }, [playerId, player, ps?.teamId, userTeamId, getReport, scoutPlayer]);
+
+  const scoutReport = playerId ? getReport(playerId) : null;
+
+  const contract = useMemo(() => {
+    if (!playerId || !engine) return null;
+    return engine.contractEngine.getContract(playerId) ?? null;
+  }, [playerId, engine]);
 
   if (!ps) {
     // No in-game stats yet — show ratings if we have the player from the engine
@@ -365,6 +404,79 @@ export function PlayerStatsPage() {
         {/* Right column: ratings */}
         {player && (
           <div className="space-y-4">
+
+            {/* Scouting Report — 20-80 grades */}
+            {scoutReport && (
+              <Panel title="Scouting Report">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-[10px] text-cream-dim/50 uppercase tracking-widest">
+                    {scoutReport.projectedRole}
+                  </span>
+                  <span className={cn(
+                    'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border',
+                    scoutReport.riskLevel === 'LOW' ? 'text-green-light border-green-light/30 bg-green-light/5'
+                    : scoutReport.riskLevel === 'MED' ? 'text-gold border-gold/30 bg-gold/5'
+                    : 'text-red-400 border-red-400/30 bg-red-400/5'
+                  )}>
+                    {scoutReport.riskLevel} RISK
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  {Object.entries(scoutReport.grades).map(([key, grade]) => (
+                    <GradeBar80
+                      key={key}
+                      label={key}
+                      grade={grade.scoutedGrade}
+                      confidence={grade.confidence}
+                    />
+                  ))}
+                </div>
+                <div className="mt-3 pt-2 border-t border-navy-lighter flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-cream-dim/40 uppercase tracking-widest">Overall</span>
+                  <span className={cn(
+                    'text-sm font-mono font-bold',
+                    scoutReport.overallGrade.scoutedGrade >= 70 ? 'text-gold'
+                    : scoutReport.overallGrade.scoutedGrade >= 60 ? 'text-green-light'
+                    : 'text-cream'
+                  )}>
+                    {scoutReport.overallGrade.scoutedGrade}
+                  </span>
+                </div>
+                {scoutReport.scoutNotes.length > 0 && (
+                  <div className="mt-3 pt-2 border-t border-navy-lighter space-y-1">
+                    {scoutReport.scoutNotes.slice(0, 2).map((note, i) => (
+                      <p key={i} className="text-[10px] font-mono text-cream-dim/50 italic">{note}</p>
+                    ))}
+                  </div>
+                )}
+              </Panel>
+            )}
+
+            {/* Contract */}
+            {contract && !contract.isFreeAgent && (
+              <Panel title="Contract">
+                <div className="space-y-2 font-mono text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-cream-dim text-xs">Salary</span>
+                    <span className="text-gold font-bold">${(contract.salaryPerYear / 1000).toFixed(1)}M / yr</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-cream-dim text-xs">Years Left</span>
+                    <span className="text-cream text-xs">{contract.yearsRemaining} yr{contract.yearsRemaining !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-cream-dim text-xs">Total Remaining</span>
+                    <span className="text-cream-dim text-xs">${((contract.salaryPerYear * contract.yearsRemaining) / 1000).toFixed(1)}M</span>
+                  </div>
+                  {contract.yearsRemaining <= 1 && (
+                    <p className="text-gold/60 text-[10px] text-center pt-1 border-t border-navy-lighter">
+                      Extension candidate — expiring after this season
+                    </p>
+                  )}
+                </div>
+              </Panel>
+            )}
+
             {/* Batting Ratings */}
             {!isPitcher && (
               <Panel title="Batting Ratings">

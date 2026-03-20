@@ -845,9 +845,17 @@ export function ScoutingPage() {
                 onScout={() => handleScout(selectedPlayer.id, selectedPlayerTeam.id)}
                 isPending={isPending(selectedPlayer.id)}
               />
-              <div className="mt-4 pt-3 border-t border-navy-lighter/30">
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => setSelectedPlayer(null)}>
-                  Dismiss Report
+              <div className="mt-4 pt-3 border-t border-navy-lighter/30 flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => navigate(`/franchise/player-stats/${selectedPlayer.id}`)}
+                >
+                  View Full Profile
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1" onClick={() => setSelectedPlayer(null)}>
+                  Dismiss
                 </Button>
               </div>
             </Panel>
