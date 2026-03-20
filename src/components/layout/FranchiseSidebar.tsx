@@ -54,6 +54,7 @@ const Icons = {
   history: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
   scouting: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z M10 10.5a.5.5 0 11-1 0 .5.5 0 011 0z',
   payroll: 'M12 1v22 M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6',
+  analytics: 'M3 3v18h18 M7 16l4-4 4 4 4-8',
   finances: 'M2 20h20 M5 20V10l7-8 7 8v10 M9 20v-5h6v5',
   lineup: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01',
   development: 'M22 12h-4l-3 9L9 3l-3 9H2',
@@ -109,6 +110,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Standings', path: '/franchise/standings', icon: 'standings' },
       { label: 'Power Rankings', path: '/franchise/power-rankings', icon: 'records' },
+      { label: 'Team Analytics', path: '/franchise/team-analytics', icon: 'analytics' },
       { label: 'Leaders', path: '/franchise/leaders', icon: 'leaders' },
       { label: 'Compare Players', path: '/franchise/compare', icon: 'compare' },
       { label: 'Records', path: '/franchise/records', icon: 'records' },

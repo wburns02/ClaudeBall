@@ -71,6 +71,7 @@ const FinancesPage = lazy(() => import('@/pages/FinancesPage.tsx').then(m => ({ 
 const InboxPage = lazy(() => import('@/pages/InboxPage.tsx').then(m => ({ default: m.InboxPage })));
 const PowerRankingsPage = lazy(() => import('@/pages/PowerRankingsPage.tsx').then(m => ({ default: m.PowerRankingsPage })));
 const PlayerComparisonPage = lazy(() => import('@/pages/PlayerComparisonPage.tsx').then(m => ({ default: m.PlayerComparisonPage })));
+const TeamAnalyticsPage = lazy(() => import('@/pages/TeamAnalyticsPage.tsx').then(m => ({ default: m.TeamAnalyticsPage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -173,6 +174,7 @@ function AppRoutes() {
           <Route path="/franchise/leaders" element={<FranchiseLayout><LeagueLeadersPage /></FranchiseLayout>} />
           <Route path="/franchise/records" element={<FranchiseLayout><RecordsPage /></FranchiseLayout>} />
           <Route path="/franchise/power-rankings" element={<FranchiseLayout><PowerRankingsPage /></FranchiseLayout>} />
+          <Route path="/franchise/team-analytics" element={<FranchiseLayout><TeamAnalyticsPage /></FranchiseLayout>} />
           {/* Player & team detail pages */}
           <Route path="/franchise/player/:playerId" element={<FranchiseLayout><PlayerEditorPage /></FranchiseLayout>} />
           <Route path="/franchise/create-player" element={<FranchiseLayout><CreatePlayerPage2 /></FranchiseLayout>} />
