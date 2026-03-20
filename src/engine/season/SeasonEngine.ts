@@ -218,6 +218,8 @@ export class SeasonEngine {
     const result = QuickSimEngine.simulate(away, home, this.rng);
     game.awayScore = result.awayScore;
     game.homeScore = result.homeScore;
+    game.awayInnings = result.awayInnings;
+    game.homeInnings = result.homeInnings;
     game.played = true;
 
     const isDivision = this.isSameDivision(game.awayId, game.homeId);
@@ -336,12 +338,14 @@ export class SeasonEngine {
   }
 
   /** Record result from a user-played game */
-  recordUserGameResult(gameId: string, awayScore: number, homeScore: number): void {
+  recordUserGameResult(gameId: string, awayScore: number, homeScore: number, awayInnings?: number[], homeInnings?: number[]): void {
     const game = this.state.schedule.find(g => g.id === gameId);
     if (!game) return;
 
     game.awayScore = awayScore;
     game.homeScore = homeScore;
+    if (awayInnings) game.awayInnings = awayInnings;
+    if (homeInnings) game.homeInnings = homeInnings;
     game.played = true;
 
     const isDivision = this.isSameDivision(game.awayId, game.homeId);

@@ -98,7 +98,7 @@ interface FranchiseState {
   advanceDay: () => ReturnType<SeasonEngine['advanceDay']>;
   simDays: (count: number) => void;
   simGame: (gameId: string) => void;
-  recordGameResult: (gameId: string, awayScore: number, homeScore: number) => void;
+  recordGameResult: (gameId: string, awayScore: number, homeScore: number, awayInnings?: number[], homeInnings?: number[]) => void;
   refresh: () => void;
 
   // Season lifecycle
@@ -474,10 +474,10 @@ export const useFranchiseStore = create<FranchiseState>()(
     }
   },
 
-  recordGameResult: (gameId, awayScore, homeScore) => {
+  recordGameResult: (gameId, awayScore, homeScore, awayInnings, homeInnings) => {
     const { engine } = get();
     if (!engine) return;
-    engine.recordUserGameResult(gameId, awayScore, homeScore);
+    engine.recordUserGameResult(gameId, awayScore, homeScore, awayInnings, homeInnings);
     set({ season: { ...engine.getState() } });
   },
 

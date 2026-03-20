@@ -221,9 +221,9 @@ export function LiveGamePage() {
       homeTotal,
     );
 
-    // If franchise game, record the result
+    // If franchise game, record the result (with per-inning scores from the live engine)
     if (franchiseGameId) {
-      recordGameResult(franchiseGameId, awayTotal, homeTotal);
+      recordGameResult(franchiseGameId, awayTotal, homeTotal, gameState.score.away, gameState.score.home);
     }
   }, [gameOver, gameState, franchiseGameId, season, recordGameStats, recordGameResult]);
 

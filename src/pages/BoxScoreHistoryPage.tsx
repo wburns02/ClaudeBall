@@ -173,6 +173,24 @@ export function BoxScoreHistoryPage() {
   const isUserAway = game.awayId === userTeamId;
   const isUserHome = game.homeId === userTeamId;
 
+  // Build normalized inning arrays (pad/trim to exactly 9)
+  const awayInn = useMemo(() => {
+    const arr = game.awayInnings ?? [];
+    return Array.from({ length: 9 }, (_, i) => arr[i] ?? null);
+  }, [game.awayInnings]);
+
+  const homeInn = useMemo(() => {
+    const arr = game.homeInnings ?? [];
+    return Array.from({ length: 9 }, (_, i) => {
+      const val = arr[i];
+      if (val === undefined) return null;
+      if (val === -1) return 'x' as const;  // walk-off: home didn't bat in 9th
+      return val;
+    });
+  }, [game.homeInnings]);
+
+  const hasInningData = (game.awayInnings?.length ?? 0) > 0;
+
   const noStatsAvailable = awayBatters.length === 0 && homeBatters.length === 0;
 
   return (
@@ -192,49 +210,82 @@ export function BoxScoreHistoryPage() {
 
       {/* Line Score */}
       <Panel className="mb-4">
-        <div className="space-y-3">
-          {/* Away */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className={cn(
-                'font-mono text-lg font-bold',
-                awayWon ? 'text-gold' : 'text-cream-dim',
-                isUserAway && 'text-gold',
-              )}>
-                {awayName}
-                {isUserAway && ' (You)'}
-              </span>
-            </div>
-            <span className={cn(
-              'font-mono text-3xl font-bold',
-              awayWon ? 'text-gold' : 'text-cream',
-            )}>
-              {game.awayScore}
-            </span>
+        {hasInningData ? (
+          /* Full inning-by-inning line score */
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[480px] font-mono text-sm border-collapse">
+              <thead>
+                <tr>
+                  <th className="text-left text-cream-dim/50 text-xs font-normal py-1 pr-4 w-40">Team</th>
+                  {[1,2,3,4,5,6,7,8,9].map(n => (
+                    <th key={n} className="text-center text-cream-dim/50 text-xs font-normal py-1 w-7">{n}</th>
+                  ))}
+                  <th className="text-center text-cream-dim/50 text-xs font-normal py-1 pl-2 border-l border-navy-lighter w-10">R</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Away row */}
+                <tr className="border-t border-navy-lighter/40">
+                  <td className={cn('py-2 pr-4 font-bold text-sm', awayWon ? 'text-gold' : 'text-cream-dim')}>
+                    {awayName}{isUserAway && <span className="text-gold/60 text-xs ml-1">(You)</span>}
+                  </td>
+                  {awayInn.map((runs, i) => (
+                    <td key={i} className={cn(
+                      'text-center py-2 text-sm',
+                      runs !== null && runs > 0 ? 'text-cream font-bold' : 'text-cream-dim/40',
+                    )}>
+                      {runs === null ? '-' : runs}
+                    </td>
+                  ))}
+                  <td className={cn(
+                    'text-center py-2 text-lg font-bold pl-2 border-l border-navy-lighter',
+                    awayWon ? 'text-gold' : 'text-cream',
+                  )}>
+                    {game.awayScore}
+                  </td>
+                </tr>
+                {/* Home row */}
+                <tr className="border-t border-navy-lighter/40">
+                  <td className={cn('py-2 pr-4 font-bold text-sm', !awayWon ? 'text-gold' : 'text-cream-dim')}>
+                    {homeName}{isUserHome && <span className="text-gold/60 text-xs ml-1">(You)</span>}
+                  </td>
+                  {homeInn.map((runs, i) => (
+                    <td key={i} className={cn(
+                      'text-center py-2 text-sm',
+                      runs === 'x' ? 'text-cream-dim/25 italic' :
+                      runs !== null && runs > 0 ? 'text-cream font-bold' : 'text-cream-dim/40',
+                    )}>
+                      {runs === null ? '-' : runs}
+                    </td>
+                  ))}
+                  <td className={cn(
+                    'text-center py-2 text-lg font-bold pl-2 border-l border-navy-lighter',
+                    !awayWon ? 'text-gold' : 'text-cream',
+                  )}>
+                    {game.homeScore}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
-          <div className="h-px bg-navy-lighter" />
-
-          {/* Home */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className={cn(
-                'font-mono text-lg font-bold',
-                !awayWon ? 'text-gold' : 'text-cream-dim',
-                isUserHome && 'text-gold',
-              )}>
-                {homeName}
-                {isUserHome && ' (You)'}
+        ) : (
+          /* Fallback: simple final score for older games */
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className={cn('font-mono text-lg font-bold', awayWon ? 'text-gold' : 'text-cream-dim', isUserAway && 'text-gold')}>
+                {awayName}{isUserAway && ' (You)'}
               </span>
+              <span className={cn('font-mono text-3xl font-bold', awayWon ? 'text-gold' : 'text-cream')}>{game.awayScore}</span>
             </div>
-            <span className={cn(
-              'font-mono text-3xl font-bold',
-              !awayWon ? 'text-gold' : 'text-cream',
-            )}>
-              {game.homeScore}
-            </span>
+            <div className="h-px bg-navy-lighter" />
+            <div className="flex items-center justify-between">
+              <span className={cn('font-mono text-lg font-bold', !awayWon ? 'text-gold' : 'text-cream-dim', isUserHome && 'text-gold')}>
+                {homeName}{isUserHome && ' (You)'}
+              </span>
+              <span className={cn('font-mono text-3xl font-bold', !awayWon ? 'text-gold' : 'text-cream')}>{game.homeScore}</span>
+            </div>
           </div>
-        </div>
+        )}
       </Panel>
 
       {/* Key Plays */}

@@ -9,6 +9,8 @@ export interface ScheduledGame {
   played: boolean;
   awayScore?: number;
   homeScore?: number;
+  awayInnings?: number[];  // runs per inning, away team
+  homeInnings?: number[];  // runs per inning, home team
 }
 
 /**

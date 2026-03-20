@@ -5,6 +5,8 @@ import { clamp } from '../util/helpers.ts';
 export interface QuickSimResult {
   awayScore: number;
   homeScore: number;
+  awayInnings: number[];
+  homeInnings: number[];
 }
 
 /**
@@ -30,11 +32,63 @@ export class QuickSimEngine {
 
     // No ties — if tied, play extras (simplified)
     while (homeScore === awayScore) {
-      if (rng.chance(0.52)) homeScore++; // slight home edge
-      else return { awayScore: awayScore + 1, homeScore };
+      if (rng.chance(0.52)) {
+        homeScore++;
+      } else {
+        const finalAway = awayScore + 1;
+        return {
+          awayScore: finalAway,
+          homeScore,
+          awayInnings: this.distributeInnings(finalAway, rng),
+          homeInnings: this.distributeInnings(homeScore, rng),
+        };
+      }
     }
 
-    return { awayScore, homeScore };
+    // Home team wins: they don't bat in the bottom of the 9th
+    const homeWins = homeScore > awayScore;
+    const homeInn = this.distributeInnings(homeScore, rng, homeWins ? 8 : 9);
+    // Pad to 9 with 'x' placeholder (store as -1, UI converts to 'x')
+    if (homeWins && homeInn.length === 8) homeInn.push(-1);
+
+    return {
+      awayScore,
+      homeScore,
+      awayInnings: this.distributeInnings(awayScore, rng),
+      homeInnings: homeInn,
+    };
+  }
+
+  /**
+   * Distribute total runs across 9 innings realistically.
+   * Uses a clustering approach: a few innings get most of the runs,
+   * most innings score 0 (like real baseball).
+   */
+  private static distributeInnings(totalRuns: number, rng: RandomProvider, numInnings = 9): number[] {
+    const innings = Array(numInnings).fill(0);
+    if (totalRuns === 0) return innings;
+
+    // Choose 1-3 "hot" innings that will receive extra runs
+    const hotCount = totalRuns === 1 ? 1 : rng.nextInt(1, Math.min(3, totalRuns));
+    const hotInnings = new Set<number>();
+    while (hotInnings.size < hotCount) {
+      hotInnings.add(rng.nextInt(0, 8));
+    }
+
+    // Distribute runs: ~65% to hot innings, ~35% scattered
+    const hotRuns = Math.round(totalRuns * 0.65);
+    const scatterRuns = totalRuns - hotRuns;
+    const hotArr = [...hotInnings];
+    const lastIdx = numInnings - 1;
+
+    for (let r = 0; r < hotRuns; r++) {
+      innings[hotArr[Math.floor(rng.next() * hotArr.length)]]++;
+    }
+    for (let r = 0; r < scatterRuns; r++) {
+      innings[rng.nextInt(0, lastIdx)]++;
+    }
+
+    return innings;
   }
 
   private static teamOffense(team: Team): number {
