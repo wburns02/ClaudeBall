@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --project tsconfig.app.json --noEmit && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve dist -s -l tcp://0.0.0.0:${PORT:-3000}"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
@@ -20,6 +21,7 @@
     "react-is": "^19.2.4",
     "react-router-dom": "^7.13.1",
     "recharts": "^3.8.0",
+    "serve": "^14.2.6",
     "tailwindcss": "^4.2.1",
     "zustand": "^5.0.12"
   },

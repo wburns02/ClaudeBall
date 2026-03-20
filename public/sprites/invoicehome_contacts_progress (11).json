@@ -1,0 +1,10018 @@
+[
+  {
+    "invoiceId": "190822978",
+    "customer": "Dale Dawson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "190822783",
+    "customer": "Mike Andrews",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "190822438",
+    "customer": "Joe Stokes",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "190822280",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "190822274",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "186031937",
+    "customer": "Haines Maxwell Co.",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "190822008",
+    "customer": "Chemtrade Solutions",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "190821787",
+    "customer": "York County Finance Departm...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "190510400",
+    "customer": "Lance and Madison Chandler",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "190348873",
+    "customer": "Coltharp Inc.",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "189483244",
+    "customer": "Sherry C. Adkins",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "188480739",
+    "customer": "Ira Coltharp",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "188144717",
+    "customer": "ASC Greenway",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "188090324",
+    "customer": "Mike Andrews",
+    "skipped": true
+  },
+  {
+    "invoiceId": "188089886",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "182504063",
+    "customer": "Ray Pettit",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "186032196",
+    "customer": "ASAP Marketplace",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "180681543",
+    "customer": "ASAP Marketplace",
+    "skipped": true
+  },
+  {
+    "invoiceId": "182503813",
+    "customer": "ASAP Marketplace",
+    "skipped": true
+  },
+  {
+    "invoiceId": "188082252",
+    "customer": "ASAP Marketplace",
+    "skipped": true
+  },
+  {
+    "invoiceId": "188079042",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "188078511",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "186031375",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "185216939",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "188076571",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "187415160",
+    "customer": "St Phillip Neri Catholic Ch...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "186814644",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "186557360",
+    "customer": "Ira Coltharp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "186032859",
+    "customer": "Mike Andrews",
+    "skipped": true
+  },
+  {
+    "invoiceId": "186031765",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "174234595",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "176652671",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "180679831",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "180680234",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "180680243",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160176761",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "155389986",
+    "customer": "Chad Gluff",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "182502635",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "182502962",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "182527643",
+    "customer": "Nucycle LLC",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "149895036",
+    "customer": "Dwayne Miller",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "152704654",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122595652",
+    "customer": "Discount Dumpster",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "144775771",
+    "customer": "Andres Rico Cales",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "138703654",
+    "customer": "Joe Levash",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "184169671",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "184169204",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "184168111",
+    "customer": "Flashes Fireworks",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "184166975",
+    "customer": "Mike Andrews",
+    "skipped": true
+  },
+  {
+    "invoiceId": "182782487",
+    "customer": "Edwards Rentals",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "182503217",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "180681244",
+    "customer": "Jeff Hart",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "176654034",
+    "customer": "Jeff Hart",
+    "skipped": true
+  },
+  {
+    "invoiceId": "180680439",
+    "customer": "Springs Farms",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "182502322",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "182501554",
+    "customer": "Doug Mason",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "168847030",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165705210",
+    "customer": "Rogers Grading",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "180680888",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "180679322",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "179435127",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "178852713",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "178278433",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "177541173",
+    "customer": "ASAP Marketplace",
+    "skipped": true
+  },
+  {
+    "invoiceId": "174942568",
+    "customer": "Tim Walling",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "176653067",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "176652403",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "176651222",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "176478828",
+    "customer": "Church of Jesus Christ of L...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "176478145",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "176477873",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "174941009",
+    "customer": "Jeff Hart",
+    "skipped": true
+  },
+  {
+    "invoiceId": "174871722",
+    "customer": "Thomas Rawlinson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "174235390",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "174234860",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "171626722",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "174233918",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "174232948",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "168846819",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "172244893",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "171627192",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "171624352",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "171625994",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "171625649",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "168847925",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "170481681",
+    "customer": "Joe Stokes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "168849361",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "170074507",
+    "customer": "ASAP Site Services",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "168848988",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "168848682",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "168847648",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165705019",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "168846355",
+    "customer": "Danny Stover",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "168845417",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "167241942",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "166654199",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165705891",
+    "customer": "Roy Boyd",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "166294296",
+    "customer": "York County Purchasing",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "165704749",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165706670",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165706300",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165705445",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165704514",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165704057",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165207828",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "165060399",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163393621",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163393578",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163393491",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163098509",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163098120",
+    "customer": "Roy Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163097948",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163097423",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163097142",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163096964",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163096613",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163096419",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "163095788",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "162786668",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "162785968",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "155099160",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154563989",
+    "customer": "Jordan Parton",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "160667091",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160348729",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160176374",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160175894",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154597354",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "160175605",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160175128",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160174879",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160173243",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "160170538",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "159520253",
+    "customer": "Gordon Barrett",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "159264413",
+    "customer": "Roy Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "159224118",
+    "customer": "Caleb George",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "143803232",
+    "customer": "SM Smith and Sons",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "152214454",
+    "customer": "Brian Donaldson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "157718119",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157717880",
+    "customer": "Shirley Hartley",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "157717634",
+    "customer": "Caleb George",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157399189",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157398900",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157398529",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157398320",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157398106",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157397753",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "157397569",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152567757",
+    "customer": "Liberty Home Guard",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "154608982",
+    "customer": "Paul Conrad",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "152707581",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152703821",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154608742",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152703658",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145587736",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154607698",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154606585",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152708117",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154596876",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154593767",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152707185",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154592825",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "154591490",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152705549",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "153334798",
+    "customer": "Caleb George",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47044106",
+    "customer": "Barry Strickland",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "52032684",
+    "customer": "Preston Construction",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "48612799",
+    "customer": "Barry Strickland",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52027475",
+    "customer": "Lloyd Allsopp",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "23381202",
+    "customer": "Michele Knox",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "47108962",
+    "customer": "Kenny Chapman",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "109172531",
+    "customer": "Miracle Development LLC",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "153065011",
+    "customer": "Mini Storage Center Tyrone ...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "152703043",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "151672995",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152706830",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152705729",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152702499",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "152068745",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "151437647",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "149897939",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "149897554",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "149896019",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141658000",
+    "customer": "GGP Roofing ,LLC dba Monroe...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "149894723",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "149894517",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "149894252",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "149893837",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143324326",
+    "customer": "James Regan",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "147381341",
+    "customer": "Philadelphia United Methodi...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "146859770",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "146858898",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145585903",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143941746",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145589122",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145588916",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145588285",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145586937",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145586429",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145584528",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145583943",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "145583194",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "144941031",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138703424",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138697384",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136006559",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136003240",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138703106",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141656700",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138703121",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133150056",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "140825585",
+    "customer": "Shirley Hartley",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141376259",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125560018",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143942315",
+    "customer": "Nucycle LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143942174",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143888242",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143887799",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143887486",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143887128",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143886847",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143886570",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143886219",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143885917",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143217279",
+    "customer": "Mini Storage Center Tyrone ...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "143084065",
+    "customer": "Karen Kaufman",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "142353621",
+    "customer": "Danny Stover",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141374719",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141657218",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141655855",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141376755",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141484365",
+    "customer": "Buck Howarth",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "141419928",
+    "customer": "Winthrop University",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "141375801",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141374887",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138461286",
+    "customer": "Gilliam Bonn",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "141371784",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "141371014",
+    "customer": "Gary Cangelosi",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "141308545",
+    "customer": "Winthrop University",
+    "skipped": true
+  },
+  {
+    "invoiceId": "139617669",
+    "customer": "GGP Roofing ,LLC dba Monroe...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138698758",
+    "customer": "York County Finance Departm...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138698104",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138697763",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138697059",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "138696567",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "134618845",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136005491",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136427849",
+    "customer": "Will Close",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "135000472",
+    "customer": "Tony Brown",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "132326896",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136004653",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136004273",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136003917",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136003555",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136002918",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "136002497",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "134821949",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133149379",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120325495",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120321670",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "134999492",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133150240",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133771578",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133154024",
+    "customer": "Eric Tutterow",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "134433814",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "131646612",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133771861",
+    "customer": "Marilyn Smith",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "133153662",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133153318",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133153144",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133152903",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133150728",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "133149725",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130205333",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130089733",
+    "customer": "Anderson Site Services,LLC",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "131510470",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130869300",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130610488",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130206905",
+    "customer": "Riverview Fire Department",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "128904480",
+    "customer": "Anderson Site Services,LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130030039",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122598498",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128152926",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125561178",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122599121",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130028690",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130028267",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130028092",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130027933",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128086884",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130027362",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128085769",
+    "customer": "Complete Demolition Service...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "130026903",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130026665",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130026401",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "130026088",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "129286325",
+    "customer": "Saranac Management Group",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "128087321",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128086907",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "126380860",
+    "customer": "Anderson Site Services",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "128086506",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128086325",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128086148",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128085534",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128085321",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128085014",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "128084368",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "126505509",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125563020",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125562179",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122600347",
+    "customer": "KCG Company",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "125561704",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125560943",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125560650",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125560250",
+    "customer": "Complete Demolition Service...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125559793",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125559458",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "125559105",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "124291327",
+    "customer": "Ronnie Yarborough",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "123841915",
+    "customer": "Gordon Barrett",
+    "skipped": true
+  },
+  {
+    "invoiceId": "118812214",
+    "customer": "Ron Edwards",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "122996978",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122600570",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122599696",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "119085299",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117768143",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122598858",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122598156",
+    "customer": "Complete Demolition Service...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120323081",
+    "customer": "Clear Springs Development Co.",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "122597774",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122597471",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122597099",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "122596740",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "119410046",
+    "customer": "Direct Rental Services",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "102603993",
+    "customer": "Prestige Site Works",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "107859102",
+    "customer": "Erie Wright",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "120324724",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115050723",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120324360",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120324019",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120323479",
+    "customer": "Complete Demolition Service...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120322840",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120322624",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120322259",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115048636",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120320982",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "120320575",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117761974",
+    "customer": "Zters",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "117761772",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117765816",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "119483268",
+    "customer": "Angel and Carmen Vega",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "119067189",
+    "customer": "Lake Pointe Academy",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "117994442",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115048475",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117768014",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117767813",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117767524",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117767113",
+    "customer": "Complete Demolition Service...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117766737",
+    "customer": "Clear Springs Development Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "109246672",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117766353",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "113812036",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117764756",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117762407",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115047733",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "117761325",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115046996",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115049829",
+    "customer": "Chris Haire",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "115050501",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115050297",
+    "customer": "Complete Demolition Service...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115050169",
+    "customer": "Clear Springs Development Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115050074",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115049677",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115048801",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115048266",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115047332",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115047178",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115046824",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "115042821",
+    "customer": "Chris Christopher",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "115034084",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112810982",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "114868649",
+    "customer": "Scott Archie",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "114300106",
+    "customer": "Bullock Creek Presbyterian ...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "110301289",
+    "customer": "Madison Builders LLC",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "112903969",
+    "customer": "Madison Builders LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107859763",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "113812770",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "113812340",
+    "customer": "Eric Tutterow",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105937540",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112920248",
+    "customer": "Dwayne Miller",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112920057",
+    "customer": "Vallie Fortson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "112907194",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112905579",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112905378",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112905011",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112904485",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112903649",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112903474",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112903328",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112811219",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112808803",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112795821",
+    "customer": "Complete Demolition Service...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112393548",
+    "customer": "Clear Springs Development Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110301715",
+    "customer": "Carl Mann",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "110299678",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110210195",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "112335289",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "111719343",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110312710",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110312341",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110310956",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110302315",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110302096",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110299373",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110299175",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110298993",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110213353",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "110211704",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107860162",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "109170443",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "102872333",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97654051",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107854993",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "108286445",
+    "customer": "Ronnie Yarborough",
+    "skipped": true
+  },
+  {
+    "invoiceId": "108207115",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "108206965",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107859416",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107858838",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107858632",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107858251",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107857560",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107857114",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107856841",
+    "customer": "Carl Mann",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107856612",
+    "customer": "Madison Builders LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107856372",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107856110",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107855948",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107855792",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107855653",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107855290",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "104263946",
+    "customer": "Reliable Truck and Trailer",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "104044988",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107854421",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "107453606",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103243711",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105426565",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105189018",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105188802",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105188459",
+    "customer": "Erie Wright",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105188085",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105187876",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105187633",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105187284",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105186839",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105186513",
+    "customer": "Carl Mann",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105186380",
+    "customer": "Madison Builders LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105186108",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105185863",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105185662",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "102873329",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105185248",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105184824",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "105184591",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "104608595",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "104262988",
+    "customer": "Cathy Herron",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "103045372",
+    "customer": "Carolina Commercial Tires",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "103047663",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103417714",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103335287",
+    "customer": "Robert and Stacia Wesseler",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "103092082",
+    "customer": "Joshua Smolcic",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "103092607",
+    "customer": "Erie Wright",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103049658",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103049574",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103049458",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103049352",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "101055761",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103047842",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103047042",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103046731",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103046295",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103046012",
+    "customer": "Carl Mann",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103045768",
+    "customer": "Madison Builders LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "103045109",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "102873709",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "102873561",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "102872796",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "102872561",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "101945249",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100236288",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100947637",
+    "customer": "Chris and Nancy Allen",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "99152975",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100397033",
+    "customer": "James Burnette { Burnette R...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "100396101",
+    "customer": "Michael Wood",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "100235848",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95413231",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100235269",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100234925",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100234558",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100234196",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100233769",
+    "customer": "Carl Mann",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100233436",
+    "customer": "Madison Builders LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100233122",
+    "customer": "Carolina Commercial Tires",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100232853",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100232534",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100232126",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100231819",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100231385",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100230836",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "100006422",
+    "customer": "Jody Silvers",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "99791226",
+    "customer": "Lane Norman",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "99790828",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "98719520",
+    "customer": "Fort Mill Business Center",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "98408270",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "98332688",
+    "customer": "Melanie Wilson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "97656484",
+    "customer": "Madison Builders LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97655603",
+    "customer": "Carolina Commercial Tires",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97655415",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97655141",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97655025",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97654816",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97654339",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97654217",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97653746",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97653321",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97652994",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97652673",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95414698",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91354443",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97651572",
+    "customer": "Paul Conrad",
+    "skipped": true
+  },
+  {
+    "invoiceId": "97177920",
+    "customer": "Carl Mann",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95418806",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95419313",
+    "customer": "Carolina Commercial Tires",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95418901",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93154177",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95418411",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95417797",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95417574",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95414350",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95416093",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95415366",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95415015",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95414055",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95412189",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "95253236",
+    "customer": "Blue Sky Homes",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "94799138",
+    "customer": "Madison Builders LLC",
+    "skipped": true
+  },
+  {
+    "invoiceId": "94496316",
+    "customer": "Carolina Commercial Tires",
+    "skipped": true
+  },
+  {
+    "invoiceId": "94287650",
+    "customer": "Riverview Fire Department",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93771242",
+    "customer": "Prestige Site Works",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77575944",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93155026",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93154806",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93154611",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93154383",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93153773",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93153537",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93153302",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93152853",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93152483",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93152117",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93151814",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "93151392",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "92115100",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91759896",
+    "customer": "Vallie Fortson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "87277298",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91354210",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91354068",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91353961",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91353838",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91353701",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88712741",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91353122",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91353025",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84301997",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88596043",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91352560",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91352237",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91351821",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91351577",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91350206",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91349911",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "91154071",
+    "customer": "Sherry Carroll",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "89945375",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "89945250",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "89945095",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "89942891",
+    "customer": "Joaquim and Joanna Goncalves",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "63837240",
+    "customer": "Tim White",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "47044242",
+    "customer": "Steve Auten",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "45078808",
+    "customer": "Barry Strickland",
+    "skipped": true
+  },
+  {
+    "invoiceId": "44850022",
+    "customer": "Angelah41@hotmail.com",
+    "email": "Angelah41@hotmail.com",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "82106775",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "89277239",
+    "customer": "T J Lather",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "88695668",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88782864",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88712839",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88712425",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88706091",
+    "customer": "Real Property Investment",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "88705758",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88705535",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88698203",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88697866",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88697524",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88697216",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "88696209",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86758379",
+    "customer": "Olga Marcie",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "87276956",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86538316",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86761772",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86762573",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86861482",
+    "customer": "Reggie Grigg",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "86762766",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86762672",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86762407",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86760866",
+    "customer": "Real Property Investment",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86760549",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86760373",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86759969",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86759643",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86759165",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86758847",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86757917",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86757427",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "85854516",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "86492189",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "85666049",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84302386",
+    "customer": "Kanawha Properties",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "84980504",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "85062022",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84979655",
+    "customer": "Real Property Investment",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84799607",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84799343",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84239659",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84301399",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84301190",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84300955",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84239553",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84239377",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84239197",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84239065",
+    "customer": "Olga Marcie",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84238946",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82102402",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84238764",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "84238606",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "83844888",
+    "customer": "Richard McClusky",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "83640879",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82107852",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82982089",
+    "customer": "Kim Knopp",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "82929428",
+    "customer": "June Barnette",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "82928962",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "81216230",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "80525947",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82106525",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82106325",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82106014",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82105826",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82105556",
+    "customer": "Olga Marcie",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82102675",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82102222",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82094607",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82094083",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "82090861",
+    "customer": "Walter Kirkpatrick",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "82089862",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79975313",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "78693570",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "81073558",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "80441987",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "80250978",
+    "customer": "Benny Weaver",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "79974859",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "78262790",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79974321",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "76760641",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79972939",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79972677",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79972360",
+    "customer": "Olga Marcie",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77576983",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75607519",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79971744",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "76760280",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79971141",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79970855",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79970591",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79970312",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79969828",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "79773681",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "78693771",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77954416",
+    "customer": "Lisa and John Pereira",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "77579874",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77579386",
+    "customer": "Chris Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77579055",
+    "customer": "Olga Marcie",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77576385",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77575638",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77575225",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77574889",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "77038426",
+    "customer": "Michael Cox",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "76914389",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "76767463",
+    "customer": "Connie Delaney (Realtor)",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "76761034",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "76633570",
+    "customer": "Mike Cochram",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "76633357",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "76621404",
+    "customer": "Billy Haire",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "76474131",
+    "customer": "Laura Hicks",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "75741565",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75608195",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75607989",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75607804",
+    "customer": "Billy Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75607697",
+    "customer": "Olga Marcie",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75593911",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73169329",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73165751",
+    "customer": "North State Environmental",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "75593479",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75593314",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75593120",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "75592948",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "74553598",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73744750",
+    "customer": "Reggie Grigg",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73745482",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73455542",
+    "customer": "Pollyanna Neely",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "73226076",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73170837",
+    "customer": "Olga Marcie",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73170532",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70920480",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70107518",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73169730",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73165443",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73165191",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "73164523",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69368676",
+    "customer": "William Berry",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "73164092",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "72041381",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "72562989",
+    "customer": "Billy Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70920210",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "71952067",
+    "customer": "Olga Marcie",
+    "skipped": true
+  },
+  {
+    "invoiceId": "71664534",
+    "customer": "Gordon Barrett",
+    "skipped": true
+  },
+  {
+    "invoiceId": "71002751",
+    "customer": "KCG Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70919726",
+    "customer": "North State Environmental",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69361939",
+    "customer": "T and T Builders",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "70919319",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70919025",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70918688",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70918254",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "70108623",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69362240",
+    "customer": "North State Environmental",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69361654",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69359962",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69359588",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69359065",
+    "customer": "William Berry",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66904893",
+    "customer": "William Berry",
+    "skipped": true
+  },
+  {
+    "invoiceId": "69358338",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "68696002",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "67339510",
+    "customer": "Justin and Rachael Pierce -...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "66905335",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66904595",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "64707642",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66904257",
+    "customer": "North State Environmental",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66894342",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65320269",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66893352",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66893108",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66891923",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66891596",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66512556",
+    "customer": "Gordon Barrett",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66500553",
+    "customer": "Ronnie Yarborough",
+    "skipped": true
+  },
+  {
+    "invoiceId": "66275508",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "44168650",
+    "customer": "Barry Strickland",
+    "skipped": true
+  },
+  {
+    "invoiceId": "44168294",
+    "customer": "Chanda Sexton",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "28686096",
+    "customer": "Mary Byers",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "22641687",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25923920",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24472787",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29666637",
+    "customer": "Mary Byers",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65309696",
+    "customer": "Gilliam Bonn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65260663",
+    "customer": "William Berry",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65260337",
+    "customer": "William Berry",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65259982",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63497044",
+    "customer": "Southern Heritage Dawson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "65253318",
+    "customer": "North State Environmental",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65253038",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65252886",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65252693",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65252194",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63350387",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "65251381",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "62223546",
+    "customer": "CMS Logistics",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "54640735",
+    "customer": "Direct Rental Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798392",
+    "customer": "Mary Byers",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63497716",
+    "customer": "Walter Kirkpatrick",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61299882",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63351841",
+    "customer": "North State Environmental",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63351478",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63351302",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63350907",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63350623",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63350062",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "62222976",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "63160794",
+    "customer": "Shirley Hartley",
+    "skipped": true
+  },
+  {
+    "invoiceId": "62457134",
+    "customer": "Affordable Jess",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "61512966",
+    "customer": "Veteran Services",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "62000583",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61999243",
+    "customer": "North State Environmental",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61989333",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61959770",
+    "customer": "Dale Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61512049",
+    "customer": "William Berry",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61304675",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61304480",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61301345",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61300791",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61300179",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61299533",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59530758",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61299103",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59791657",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "61043345",
+    "customer": "Jai Singh and Amandeep Samra",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "60746791",
+    "customer": "Andrew McCrossan",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "60212577",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43779108",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37781198",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36950790",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "58436496",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59790509",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59591252",
+    "customer": "Veteran Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59532104",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "58746644",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59531623",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59531348",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59530925",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59530448",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59103586",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "59053654",
+    "customer": "Michael Brant Buyer",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "58157681",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55847381",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57710091",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57709857",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57709619",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57708967",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55849400",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57708663",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54117690",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57664929",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57664700",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "57367266",
+    "customer": "Eddie and Linda Potts",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "57384435",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "56996196",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55848861",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54454616",
+    "customer": "Veteran Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55849112",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55848632",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55848305",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54642360",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55848073",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54641855",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55461377",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "55086939",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54812177",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54641205",
+    "customer": "Lisa Hileman",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "54457384",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54456654",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54456159",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54455398",
+    "customer": "Flashes Fireworks",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54118434",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54118204",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54118031",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52027898",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54117099",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "54115092",
+    "customer": "Gordon Barrett",
+    "skipped": true
+  },
+  {
+    "invoiceId": "53105246",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52645820",
+    "customer": "Sharon Fire Department",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "52472765",
+    "customer": "Rusty Schneider",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "52362216",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52146328",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52146120",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52146004",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52032063",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50505659",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50499257",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "52026421",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "51192812",
+    "customer": "Warren Norman Co.",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "51042937",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50533825",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50533659",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50533209",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50506285",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50506027",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48610718",
+    "customer": "Brianna Fazio",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "50498420",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "50002364",
+    "customer": "John Grant",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "49780886",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "49583577",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "49375517",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48708261",
+    "customer": "Mike Cockram",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "49224028",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "49223585",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47842852",
+    "customer": "Dale Pfeil",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "48856848",
+    "customer": "Vicki Hawkins",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "48613359",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48612472",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48612177",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48611854",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47042863",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48610965",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48610568",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48160804",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "48160429",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47109250",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47042309",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47043790",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47043665",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47043534",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45067766",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47023229",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47023021",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47022736",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "47016103",
+    "customer": "Marty Taylor",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "46904160",
+    "customer": "Shirley Hartley",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45649154",
+    "customer": "Gary Cofty",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "45262898",
+    "customer": "Carol and Wyman Date",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "45180681",
+    "customer": "Shirley Hartley",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45181666",
+    "customer": "Hagan Burnette",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "45181069",
+    "customer": "Steve Auten",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39071144",
+    "customer": "Doug Woods",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "45078622",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45078073",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45078023",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45077779",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45077605",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43777685",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45067267",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45067006",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45066348",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45066007",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42283030",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20141886",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45064248",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "45003635",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "44851781",
+    "customer": "Melanie Lester",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "27541303",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "44491405",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "44131970",
+    "customer": "Vista Road Rentals Att: Coo...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "41033052",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43779441",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43779286",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43779192",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43777848",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43777576",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43777450",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43777246",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43776995",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "43776803",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25043674",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42308716",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40633528",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39328421",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39074354",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "38539001",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42514124",
+    "customer": "Giles Plumbing",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "42314426",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42314215",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40634507",
+    "customer": "Stanley Black and Decker",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "42313482",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42312314",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42289759",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42288763",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42288530",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42284631",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39073243",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42284044",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42282800",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40629914",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "42081657",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "41647181",
+    "customer": "Media Resources",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "40697447",
+    "customer": "Preston Construction",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40634850",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40634317",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40634187",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40633971",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40632278",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40631310",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40630653",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40630431",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "40630211",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39697973",
+    "customer": "Media Resources",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39150880",
+    "customer": "Eddie Guy",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "39125963",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39095131",
+    "customer": "Eddie Guy",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39073907",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39073766",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39073503",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39073002",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39072647",
+    "customer": "Stanley Black and Decker",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39072419",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39071824",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39070792",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "39070448",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "38896505",
+    "customer": "Media Resources",
+    "skipped": true
+  },
+  {
+    "invoiceId": "38216454",
+    "customer": "Media Resources",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37780717",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37780512",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37780323",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36549726",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37776398",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37776173",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35460787",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37775493",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35337095",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37775326",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37770084",
+    "customer": "Media Resources",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37226089",
+    "customer": "Media Resources",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36902666",
+    "customer": "Media Resources",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37509391",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37459237",
+    "customer": "Lloyd Allsopp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "37387124",
+    "customer": "Phyllis Carswell",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "37227099",
+    "customer": "Stanley Black and Decker",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36550585",
+    "customer": "Dynamite Dumpsters Manageme...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36902118",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34540786",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36550793",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36550445",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36550167",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35462378",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36549439",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36549271",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36549094",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36415170",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36282686",
+    "customer": "Brianna Fazio",
+    "skipped": true
+  },
+  {
+    "invoiceId": "36019879",
+    "customer": "Signs Unlimited",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "34627010",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35529937",
+    "customer": "Ira Coltharp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34654692",
+    "customer": "Jackie Queen",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "35464580",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35464330",
+    "customer": "Stanley Black and Decker",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35463751",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35463058",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33227018",
+    "customer": "John Loman",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "35462733",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35462584",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35462110",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35460603",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "35336943",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34639159",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34639063",
+    "customer": "Stanley Black and Decker",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34638981",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34638806",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34638698",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34638536",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33648927",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34626771",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34626592",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34626425",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34626328",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26886850",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "34144749",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33928541",
+    "customer": "ASAP Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33927972",
+    "customer": "Phyllis Carswell",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33756086",
+    "customer": "Blue Sky Homes",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33755948",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33649544",
+    "customer": "Stanley Black and Decker",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33649427",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33649329",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33649239",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33649094",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33648630",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33648371",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33648204",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33600713",
+    "customer": "&nbsp;",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "33557021",
+    "customer": "Bethesda Fire Station #2",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "33346473",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33287678",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33227618",
+    "customer": "Stanley Black and Decker",
+    "skipped": true
+  },
+  {
+    "invoiceId": "33227224",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28335257",
+    "customer": "Coltharp Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32716176",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32716111",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26885566",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32715961",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32715879",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32715544",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31619578",
+    "customer": "Earl Horne",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "32715474",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32685500",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32601094",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "32161728",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31992538",
+    "customer": "Libby Howey",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "31620112",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31770982",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31650047",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31619882",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31619691",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31618962",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31618760",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "31444178",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30937270",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30618693",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30618582",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30618501",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30618417",
+    "customer": "Earl Horne",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30618335",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30618246",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30557246",
+    "customer": "Gene Thomas",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "30557112",
+    "customer": "Gordon Barrett",
+    "skipped": true
+  },
+  {
+    "invoiceId": "30556958",
+    "customer": "Charles Dezeeuw",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "30429905",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29922663",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29067631",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28685856",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25043898",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25924542",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19632988",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29667605",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29667053",
+    "customer": "Earl Horne",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29666327",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29666048",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29663965",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29604958",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29162025",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29136833",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "29067641",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28687673",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28687521",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28687428",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28686260",
+    "customer": "Earl Horne",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798307",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798185",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28685623",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28685478",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28559846",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28335009",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "28088246",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27925502",
+    "customer": "Billy Haire",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27913681",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798992",
+    "customer": "Doug Woods",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798836",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798721",
+    "customer": "Earl Horne",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798405",
+    "customer": "Mary Byers",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27798039",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27797814",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27541657",
+    "customer": "Benny Weaver",
+    "skipped": true
+  },
+  {
+    "invoiceId": "27463416",
+    "customer": "Jeri Alexander",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "27263833",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26886446",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26917315",
+    "customer": "Clear Springs",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "26888950",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26886582",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26886102",
+    "customer": "Earl Horne",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25924179",
+    "customer": "Tim Newport",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "26885777",
+    "customer": "Mary Byers",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26883885",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26883710",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26883555",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26366942",
+    "customer": "David Grigg",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "26323922",
+    "customer": "Vallie Fortson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26304924",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26259360",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "26006290",
+    "customer": "Libby Howey",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25925180",
+    "customer": "Earl Horne",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25925005",
+    "customer": "Mary Byers",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25924818",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25045169",
+    "customer": "Bob Sarn",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "25924375",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25043720",
+    "customer": "Bruce Ghent",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "25923721",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24169879",
+    "customer": "Keely Ryan, Remax Executive",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "18350684",
+    "customer": "Kathy Rushing",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "22070296",
+    "customer": "Eddie Benfield",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "24473697",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20803721",
+    "customer": "Brian Boyd",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19683168",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21661484",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25550375",
+    "customer": "Earl Horne",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25363636",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25363390",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22929660",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25044109",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25043908",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25043839",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25043785",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "25043601",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24951729",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24951482",
+    "customer": "Charles Dezeeuw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24817661",
+    "customer": "Mary Byers",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23244362",
+    "customer": "Tega Cay Salon &amp; Spa",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "24751721",
+    "customer": "Charles Dezeeuw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24716650",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23416860",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24475157",
+    "customer": "Will Robbins .... willrobbi...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "24017153",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24474765",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24474448",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24473031",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23378467",
+    "customer": "Mary Lazenby",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "24154085",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24034373",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22070581",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "24016754",
+    "customer": "Robert Jackson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "24016513",
+    "customer": "Elks Recreation Park",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "23951320",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22594448",
+    "customer": "Dale Pfeil",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23949331",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23949018",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23948702",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23948459",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23948038",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23775164",
+    "customer": "AW Site Services, LLC",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "23396759",
+    "customer": "Charles Dezeeuw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23590938",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23417072",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22594688",
+    "customer": "Anderson Site Services",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23397175",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23396638",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23396462",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23244171",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23080933",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23076302",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "23019847",
+    "customer": "Will Robbins .... willrobbi...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22955528",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22955240",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22645714",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22067897",
+    "customer": "Zters",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22954588",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22071304",
+    "customer": "Carolina Power",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "22641849",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22932789",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22932563",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22930069",
+    "customer": "Mt Gallant Church of God",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "22929881",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22710140",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21661794",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20804018",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19683844",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22644481",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22644228",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22644075",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21666800",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19202328",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22642362",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9099121",
+    "customer": "Joe Balasco",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "7762145",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7106794",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7762095",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7106886",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6749764",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7930114",
+    "customer": "Long Cove Marina",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "8562843",
+    "customer": "Thomas Rental Property",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "9099466",
+    "customer": "Jon Shillinglaw",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "13689466",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11558780",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15979704",
+    "customer": "Chris Larson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19201617",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22203185",
+    "customer": "Hal Kennedy",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "22202672",
+    "customer": "Charles Ferrell",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "22164037",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22145339",
+    "customer": "Delaine Robbins",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "22071166",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22071032",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20295391",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19688467",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22070705",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "22068229",
+    "customer": "Jackie Queen",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21998556",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21264818",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21666494",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15918482",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16686494",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21834768",
+    "customer": "Doug Mason",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21666680",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21666225",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21662286",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21661631",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21644719",
+    "customer": "Kathryn Brooks",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "21644541",
+    "customer": "Barfield Grading",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "21644346",
+    "customer": "Mike Cockram",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21630950",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21460422",
+    "customer": "Michael Hill",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "21407913",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21297285",
+    "customer": "Doug Mason",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21297064",
+    "customer": "Ira Coltharp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21289133",
+    "customer": "Haul Rogers",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "21264657",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21263448",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21263326",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21263202",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21262983",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21261821",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "21025261",
+    "customer": "Billy Therrell",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "20946922",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20875087",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20805701",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20805580",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20805381",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20805070",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20803869",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20752252",
+    "customer": "Ira Coltharp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20703754",
+    "customer": "Will Close",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20381399",
+    "customer": "Rodney Deason",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19937380",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20381016",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20380778",
+    "customer": "Camp Cannan ..... Sand Island",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "13097576",
+    "customer": "Camp Cannan ..... Sand Island",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20295819",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20295635",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20295498",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20295254",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19687538",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20295098",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "20139043",
+    "customer": "Christina Hidalgo",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "20137338",
+    "customer": "Vallie Fortson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19987828",
+    "customer": "Beth Parnelle",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19690200",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19690059",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19690000",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19689798",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19689456",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19688400",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19687765",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19687489",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19687307",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18683297",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19683988",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19683299",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18702821",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18439012",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18437632",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17887569",
+    "customer": "W. L. Adkins &amp; Sons Constru...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "17750676",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15974380",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15979518",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14926913",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19620106",
+    "customer": "Andy Morton",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19620002",
+    "customer": "Wayne Helms",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19575415",
+    "customer": "Brian Murray",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19434094",
+    "customer": "Jackie Queen",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19413473",
+    "customer": "Charles Dezeeuw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19292473",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19202344",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17751145",
+    "customer": "Keith Morton",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "19202235",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19201998",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19202017",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19201807",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "19201731",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18901100",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18684454",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18684220",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18684118",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18684029",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18683890",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18683743",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18473424",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17886974",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18438734",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18438565",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18438315",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18437784",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18437514",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18388067",
+    "customer": "&nbsp;",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3285575",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18110959",
+    "customer": "Marty Taylor",
+    "skipped": true
+  },
+  {
+    "invoiceId": "18110683",
+    "customer": "Lynn Williams",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "18019635",
+    "customer": "Tim Newport",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17942109",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17538484",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16417304",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17886859",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17874475",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17874205",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17873354",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17776559",
+    "customer": "Billy Therrell",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17750364",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17723715",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17723483",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17723154",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17713638",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17713220",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17675812",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17640353",
+    "customer": "Ira Coltharp",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17567213",
+    "customer": "Carolina Power",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17538677",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15953387",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15917996",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14019310",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15139525",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14256139",
+    "customer": "Crossroads at Catawba ........",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "11726087",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10755983",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17210701",
+    "customer": "Bob Sarn",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17203386",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17203227",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17203090",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17202966",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17149840",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16691365",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17147179",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17146931",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "17005806",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16686221",
+    "customer": "Gladden Builders",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "16694437",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16694278",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16691932",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16691675",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16691521",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16691156",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16689990",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16689155",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16632024",
+    "customer": "Leroy Renegar",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "16523839",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16417385",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16360787",
+    "customer": "Charles Dezeeuw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "16001231",
+    "customer": "Westminster Presbyterian Ch...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "15990701",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15981472",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15981464",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14927827",
+    "customer": "Zters Wastevalue",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "15981153",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15979315",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15974812",
+    "customer": "Myers and Chapman",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "15974799",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15974531",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15953765",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15953081",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15952929",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15937275",
+    "customer": "Jackie Sutton",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "15918673",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15918256",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15817193",
+    "customer": "Charles Dezeeuw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15788195",
+    "customer": "Elks Recreation Park",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14555194",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14416578",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14206346",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14206164",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13387079",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12641141",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11726466",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11697570",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11697446",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11319824",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9675137",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15695741",
+    "customer": "Westerly Hills Baptist Church",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "15205932",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15202351",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15389581",
+    "customer": "Old Town Country Kitchen",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "15205227",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15204464",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15204270",
+    "customer": "Chris Larson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15203681",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15203438",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15202565",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15199767",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "15199512",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13528954",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13388851",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13307773",
+    "customer": "Jason Sharkey",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "12778956",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13690750",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14927760",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14926843",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13690233",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14926679",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14925125",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14924878",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14924785",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14924678",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14901958",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14900489",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14407080",
+    "customer": "Ratzlaff Construction Compa...",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "14406877",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14434668",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13097344",
+    "customer": "Chris Larson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14416411",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14411967",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14411755",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14410668",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14406710",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14406171",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14386605",
+    "customer": "Robert Barr",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "14322394",
+    "customer": "Trent Erving",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "14208775",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14207915",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14207754",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14206944",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14206447",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "14206043",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13896615",
+    "customer": "Betty Rankin",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "13784012",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13783823",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13722416",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12779123",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13721820",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12777310",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12774899",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12774916",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13720963",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12718232",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13690564",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13690381",
+    "customer": "Kylie&#39;s Strawberry Patch",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "13690092",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13387547",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13689803",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13689573",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13689095",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13665692",
+    "customer": "Todd Simpson",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "13665234",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13528818",
+    "customer": "Robert Barr",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9968576",
+    "customer": "Robert Barr",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13388949",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13387407",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13387243",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13387164",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13386912",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13386646",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13386292",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12738953",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13307562",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13188863",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13137499",
+    "customer": "Elks Recreation Park",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13097195",
+    "customer": "Mary Lazenby",
+    "skipped": true
+  },
+  {
+    "invoiceId": "13096820",
+    "customer": "Will Robbins .... willrobbi...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12916174",
+    "customer": "Eddie Benfield",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11697784",
+    "customer": "Dale Pfeil",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12826817",
+    "customer": "Dale Pfeil",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12776929",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12775032",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12774089",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12773921",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12739361",
+    "customer": "Tomeka Ratchford",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "12738847",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12565814",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12565748",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12561893",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12561727",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12561571",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12561325",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12561146",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12560541",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12557154",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12556968",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12556819",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12556219",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12406043",
+    "customer": "Kylie&#39;s Strawberry Patch",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12405800",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11726615",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9789483",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12269363",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8208720",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9376019",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10283709",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10755775",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8828305",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10282409",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9111515",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8400181",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8208876",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6527106",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11726759",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10285795",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10756309",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11697761",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12181635",
+    "customer": "Michael Nester",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "12017945",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12017830",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12017518",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12017048",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11726093",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11725656",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11135361",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12016191",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12016053",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "12015882",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11348713",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11726851",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11725947",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11725535",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11133463",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11697628",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11348498",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11241724",
+    "customer": "Tomeka Ratchford",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11241454",
+    "customer": "Tomeka Ratchford",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10756005",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9099395",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10279369",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10285530",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10283356",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10285607",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7312083",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11135786",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11133619",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11133306",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "11133179",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7109850",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10976865",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10939689",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10922924",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10920497",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10240196",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10756382",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10756185",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10756085",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10755537",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10282271",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10742823",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10293482",
+    "customer": "Charles Dezeeuw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10293341",
+    "customer": "Bill Geddings",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "10286973",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10285700",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10285200",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10283216",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9676005",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10282976",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10282067",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9675280",
+    "customer": "Tomeka Ratchford",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10279548",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10279126",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "10239577",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9097481",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9111284",
+    "customer": "Tomeka Ratchford",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9099205",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8828411",
+    "customer": "Mohle Builders",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6099059",
+    "customer": "Oakdale Baptist Church",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6749628",
+    "customer": "Oakdale Baptist Church",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7465492",
+    "customer": "Oakdale Baptist Church",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5752545",
+    "customer": "Nagy Builders",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "7762186",
+    "customer": "Arwood Waste",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6481188",
+    "customer": "Arwood Waste",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9111324",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9099578",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8928798",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8831432",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8325098",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7812624",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7508143",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6277076",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9695440",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9695190",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9677673",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9677539",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9676378",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9675843",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9675594",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9675398",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9674930",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9674778",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9567710",
+    "customer": "Queen City Plastics",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "9566800",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9376450",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9376345",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9376258",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9376145",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8562519",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9111586",
+    "customer": "Les Erving",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "9100019",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9099060",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9098862",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9097576",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9096961",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "9096915",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8928654",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7762255",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7984648",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6471096",
+    "customer": "Mike Broome",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "7100750",
+    "customer": "Mike Broome",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7492441",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7492491",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8831780",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8831708",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8831506",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8828609",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8828509",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8828133",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8828028",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8399557",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8562761",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8560131",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8400318",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8400094",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8400014",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8399951",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8399863",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8399767",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8399665",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8348331",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8253029",
+    "customer": "S.M. Smith &amp; Sons Inc.",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "7590187",
+    "customer": "Signs Unlimited",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6868154",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7107282",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7465315",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8208451",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8208378",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8208091",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "8174022",
+    "customer": "John Burks",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "8104643",
+    "customer": "Southeastern Tree Service",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "7984920",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7753102",
+    "customer": "Tomeka Ratchford",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7984564",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7984539",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7984477",
+    "customer": "Mohle Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7984263",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7982739",
+    "customer": "Carrie Wrights",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "7909820",
+    "customer": "Joseph and Gail Naval",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "7812475",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7762025",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7753694",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7753623",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7753577",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7753461",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7753266",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7752983",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7492561",
+    "customer": "Chemtrade Solutions",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7492335",
+    "customer": "Mohle Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7492197",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7465378",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7465087",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7464984",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7100969",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4827580",
+    "customer": "Hillary and Chad Crawford",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6470976",
+    "customer": "Jabco Construction Company",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6474713",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5429764",
+    "customer": "Affordable Jess",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6749790",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6094306",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6094259",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7313812",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7313060",
+    "customer": "Cats Paw Winery",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6541189",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6749449",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7107523",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7217842",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7107006",
+    "customer": "Arwood Waste",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7106679",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7106529",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7106263",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7105741",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6093926",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5135500",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "7100177",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6868604",
+    "customer": "Mohle Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6868526",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6868341",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6867877",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6867647",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6826041",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6766312",
+    "customer": "Al Steele",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6766247",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6766026",
+    "customer": "Ratzlaff Construction Compa...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6148311",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6765839",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6561878",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6561372",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6474572",
+    "customer": "NSITE CONSTRUCTION",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "6474483",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6474363",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6474131",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6471424",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6471167",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6345233",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6345079",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6344899",
+    "customer": "NSITE CONSTRUCTION",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6344787",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6343164",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6341896",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6341694",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6267209",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6236416",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6236133",
+    "customer": "Jon Shillinglaw",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4304463",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4523234",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840666",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5116240",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5619739",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5806362",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5805814",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5805571",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4344532",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5117654",
+    "customer": "John Jacobus",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "5492198",
+    "customer": "Arwood Waste",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5426508",
+    "customer": "NSITE CONSTRUCTION",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5827439",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5827276",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5634137",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5117867",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6132071",
+    "customer": "Fort Mill Business Center",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6099328",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5135542",
+    "customer": "Myers and Chapman",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5135665",
+    "customer": "Oakdale Baptist Church",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6094562",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6094438",
+    "customer": "T and T Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6094188",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6094033",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6093983",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6093804",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6093634",
+    "customer": "Mike Broome",
+    "skipped": true
+  },
+  {
+    "invoiceId": "6093525",
+    "customer": "Jabco Construction Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5981796",
+    "customer": "Cats Paw Winery",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5940808",
+    "customer": "Mohle Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5917947",
+    "customer": "Kyrra Stevens",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "5889798",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5805979",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5805669",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5763972",
+    "customer": "Tega Cay Salon &amp; Spa",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5763864",
+    "customer": "Fort Mill Business Center",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5703603",
+    "customer": "Hoover Builders",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "5703081",
+    "customer": "Banks McGinn",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "5550503",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5492305",
+    "customer": "Arwood Waste",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5453005",
+    "customer": "Rixie Dunn",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "5426346",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5418384",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5418220",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4491643",
+    "customer": "Mike Broome",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5418071",
+    "customer": "Mike Broome",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5240897",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4304608",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5417102",
+    "customer": "Jabco Construction Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5387430",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5321952",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5265789",
+    "customer": "Edwards Rentals",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5265743",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5265644",
+    "customer": "Cats Paw Winery",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5265562",
+    "customer": "Church of Jesus Christ of L...",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5258502",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5257730",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5257710",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5257649",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5257612",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5249995",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5249930",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4318862",
+    "customer": "Gladden Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4524090",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5249365",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5249324",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5241171",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5211355",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5161520",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5117557",
+    "customer": "Zters Wastevalue",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5116141",
+    "customer": "Bruce Ghent",
+    "skipped": true
+  },
+  {
+    "invoiceId": "5103320",
+    "customer": "Thomas and Deborah Gray",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "4947304",
+    "customer": "Nagy Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4841271",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4841151",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840849",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840785",
+    "customer": "Mike Broome",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840598",
+    "customer": "Nagy Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840523",
+    "customer": "NSITE CONSTRUCTION",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4445894",
+    "customer": "NSITE CONSTRUCTION",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840331",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840095",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4840038",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4801985",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4784212",
+    "customer": "Kylie&#39;s Strawberry Patch",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4784148",
+    "customer": "Kylie&#39;s Strawberry Patch",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4761376",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4685193",
+    "customer": "Michele Knox",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4660448",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4524010",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4093179",
+    "customer": "Nagy Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3390573",
+    "customer": "Nagy Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4523557",
+    "customer": "Nagy Builders",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4093082",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4491756",
+    "customer": "Jabco Construction Company",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4445819",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4438426",
+    "customer": "Elks Recreation Park",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4438364",
+    "customer": "Karen Burgess",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "4344489",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4344411",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3509911",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3870197",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3831673",
+    "customer": "Qiao Yun Chen",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "3760776",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4304559",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4304349",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4304279",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4304150",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4258371",
+    "customer": "H &amp; M Enterprises LLC",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "4224010",
+    "customer": "Charles Kennedy",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "4160850",
+    "customer": "Mike Stump",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "4158447",
+    "customer": "Chris and Missy Broome",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "4092979",
+    "customer": "NSITE CONSTRUCTION",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4080985",
+    "customer": "ASC Greenway",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4076685",
+    "customer": "Southern Heritage Dawson",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4076473",
+    "customer": "Warren Norman Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4057221",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4035352",
+    "customer": "York County Purchasing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "4035300",
+    "customer": "Springs Farms",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3509873",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3527748",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3527655",
+    "customer": "Brian Boyd",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3456819",
+    "customer": "Joe Balasco",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3974748",
+    "customer": "Cathy Herron",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3925399",
+    "customer": "Rogers Grading",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3925260",
+    "customer": "S.M.Smith &amp; Sons Inc.",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "3899217",
+    "customer": "Long Cove Marina",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3889685",
+    "customer": "David St Laurent",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "3889637",
+    "customer": "Real St Laurent",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "3870391",
+    "customer": "Robert Currence",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "3837378",
+    "customer": "Ray Pettit",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3779799",
+    "customer": "S.M.Smith &amp; Sons Inc.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3775967",
+    "customer": "Cats Paw Winery",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3760146",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3174655",
+    "customer": "Giles Plumbing",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3691655",
+    "customer": "Donna Jackley",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "3688951",
+    "customer": "Mike Broome",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3688848",
+    "customer": "Mike Broome",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3595322",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3595295",
+    "customer": "Haines Maxwell Co.",
+    "skipped": true
+  },
+  {
+    "invoiceId": "3593481",
+    "customer": "Eric Gillespie",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  },
+  {
+    "invoiceId": "3559692",
+    "customer": "Robert Garrison",
+    "email": "",
+    "phone": "",
+    "billTo": ""
+  }
+]
