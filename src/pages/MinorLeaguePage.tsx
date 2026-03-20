@@ -660,9 +660,11 @@ function AAAStatsTab({
       if (teamFilter === 'mine' && teamId !== userTeamId) continue;
       const teamAbbr = playerTeamAbbr.get(playerId) ?? teamId.slice(0, 3).toUpperCase();
       if (player.position === 'P') {
-        pitRows.push({ player, teamId, teamAbbr, stats: stats as MiLBPitcherStats });
+        const ps = stats as MiLBPitcherStats;
+        if (ps.g > 0) pitRows.push({ player, teamId, teamAbbr, stats: ps });
       } else {
-        batRows.push({ player, teamId, teamAbbr, stats: stats as MiLBBatterStats });
+        const bs = stats as MiLBBatterStats;
+        if (bs.g > 0) batRows.push({ player, teamId, teamAbbr, stats: bs });
       }
     }
     return { batters: batRows, pitchers: pitRows };
@@ -746,7 +748,7 @@ function AAAStatsTab({
           {sortedBatters.length === 0 ? (
             <p className="font-mono text-cream-dim/50 text-sm py-8 text-center">No batter stats for this filter.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="border-b border-navy-lighter/40 bg-navy-lighter/20">
                   <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/40 text-left w-6">#</th>
@@ -797,7 +799,7 @@ function AAAStatsTab({
           {sortedPitchers.length === 0 ? (
             <p className="font-mono text-cream-dim/50 text-sm py-8 text-center">No pitcher stats for this filter.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[780px]">
               <thead>
                 <tr className="border-b border-navy-lighter/40 bg-navy-lighter/20">
                   <th className="px-2 py-1.5 font-mono text-[10px] text-cream-dim/40 text-left w-6">#</th>
@@ -826,8 +828,8 @@ function AAAStatsTab({
                       <td className="px-2 py-1.5 font-mono text-xs text-cream-dim/60 text-left">{player.age}</td>
                       <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.g}</td>
                       <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.gs}</td>
-                      <td className="px-2 py-1.5 font-mono text-xs text-green-light tabular-nums">{stats.w}</td>
-                      <td className="px-2 py-1.5 font-mono text-xs text-red-400/80 tabular-nums">{stats.l}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums', stats.w > 0 ? 'text-green-light' : 'text-cream-dim/50')}>{stats.w}</td>
+                      <td className={cn('px-2 py-1.5 font-mono text-xs tabular-nums', stats.l > 0 ? 'text-red-400/80' : 'text-cream-dim/50')}>{stats.l}</td>
                       <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.sv}</td>
                       <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{formatIP(stats.ip)}</td>
                       <td className="px-2 py-1.5 font-mono text-xs text-cream tabular-nums">{stats.h}</td>
