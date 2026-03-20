@@ -35,14 +35,14 @@ const MOUND_Y = 310;
 
 const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
   P:    { x: MOUND_X, y: MOUND_Y },
-  C:    { x: HOME_X, y: HOME_Y + 22 },
+  C:    { x: HOME_X, y: HOME_Y + 12 },
   '1B': { x: 382, y: 330 },
   '2B': { x: 345, y: 268 },
   SS:   { x: 255, y: 268 },
   '3B': { x: 218, y: 330 },
-  LF:   { x: 150, y: 158 },
-  CF:   { x: 300, y: 100 },
-  RF:   { x: 450, y: 158 },
+  LF:   { x: 160, y: 215 },
+  CF:   { x: 300, y: 190 },
+  RF:   { x: 440, y: 215 },
 };
 
 // ── Perspective scale factors ──────────────────────────────────────────────
@@ -70,9 +70,9 @@ const FIELDER_SCALES: Record<string, number> = {
   '2B': 0.15,   // middle infield
   SS:   0.15,
   '3B': 0.17,
-  LF:   0.11,   // outfielder
-  CF:   0.09,   // CF furthest back
-  RF:   0.11,
+  LF:   0.09,   // outfielder — smaller for perspective depth
+  CF:   0.07,   // CF furthest back — smallest
+  RF:   0.09,
 };
 
 const BATTER_SCALE  = 0.28;  // batter — largest, closest to camera
@@ -289,8 +289,8 @@ export class SpritePlayerScene {
       this.catcherUmpireFrames[CATCHER_UMP_V2_FRAMES.umpireStanding],
       this.catcherUmpireFrames,
     );
-    anim.setPosition(HOME_X + 5, HOME_Y + 38);
-    anim.setScale(UMPIRE_SCALE);
+    anim.setPosition(HOME_X + 18, HOME_Y + 30);
+    anim.setScale(UMPIRE_SCALE * 0.85);
     anim.setFrame(CATCHER_UMP_V2_FRAMES.umpireStanding);
 
     this._umpire = anim;

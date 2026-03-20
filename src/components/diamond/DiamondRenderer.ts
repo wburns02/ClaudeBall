@@ -44,14 +44,14 @@ const BASE_3_Y = 335;   // 67% of 500
 // ── Fielder positions ──────────────────────────────────────────────────────
 const FIELDER_POSITIONS: Record<string, { x: number; y: number }> = {
   P:    { x: MOUND_X,  y: MOUND_Y },
-  C:    { x: HOME_X,   y: HOME_Y + 22 },
+  C:    { x: HOME_X,   y: HOME_Y + 12 },
   '1B': { x: 382,      y: 330 },
   '2B': { x: 345,      y: 268 },
   SS:   { x: 255,      y: 268 },
   '3B': { x: 218,      y: 330 },
-  LF:   { x: 150,      y: 158 },
-  CF:   { x: 300,      y: 100 },
-  RF:   { x: 450,      y: 158 },
+  LF:   { x: 160,      y: 215 },
+  CF:   { x: 300,      y: 190 },
+  RF:   { x: 440,      y: 215 },
 };
 
 // ── Hit trajectory helpers ────────────────────────────────────────────────

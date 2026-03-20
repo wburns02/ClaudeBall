@@ -124,14 +124,12 @@ export class AtBatCamera {
     if (!this.root) return Promise.resolve();
     this._zoomedIn = true;
 
-    // Focus point: midway between mound and home plate, slightly biased toward home
-    const focusX = MOUND_X * 0.35 + HOME_X * 0.65;
-    const focusY = MOUND_Y * 0.40 + HOME_Y * 0.60;
+    // Focus point: midway between mound and home plate, balanced to show both
+    const focusX = MOUND_X * 0.45 + HOME_X * 0.55;
+    const focusY = MOUND_Y * 0.50 + HOME_Y * 0.50;
 
-    // We zoom the WORLD by atBatZoom relative to basescale.
-    // The rendered canvas shows "world * baseScale" pixels, so an additional
-    // 2.5x zoom fills the camera with the close-up area.
-    const atBatZoom = 2.5;
+    // 2.0x zoom shows pitcher, batter, catcher, and umpire together
+    const atBatZoom = 2.0;
     const targetScaleX = this.baseScaleX * atBatZoom;
     const targetScaleY = this.baseScaleY * atBatZoom;
 
@@ -171,11 +169,11 @@ export class AtBatCamera {
     if (!this.root) return Promise.resolve();
     this._zoomedIn = false;
 
-    // Outfield target positions (world coords)
+    // Outfield target positions (world coords) — aligned with fielder positions
     const ofTargets = {
-      left:   { x: 150, y: 158 },
-      right:  { x: 450, y: 158 },
-      center: { x: 300, y: 100 },
+      left:   { x: 160, y: 215 },
+      right:  { x: 440, y: 215 },
+      center: { x: 300, y: 190 },
     };
     const target = ofTargets[direction];
 
