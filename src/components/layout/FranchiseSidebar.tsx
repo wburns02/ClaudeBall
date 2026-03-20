@@ -64,6 +64,7 @@ const Icons = {
   teamStats: 'M3 3h18v18H3z M7 7h4v4H7z M13 7h4v4h-4z M7 13h4v4H7z M13 13h4v4h-4z',
   hotCold: 'M12 2a5 5 0 015 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 015-5z M12 22l2-4h-4l2 4z',
   compare: 'M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h3 M16 3h3a2 2 0 012 2v14a2 2 0 01-2 2h-3 M12 3v18',
+  depthChart: 'M3 3h18v4H3z M3 10h8v4H3z M3 17h8v4H3z M14 10h7v11h-7z',
 };
 
 interface NavItem {
@@ -93,6 +94,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'TEAM',
     items: [
       { label: 'Roster', path: '/franchise/roster', icon: 'roster' },
+      { label: 'Depth Chart', path: '/franchise/depth-chart', icon: 'depthChart' },
       { label: 'Development Hub', path: '/franchise/development', icon: 'development' },
       { label: 'Training Center', path: '/franchise/training', icon: 'training' },
       { label: 'Lineup Editor', path: '/franchise/lineup-editor', icon: 'lineup' },
