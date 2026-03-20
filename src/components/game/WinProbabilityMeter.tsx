@@ -75,22 +75,22 @@ export function WinProbabilityMeter({ game, history, className }: WinProbability
       return homeScore > awayScore ? 100 : homeScore < awayScore ? 0 : 50;
     }
     return calcWinProbability(
-      game.inning.number,
+      game.inning.inning,
       game.inning.half,
       game.inning.outs,
       homeScore - awayScore,
       runnersOnBase,
     );
-  }, [game.phase, game.inning.number, game.inning.half, game.inning.outs, homeScore, awayScore, runnersOnBase]);
+  }, [game.phase, game.inning.inning, game.inning.half, game.inning.outs, homeScore, awayScore, runnersOnBase]);
 
   const awayWP = 100 - homeWP;
 
   const leverage = useMemo(() => calcLeverage(
-    game.inning.number,
+    game.inning.inning,
     game.inning.half,
     game.inning.outs,
     homeScore - awayScore,
-  ), [game.inning.number, game.inning.half, game.inning.outs, homeScore, awayScore]);
+  ), [game.inning.inning, game.inning.half, game.inning.outs, homeScore, awayScore]);
 
   const isHighLeverage = leverage >= 0.6;
   const isFinalOrOver = game.phase === 'final';
@@ -207,7 +207,7 @@ export function WinProbabilityMeter({ game, history, className }: WinProbability
           className="px-3 pb-2 font-mono text-[9px] text-center"
           style={{ color: 'rgba(232,224,212,0.35)' }}
         >
-          {game.inning.half === 'top' ? '▲' : '▼'}{game.inning.number}
+          {game.inning.half === 'top' ? '▲' : '▼'}{game.inning.inning}
           {' · '}{game.inning.outs} out{game.inning.outs !== 1 ? 's' : ''}
           {awayScore !== homeScore && ` · ${awayScore > homeScore ? game.away.abbreviation : game.home.abbreviation} +${Math.abs(awayScore - homeScore)}`}
         </div>

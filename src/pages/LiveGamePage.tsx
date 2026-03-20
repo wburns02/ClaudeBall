@@ -254,14 +254,14 @@ export function LiveGamePage() {
     setEvents([...currentState.events]);
 
     // Track WP snapshot at each inning change
-    const halfKey = `${currentState.inning.number}-${currentState.inning.half}`;
+    const halfKey = `${currentState.inning.inning}-${currentState.inning.half}`;
     if (halfKey !== lastInningHalfRef.current) {
       lastInningHalfRef.current = halfKey;
       const aS = currentState.score.away.reduce((a, b) => a + b, 0);
       const hS = currentState.score.home.reduce((a, b) => a + b, 0);
       const runners = [currentState.inning.bases.first, currentState.inning.bases.second, currentState.inning.bases.third].filter(Boolean).length;
       const wp = calcWinProbability(
-        currentState.inning.number, currentState.inning.half,
+        currentState.inning.inning, currentState.inning.half,
         currentState.inning.outs, hS - aS, runners
       );
       setWpHistory(h => [...h, {
