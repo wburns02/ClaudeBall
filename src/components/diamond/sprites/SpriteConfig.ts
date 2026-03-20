@@ -41,7 +41,7 @@ export const SPRITE_SHEETS: Record<string, SpriteSheetConfig> = {
   batterV2:          { url: '/sprites/batter-v2.png',            cols: 4, rows: 3 },
   fielderV2:         { url: '/sprites/fielder32bit.png',         cols: 4, rows: 4 },
   runnerV2:          { url: '/sprites/runner-v2.png',            cols: 2, rows: 4 },
-  catcherUmpireV2:   { url: '/sprites/catcher-umpire-v2.png',    cols: 4, rows: 2 },
+  catcherUmpireV2:   { url: '/sprites/catcher-umpire-v2.png',    cols: 4, rows: 2, trimTop: 0.08, trimBottom: 1.0 },
 
   // ── Scene / environment assets ───────────────────────────────────────────
   // stadium1.png — panoramic stadium background (NOT green-screened, use as-is)
