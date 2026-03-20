@@ -284,17 +284,22 @@ export function PowerRankingsPage() {
             {season.year} · Day {season.currentDay}/{season.totalDays} · {data.gamesRemaining} games remaining
           </p>
         </div>
-        <button
-          onClick={() => setShowDivisions(d => !d)}
-          className={cn(
-            'font-mono text-xs px-3 py-1.5 rounded border transition-colors',
-            showDivisions
-              ? 'border-gold/50 text-gold bg-gold/10'
-              : 'border-navy-lighter text-cream-dim hover:text-cream',
-          )}
-        >
-          {showDivisions ? 'League View' : 'Division View'}
-        </button>
+        <div className="flex items-center gap-1 bg-navy-lighter/30 rounded-xl p-1">
+          {([['league', 'League', false], ['divisions', 'Divisions', true]] as const).map(([id, label, isDivisions]) => (
+            <button
+              key={id}
+              onClick={() => setShowDivisions(isDivisions)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all',
+                showDivisions === isDivisions
+                  ? 'bg-gold text-navy shadow-[0_1px_3px_rgba(0,0,0,0.3)]'
+                  : 'text-cream-dim hover:text-cream',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Your Team Spotlight */}

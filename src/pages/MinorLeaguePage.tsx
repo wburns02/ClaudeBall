@@ -260,12 +260,16 @@ function ProspectRow({
   isSelected,
   onClick,
   recentDev,
+  canCallUp,
+  onCallUp,
 }: {
   player: Player;
   rank: number;
   isSelected: boolean;
   onClick: () => void;
   recentDev?: ProspectDevelopmentEvent;
+  canCallUp?: boolean;
+  onCallUp?: (id: string) => void;
 }) {
   const ovr = Math.round(evaluatePlayer(player));
   const pot = prospectPotential(ovr, player.age);
@@ -291,7 +295,7 @@ function ProspectRow({
       onClick={onClick}
       className={cn(
         'grid items-center gap-2 px-3 py-2.5 rounded-lg border cursor-pointer transition-all',
-        'grid-cols-[28px_1fr_36px_36px_auto_auto]',
+        canCallUp && onCallUp ? 'grid-cols-[28px_1fr_36px_36px_auto_auto_auto]' : 'grid-cols-[28px_1fr_36px_36px_auto_auto]',
         isSelected
           ? 'border-gold/60 bg-gold/10'
           : 'border-navy-lighter/40 bg-navy-lighter/10 hover:border-navy-lighter/70 hover:bg-navy-lighter/20',
@@ -338,6 +342,16 @@ function ProspectRow({
         </span>
         {recentDev && <DevEventBadge delta={recentDev.ovrDelta} type={recentDev.type} />}
       </div>
+
+      {/* Inline call-up button */}
+      {canCallUp && onCallUp && (
+        <button
+          onClick={e => { e.stopPropagation(); onCallUp(player.id); }}
+          className="font-mono text-[10px] px-2 py-1 rounded border border-green-500/40 text-green-light bg-green-900/20 hover:bg-green-900/40 transition-colors whitespace-nowrap shrink-0"
+        >
+          ↑ Call Up
+        </button>
+      )}
     </div>
   );
 }
@@ -868,6 +882,8 @@ export function MinorLeaguePage() {
                     isSelected={selectedProspectId === p.id}
                     onClick={() => setSelectedProspectId(prev => prev === p.id ? null : p.id)}
                     recentDev={recentDevByPlayer.get(p.id)}
+                    canCallUp={canCallUp}
+                    onCallUp={handleCallUp}
                   />
                 ))}
               </div>

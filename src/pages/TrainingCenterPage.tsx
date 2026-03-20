@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { addToast } from '@/stores/toastStore.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { cn } from '@/lib/cn.ts';
@@ -232,6 +233,12 @@ export function TrainingCenterPage() {
   const pitchers = roster.filter(p => p.position === 'P');
   const hitters = roster.filter(p => p.position !== 'P');
 
+  function handleTrainingChange(playerId: string, playerName: string, a: TrainingAssignment) {
+    setTrainingAssignment(playerId, a);
+    const focusLabel = a.intensity === 'rest' ? 'Rest' : a.focus === 'none' ? 'General' : a.focus.charAt(0).toUpperCase() + a.focus.slice(1);
+    addToast(`${playerName}: ${focusLabel} (${a.intensity})`, 'info');
+  }
+
   return (
     <div className="min-h-screen p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -341,7 +348,7 @@ export function TrainingCenterPage() {
                   key={p.id}
                   player={p}
                   assignment={trainingAssignments[p.id]}
-                  onChange={(a) => setTrainingAssignment(p.id, a)}
+                  onChange={(a) => handleTrainingChange(p.id, getPlayerName(p), a)}
                 />
               ))
             )}
@@ -363,7 +370,7 @@ export function TrainingCenterPage() {
                   key={p.id}
                   player={p}
                   assignment={trainingAssignments[p.id]}
-                  onChange={(a) => setTrainingAssignment(p.id, a)}
+                  onChange={(a) => handleTrainingChange(p.id, getPlayerName(p), a)}
                 />
               ))
             )}
