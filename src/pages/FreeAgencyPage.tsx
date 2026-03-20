@@ -168,7 +168,7 @@ export function FreeAgencyPage() {
   }, [freeAgentPool, initFreeAgency]);
 
   const agents = useMemo(() => {
-    let list: FreeAgent[] = freeAgentPool ? freeAgentPool.getAll() : [];
+    let list: FreeAgent[] = freeAgentPool ? freeAgentPool.getAll().filter(fa => evaluatePlayer(fa.player) < 68) : [];
     if (posFilter !== 'ALL') list = list.filter(fa => fa.player.position === posFilter);
     switch (sortMode) {
       case 'ovr': list = [...list].sort((a, b) => evaluatePlayer(b.player) - evaluatePlayer(a.player)); break;

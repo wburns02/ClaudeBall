@@ -183,7 +183,7 @@ function updateRecords(
     const { playerId, playerName, teamId, batting, pitching } = ps;
 
     // Season records
-    const ba = ps.batting.ab >= 150 ? batting.h / batting.ab : 0;
+    const ba = ps.batting.ab >= 50 ? batting.h / batting.ab : 0;
     if (ba > 0 && (!newRecords.highestBA || ba > newRecords.highestBA.value)) {
       newRecords.highestBA = { playerId, playerName, teamId, value: ba, season };
     }

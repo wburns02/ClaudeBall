@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -23,127 +23,75 @@ const CATEGORIES = [
 ] as const;
 
 const USERNAME_KEY = 'claudeball-username';
-// Legacy localStorage key — used only for migration on first load
-const LEGACY_STORAGE_KEY = 'claudeball-ideas';
+const IDEAS_KEY = 'claudeball-ideas-v2';
 
-function getUsername(): string {
-  let name = localStorage.getItem(USERNAME_KEY);
-  if (!name) {
-    name = prompt('Enter your name (so we know who suggested it):') || 'Anonymous';
-    localStorage.setItem(USERNAME_KEY, name);
+function loadIdeasFromStorage(): Idea[] {
+  try {
+    const raw = localStorage.getItem(IDEAS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
   }
-  return name;
 }
 
-async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, options);
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error((body as { error?: string }).error || `HTTP ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+function saveIdeasToStorage(ideas: Idea[]) {
+  localStorage.setItem(IDEAS_KEY, JSON.stringify(ideas));
 }
 
 export function IdeasPage() {
   const navigate = useNavigate();
-  const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [ideas, setIdeas] = useState<Idea[]>(() => loadIdeasFromStorage());
   const [submitting, setSubmitting] = useState(false);
   const [newIdea, setNewIdea] = useState('');
   const [category, setCategory] = useState<Idea['category']>('feature');
   const [sortBy, setSortBy] = useState<'votes' | 'newest'>('votes');
   const [filterCat, setFilterCat] = useState<string>('all');
+  const [username, setUsername] = useState<string>(() => localStorage.getItem(USERNAME_KEY) || '');
+  const [pendingUsername, setPendingUsername] = useState('');
+  const [showUsernameInput, setShowUsernameInput] = useState(false);
 
-  // Load ideas from API
-  const loadIdeas = useCallback(async () => {
-    try {
-      const data = await apiFetch<Idea[]>('/api/ideas');
-      setIdeas(data);
-      setApiError(null);
-    } catch (err) {
-      console.error('Failed to load ideas from API:', err);
-      // Graceful fallback: try to read from legacy localStorage
-      try {
-        const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
-        const local: Idea[] = raw ? JSON.parse(raw) : [];
-        setIdeas(local);
-      } catch {
-        setIdeas([]);
-      }
-      setApiError('Could not reach server — showing cached ideas. Changes will sync when reconnected.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Persist ideas to localStorage whenever they change
+  useEffect(() => { saveIdeasToStorage(ideas); }, [ideas]);
 
-  useEffect(() => { loadIdeas(); }, [loadIdeas]);
-
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!newIdea.trim() || submitting) return;
-    const author = getUsername();
+    if (!username) { setShowUsernameInput(true); return; }
     setSubmitting(true);
-    try {
-      const created = await apiFetch<Idea>('/api/ideas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: newIdea.trim(), author, category }),
-      });
-      setIdeas(prev => [created, ...prev]);
-      setNewIdea('');
-      setApiError(null);
-    } catch (err) {
-      console.error('Failed to submit idea:', err);
-      setApiError('Failed to submit — please try again.');
-    } finally {
-      setSubmitting(false);
-    }
+    const created: Idea = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      text: newIdea.trim(),
+      author: username,
+      votes: 1,
+      votedBy: [username],
+      createdAt: new Date().toISOString(),
+      category,
+    };
+    setIdeas(prev => [created, ...prev]);
+    setNewIdea('');
+    setSubmitting(false);
   };
 
-  const handleVote = async (id: string) => {
-    const author = getUsername();
-    // Optimistic update
+  const handleSetUsername = () => {
+    const name = pendingUsername.trim() || 'Anonymous';
+    setUsername(name);
+    localStorage.setItem(USERNAME_KEY, name);
+    setPendingUsername('');
+    setShowUsernameInput(false);
+  };
+
+  const handleVote = (id: string) => {
+    if (!username) { setShowUsernameInput(true); return; }
     setIdeas(prev => prev.map(idea => {
       if (idea.id !== id) return idea;
-      const hasVoted = idea.votedBy.includes(author);
+      const hasVoted = idea.votedBy.includes(username);
       return hasVoted
-        ? { ...idea, votes: idea.votes - 1, votedBy: idea.votedBy.filter(n => n !== author) }
-        : { ...idea, votes: idea.votes + 1, votedBy: [...idea.votedBy, author] };
+        ? { ...idea, votes: idea.votes - 1, votedBy: idea.votedBy.filter(n => n !== username) }
+        : { ...idea, votes: idea.votes + 1, votedBy: [...idea.votedBy, username] };
     }));
-    try {
-      const updated = await apiFetch<Idea>(`/api/ideas/${id}/vote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author }),
-      });
-      // Reconcile with server truth
-      setIdeas(prev => prev.map(i => i.id === id ? updated : i));
-      setApiError(null);
-    } catch (err) {
-      console.error('Vote failed:', err);
-      // Revert optimistic update
-      await loadIdeas();
-      setApiError('Vote failed — please try again.');
-    }
   };
 
-  const handleDelete = async (id: string) => {
-    const author = getUsername();
-    // Optimistic remove
+  const handleDelete = (id: string) => {
     setIdeas(prev => prev.filter(i => i.id !== id));
-    try {
-      await apiFetch(`/api/ideas/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author }),
-      });
-      setApiError(null);
-    } catch (err) {
-      console.error('Delete failed:', err);
-      // Revert
-      await loadIdeas();
-      setApiError('Delete failed — please try again.');
-    }
   };
 
   const sorted = [...ideas]
@@ -154,8 +102,6 @@ export function IdeasPage() {
         : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
-  const username = localStorage.getItem(USERNAME_KEY) || '';
-
   return (
     <div className="min-h-screen p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -165,13 +111,35 @@ export function IdeasPage() {
             Suggest features, report bugs, vote on what matters
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Back</Button>
+        <div className="flex items-center gap-2">
+          {username && (
+            <button
+              onClick={() => setShowUsernameInput(true)}
+              className="text-cream-dim/50 hover:text-cream text-xs font-mono cursor-pointer"
+            >
+              {username}
+            </button>
+          )}
+          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Back</Button>
+        </div>
       </div>
 
-      {/* API error banner */}
-      {apiError && (
-        <div className="mb-4 px-3 py-2 bg-red/10 border border-red/30 rounded-md text-red text-xs font-mono">
-          {apiError}
+      {/* Username input modal */}
+      {showUsernameInput && (
+        <div className="mb-4 p-3 bg-navy-light border border-gold/30 rounded-lg">
+          <p className="text-cream text-sm font-body mb-2">What's your name?</p>
+          <div className="flex gap-2">
+            <input
+              autoFocus
+              value={pendingUsername}
+              onChange={e => setPendingUsername(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSetUsername()}
+              placeholder="Your name..."
+              className="flex-1 bg-navy-lighter border border-navy-lighter rounded px-3 py-1.5 text-cream text-sm font-body placeholder-cream-dim/40 focus:outline-none focus:border-gold/50"
+            />
+            <Button size="sm" onClick={handleSetUsername}>Set</Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowUsernameInput(false)}>Cancel</Button>
+          </div>
         </div>
       )}
 
@@ -257,12 +225,7 @@ export function IdeasPage() {
 
       {/* Ideas list */}
       <div className="space-y-2">
-        {loading && (
-          <div className="text-center py-12 text-cream-dim font-mono text-sm animate-pulse">
-            Loading ideas…
-          </div>
-        )}
-        {!loading && sorted.length === 0 && (
+        {sorted.length === 0 && (
           <div className="text-center py-12 text-cream-dim font-mono text-sm">
             No ideas yet — be the first to suggest something!
           </div>

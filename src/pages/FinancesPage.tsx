@@ -220,7 +220,7 @@ export function FinancesPage() {
       .findIndex(t => t.id === userTeamId) + 1;
     const payrollTier = payrollRank / teams.length;
     const expectedWP = 0.550 - payrollTier * 0.200;
-    const satisfaction = Math.min(100, Math.max(0,
+    const satisfaction = gp < 5 ? 65 : Math.min(100, Math.max(0,
       Math.round(50 + (winPct - expectedWP) * 200 + Math.min(1, occupancy / 100) * 20)
     ));
 
