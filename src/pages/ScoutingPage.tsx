@@ -201,6 +201,10 @@ function TeamNeedsPanel({ userTeam }: { userTeam: Team }) {
 // ── Staff Panel ───────────────────────────────────────────────────────────────
 function StaffPanel() {
   const { staff, upgradeStaff } = useScoutingStore();
+  const handleUpgrade = (level: (typeof STAFF_TIERS)[number]['level'], label: string) => {
+    const ok = upgradeStaff(level);
+    if (ok) addToast(`Scouting upgraded → ${label}`, 'success');
+  };
   const currentIdx = STAFF_TIERS.findIndex(t => t.level === staff.level);
   const currentTier = STAFF_TIERS[currentIdx];
   const nextTier = STAFF_TIERS[currentIdx + 1];
@@ -245,7 +249,7 @@ function StaffPanel() {
 
       {nextTier ? (
         <button
-          onClick={() => upgradeStaff(nextTier.level)}
+          onClick={() => handleUpgrade(nextTier.level, nextTier.label)}
           className="w-full py-2 rounded-lg bg-gold/15 border border-gold/30 text-gold text-xs font-mono hover:bg-gold/25 active:bg-gold/35 transition-colors"
         >
           ↑ Upgrade → {nextTier.label}

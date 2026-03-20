@@ -309,6 +309,13 @@ export function FinancesPage() {
         </p>
       </div>
 
+      {/* Action bar */}
+      <div className="flex gap-3 mb-5">
+        <Button onClick={() => navigate('/franchise/payroll')}>Manage Payroll →</Button>
+        <Button variant="ghost" onClick={() => navigate('/franchise/war-room')}>GM War Room →</Button>
+        <Button variant="ghost" onClick={() => navigate('/franchise/free-agency')}>Free Agency →</Button>
+      </div>
+
       {/* Key metrics row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <MetricCard

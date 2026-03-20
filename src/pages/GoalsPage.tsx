@@ -542,6 +542,25 @@ export function GoalsPage() {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { icon: '📊', label: 'Standings', path: '/franchise/standings' },
+          { icon: '👥', label: 'Manage Roster', path: '/franchise/roster' },
+          { icon: '💰', label: 'Payroll', path: '/franchise/payroll' },
+          { icon: '📈', label: 'Analytics', path: '/franchise/team-analytics' },
+        ].map(({ icon, label, path }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-navy-lighter hover:border-gold/40 bg-navy-light/30 hover:bg-navy-light/60 transition-all cursor-pointer"
+          >
+            <span className="text-xl">{icon}</span>
+            <span className="font-mono text-xs text-cream-dim">{label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* History */}
       <div className="mt-6">
         <HistoryPanel />

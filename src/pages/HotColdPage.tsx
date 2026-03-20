@@ -49,7 +49,7 @@ type FilterMode = 'all' | 'hot' | 'cold' | 'batters' | 'pitchers';
 
 export function HotColdPage() {
   const navigate = useNavigate();
-  const { engine, userTeamId, teams } = useFranchiseStore();
+  const { engine, userTeamId, teams, isOnIL } = useFranchiseStore();
   const playerStats = useStatsStore(s => s.playerStats);
 
   const [sortKey, setSortKey] = useState<SortKey>('form');
@@ -220,6 +220,7 @@ export function HotColdPage() {
         </Panel>
       ) : (
         <Panel title={`Performance Tracker — ${rows.length} Players`}>
+          <p className="font-mono text-[10px] text-cream-dim/40 mb-3 -mt-1">Click any row for full player stats</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -249,7 +250,12 @@ export function HotColdPage() {
                       )}
                     >
                       <td className="px-3 py-2.5">
-                        <p className="text-cream text-sm font-body">{getPlayerName(player)}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-cream text-sm font-body">{getPlayerName(player)}</p>
+                          {isOnIL(player.id) && (
+                            <span className="text-[10px] font-mono font-bold text-red-400 bg-red-900/30 border border-red-500/30 px-1 py-0.5 rounded">IL</span>
+                          )}
+                        </div>
                         {showLeague && (
                           <p className="text-cream-dim/60 text-xs font-mono">{teamName}</p>
                         )}
