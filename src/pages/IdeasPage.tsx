@@ -126,12 +126,20 @@ export function IdeasPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {username && (
+          {username ? (
             <button
               onClick={() => setShowUsernameInput(true)}
-              className="text-cream-dim/50 hover:text-cream text-xs font-mono cursor-pointer"
+              className="flex items-center gap-1.5 px-2 py-1 rounded border border-navy-lighter text-cream-dim text-xs font-mono cursor-pointer hover:text-cream hover:border-gold/40 transition-colors"
             >
+              <span className="text-green-light text-[8px]">●</span>
               {username}
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowUsernameInput(true)}
+              className="flex items-center gap-1 px-2 py-1 rounded border border-gold/40 text-gold/80 text-xs font-mono cursor-pointer hover:text-gold hover:border-gold/70 transition-colors"
+            >
+              + Set name to submit
             </button>
           )}
           <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Back</Button>

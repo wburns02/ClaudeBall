@@ -324,14 +324,14 @@ export function FinancesPage() {
           color={payroll > budget ? 'text-red-400' : 'text-cream'}
         />
         <MetricCard
-          label="Net Income"
+          label={homeGamesPlayed > 0 && homeGamesPlayed < 81 ? 'Net Income (YTD)' : 'Net Income'}
           value={homeGamesPlayed === 0 ? '—' : `${netIncome >= 0 ? '+' : ''}$${(netIncome / 1000).toFixed(0)}M`}
           sub={homeGamesPlayed === 0
             ? `Proj. ${projNet >= 0 ? '+' : ''}$${(projNet / 1000).toFixed(0)}M · builds with home games`
             : homeGamesPlayed < 81
-              ? `Proj. ${projNet >= 0 ? '+' : ''}$${(projNet / 1000).toFixed(0)}M full season`
+              ? `Proj. full season: ${projNet >= 0 ? '+' : ''}$${(projNet / 1000).toFixed(0)}M`
               : 'Final'}
-          color={homeGamesPlayed === 0 ? 'text-cream-dim' : netColor}
+          color={homeGamesPlayed === 0 ? 'text-cream-dim' : homeGamesPlayed < 81 && netIncome < 0 ? 'text-gold' : netColor}
         />
       </div>
 

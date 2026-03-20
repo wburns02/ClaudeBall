@@ -129,11 +129,11 @@ export function InboxPage() {
                 key={item.id}
                 onClick={() => handleClick(item)}
                 className={cn(
-                  'w-full text-left flex gap-3 rounded-lg border-l-2 border border-navy-lighter/40',
+                  'w-full text-left flex gap-3 rounded-lg border border-navy-lighter/40',
                   'p-3.5 transition-all duration-150 cursor-pointer group',
                   item.read
-                    ? 'bg-navy-light/10 hover:bg-navy-light/20 opacity-60 hover:opacity-80'
-                    : cn('bg-navy-light/30 hover:bg-navy-light/50', meta.accentClass),
+                    ? 'bg-navy-light/10 hover:bg-navy-light/20 opacity-60 hover:opacity-80 border-l-2'
+                    : cn('bg-navy-light/30 hover:bg-navy-light/50 border-l-4', meta.accentClass),
                 )}
               >
                 {/* Icon */}
@@ -150,8 +150,8 @@ export function InboxPage() {
                     </p>
                     <div className="flex items-center gap-2 shrink-0">
                       {item.urgent && !item.read && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-red/20 text-red border border-red/40 uppercase tracking-wider">
-                          Urgent
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red/25 text-red border border-red/50 uppercase tracking-wider">
+                          !! Urgent
                         </span>
                       )}
                       <span className="text-[10px] font-mono text-cream-dim/40 tabular-nums">
@@ -166,8 +166,8 @@ export function InboxPage() {
                     {item.body}
                   </p>
                   {item.linkedUrl && !item.read && (
-                    <p className="text-[10px] font-mono text-gold/40 mt-2 group-hover:text-gold/70 transition-colors">
-                      {item.linkedUrl.split('/').pop()?.replace(/-/g, ' ') ?? 'View'} →
+                    <p className="text-[10px] font-mono text-gold/70 mt-2 group-hover:text-gold transition-colors">
+                      → View {item.linkedUrl.split('/').pop()?.replace(/-/g, ' ')}
                     </p>
                   )}
                 </div>

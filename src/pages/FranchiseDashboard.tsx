@@ -282,9 +282,10 @@ export function FranchiseDashboard() {
         >
           <span className="text-base">📬</span>
           <span className="font-mono text-xs">Inbox</span>
+          {/* Badge overlaid absolutely so it doesn't shift button width */}
           {inboxUnread > 0 && (
-            <span className="inline-flex items-center justify-center w-5 h-5 bg-red text-white text-[10px] font-bold rounded-full leading-none">
-              {inboxUnread > 99 ? '99+' : inboxUnread}
+            <span className="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red text-white text-[9px] font-bold rounded-full leading-none">
+              {inboxUnread > 99 ? '99' : inboxUnread}
             </span>
           )}
         </button>

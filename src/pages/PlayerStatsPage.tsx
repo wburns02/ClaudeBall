@@ -146,6 +146,7 @@ export function PlayerStatsPage() {
                 <span className="text-cream-dim">Age {player.age}</span>
                 <span className="text-cream-dim">{player.bats}/{player.throws}</span>
                 <span className="text-cream font-bold">OVR {ovrRatings}</span>
+                <span className="text-cream-dim/40 text-[10px]">engine rating</span>
               </div>
             </div>
             <Button size="sm" variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/franchise/roster')}>← Back</Button>
@@ -154,7 +155,9 @@ export function PlayerStatsPage() {
             {/* Left: ratings */}
             <div className="lg:col-span-2 space-y-4">
               <Panel title="Player Ratings">
-                <p className="font-mono text-xs text-cream-dim/40 mb-4">No in-game stats yet — play games to unlock season statistics.</p>
+                <p className="font-mono text-xs text-cream-dim/70 mb-4 bg-navy-lighter/20 px-3 py-2 rounded border-l-2 border-gold/30">
+                  No in-game stats yet — play games to unlock season statistics.
+                </p>
                 <div className="space-y-2">
                   {isPitcherRatings ? (
                     <>
