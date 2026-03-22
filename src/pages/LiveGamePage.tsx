@@ -154,6 +154,7 @@ export function LiveGamePage() {
   const [showBoxScore, setShowBoxScore] = useState(false);
   const [wpHistory, setWpHistory] = useState<WPSnapshot[]>([]);
   const [paText, setPaText] = useState<string | null>(null);
+  const [stadium, setStadium] = useState('default');
   const lastInningHalfRef = useRef<string>('');
   const lastBatterRef = useRef<string>('');
 
@@ -549,6 +550,7 @@ export function LiveGamePage() {
           events={events}
           width={800}
           height={600}
+          stadium={stadium}
         />
 
         {/* ── PA ANNOUNCER overlay ── */}
@@ -633,6 +635,28 @@ export function LiveGamePage() {
               Menu [Esc]
             </button>
           </div>
+
+          {/* Stadium selector */}
+          <select
+            value={stadium}
+            onChange={e => setStadium(e.target.value)}
+            style={{
+              background: 'rgba(10,15,26,0.85)',
+              border: '1px solid rgba(212,168,67,0.22)',
+              borderRadius: 5,
+              padding: '3px 8px',
+              fontSize: 10,
+              fontFamily: 'IBM Plex Mono, monospace',
+              color: '#d4a843',
+              cursor: 'pointer',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <option value="default">Night (Default)</option>
+            <option value="day">Day Game</option>
+            <option value="night">Night Game</option>
+            <option value="sunset">Sunset</option>
+          </select>
 
           {/* Box score toggle (shown when game over) */}
           {gameOver && (

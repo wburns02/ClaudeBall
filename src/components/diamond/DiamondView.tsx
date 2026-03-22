@@ -20,6 +20,8 @@ interface DiamondViewProps {
   animationSpeed?: number;
   /** If true, the canvas fills its parent container and resizes on window resize. */
   fullScreen?: boolean;
+  /** Stadium background key: 'default' | 'day' | 'night' | 'sunset' */
+  stadium?: string;
 }
 
 /** Convert engine BaseState (player ID | null) to simple booleans. */
@@ -52,6 +54,7 @@ export function DiamondView({
   preferSprites = true,
   animationSpeed = 1,
   fullScreen = false,
+  stadium = 'default',
 }: DiamondViewProps) {
   // Use a div container — Pixi creates its own canvas inside it.
   const outerRef = useRef<HTMLDivElement>(null);
@@ -135,6 +138,14 @@ export function DiamondView({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height, preferSprites, fullScreen]);
+
+  // ── Stadium background switching ─────────────────────────────────
+  useEffect(() => {
+    const renderer = rendererRef.current;
+    if (renderer && stadium !== 'default') {
+      void renderer.setStadium(stadium);
+    }
+  }, [stadium]);
 
   // ── Resize observer for fullScreen mode ──────────────────────────
   useEffect(() => {
