@@ -7,6 +7,7 @@ import { useScoutingStore } from '@/stores/scoutingStore.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { battingAvg, onBasePct, slugging, era, whip, formatIP } from '@/engine/types/stats.ts';
+import { calcBattingAdvanced, calcPitchingAdvanced, deriveLeagueContext, DEFAULT_LEAGUE_CONTEXT, POSITION_ADJ } from '@/engine/stats/AdvancedStats.ts';
 import { cn } from '@/lib/cn.ts';
 
 function gradeColor(v: number) {
@@ -88,6 +89,35 @@ export function PlayerQuickView() {
     { label: 'Fld', val: scoutReport?.grades['Field']?.scoutedGrade ?? player.batting.gap_power },
   ];
 
+  // Compute WAR using league context
+  const leagueCtx = (() => {
+    if (!engine) return DEFAULT_LEAGUE_CONTEXT;
+    const allStats = Object.values(useStatsStore.getState().playerStats);
+    if (allStats.length === 0) return DEFAULT_LEAGUE_CONTEXT;
+    let totalAB = 0, totalPA = 0, totalH = 0, totalDoubles = 0, totalTriples = 0;
+    let totalHR = 0, totalBB = 0, totalHBP = 0, totalSF = 0, totalSO = 0, totalRuns = 0;
+    let totalER = 0, totalIP = 0;
+    for (const p of allStats) {
+      const b = p.batting;
+      totalAB += b.ab; totalPA += b.pa; totalH += b.h;
+      totalDoubles += b.doubles; totalTriples += b.triples; totalHR += b.hr;
+      totalBB += b.bb; totalHBP += b.hbp; totalSF += b.sf; totalSO += b.so; totalRuns += b.r;
+      totalER += p.pitching.er; totalIP += p.pitching.ip;
+    }
+    return deriveLeagueContext(totalAB, totalPA, totalH, totalDoubles, totalTriples, totalHR, totalBB, totalHBP, totalSF, totalSO, totalRuns, 0, totalER, totalIP);
+  })();
+
+  const playerWar = (() => {
+    if (!ps) return null;
+    if (isPitcher && ps.pitching.ip > 0) {
+      return calcPitchingAdvanced(ps.pitching, leagueCtx).war;
+    }
+    if (!isPitcher && ps.batting.ab > 0) {
+      return calcBattingAdvanced(ps.batting, leagueCtx, player.position).war;
+    }
+    return null;
+  })();
+
   const statsLine = (() => {
     if (!ps) return null;
     if (isPitcher && ps.pitching.ip > 0) {
@@ -96,19 +126,16 @@ export function PlayerQuickView() {
         { label: 'ERA', val: eraVal.toFixed(2), hi: eraVal < 3.0 },
         { label: 'IP', val: formatIP(ps.pitching.ip), hi: false },
         { label: 'K', val: String(ps.pitching.so), hi: false },
-        { label: 'WHIP', val: whip(ps.pitching).toFixed(2), hi: false },
+        { label: 'WAR', val: playerWar !== null ? playerWar.toFixed(1) : '—', hi: (playerWar ?? 0) >= 2.0 },
       ];
     }
     if (!isPitcher && ps.batting.ab > 0) {
       const avg = battingAvg(ps.batting);
-      const obp = onBasePct(ps.batting);
-      const slg = slugging(ps.batting);
       return [
         { label: 'AVG', val: avg === 0 ? '.000' : `.${Math.round(avg * 1000).toString().padStart(3, '0')}`, hi: avg > 0.300 },
-        { label: 'OBP', val: `.${Math.round(obp * 1000).toString().padStart(3, '0')}`, hi: false },
-        { label: 'SLG', val: `.${Math.round(slg * 1000).toString().padStart(3, '0')}`, hi: false },
         { label: 'HR', val: String(ps.batting.hr), hi: false },
         { label: 'RBI', val: String(ps.batting.rbi ?? 0), hi: false },
+        { label: 'WAR', val: playerWar !== null ? playerWar.toFixed(1) : '—', hi: (playerWar ?? 0) >= 2.0 },
       ];
     }
     return null;
