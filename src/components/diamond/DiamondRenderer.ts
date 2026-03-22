@@ -491,12 +491,19 @@ export class DiamondRenderer {
 
   reset(): void {
     if (this.effectsLayer) {
-      this.effectsLayer.removeChildren().forEach((c) => c.destroy());
+      // Reset position (screen shake may have offset it)
+      this.effectsLayer.x = 0;
+      this.effectsLayer.y = 0;
+      const children = this.effectsLayer.removeChildren();
+      for (const c of children) {
+        if (!c.destroyed) c.destroy();
+      }
     }
 
     if (this.ballGraphic) {
       this.ballGraphic.visible = false;
     }
+    this.hideBall();
 
     this._animating = false;
   }
@@ -854,31 +861,29 @@ export class DiamondRenderer {
     this._showScreenFlash(0xffd700, 0.25);
   }
 
-  /** Screen shake effect — rapidly offsets root container. */
+  /** Screen shake effect — offsets the ball/effects layers (not root, to avoid fighting camera). */
   screenShake(intensity: number, durationMs: number): void {
-    if (!this.root || this._destroyed) return;
-    const root = this.root;
-    const origX = root.x;
-    const origY = root.y;
+    if (this._destroyed) return;
+    // Shake the effects layer instead of root to avoid conflicting with camera tweens
+    const target = this.effectsLayer;
+    if (!target) return;
     let elapsed = 0;
 
     const onTick = (ticker: Ticker) => {
-      if (this._destroyed) {
+      if (this._destroyed || !target || target.destroyed) {
         Ticker.shared.remove(onTick);
-        root.x = origX;
-        root.y = origY;
         return;
       }
       elapsed += ticker.deltaMS;
       if (elapsed >= durationMs) {
         Ticker.shared.remove(onTick);
-        root.x = origX;
-        root.y = origY;
+        target.x = 0;
+        target.y = 0;
         return;
       }
       const decay = 1 - elapsed / durationMs;
-      root.x = origX + (Math.random() - 0.5) * 2 * intensity * decay;
-      root.y = origY + (Math.random() - 0.5) * 2 * intensity * decay;
+      target.x = (Math.random() - 0.5) * 2 * intensity * decay;
+      target.y = (Math.random() - 0.5) * 2 * intensity * decay;
     };
     Ticker.shared.add(onTick);
   }

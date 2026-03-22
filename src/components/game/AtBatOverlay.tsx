@@ -197,11 +197,11 @@ export function AtBatOverlay({ state }: AtBatOverlayProps) {
       }}
     >
 
-      {/* ── TOP CENTER: Pitch type + speed flash ── */}
+      {/* ── TOP CENTER: Pitch type + speed flash (compact) ── */}
       <div
         style={{
           position: 'absolute',
-          top: '18%',
+          top: '8%',
           left: '50%',
           transform: 'translateX(-50%)',
           textAlign: 'center',
@@ -212,37 +212,28 @@ export function AtBatOverlay({ state }: AtBatOverlayProps) {
         <div
           style={{
             fontFamily: 'Oswald, sans-serif',
-            fontSize: 28,
+            fontSize: 16,
             fontWeight: 700,
             color: pitchColor,
-            letterSpacing: '0.12em',
+            letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            textShadow: `0 0 20px ${pitchColor}88, 0 2px 8px rgba(0,0,0,0.8)`,
+            textShadow: `0 0 12px ${pitchColor}66, 0 1px 4px rgba(0,0,0,0.8)`,
           }}
         >
           {pitchDisplayName}
+          {state.pitchSpeedMph > 0 && (
+            <span style={{ color: '#e8e0d4', opacity: 0.8, marginLeft: 8, fontSize: 14, fontFamily: 'IBM Plex Mono, monospace' }}>
+              {state.pitchSpeedMph}
+            </span>
+          )}
         </div>
-        {state.pitchSpeedMph > 0 && (
-          <div
-            style={{
-              fontFamily: 'IBM Plex Mono, monospace',
-              fontSize: 18,
-              color: '#e8e0d4',
-              opacity: 0.85,
-              marginTop: 2,
-              textShadow: '0 2px 6px rgba(0,0,0,0.7)',
-            }}
-          >
-            {state.pitchSpeedMph} MPH
-          </div>
-        )}
       </div>
 
-      {/* ── CENTER: Result flash ── */}
+      {/* ── CENTER: Result flash (smaller) ── */}
       <div
         style={{
           position: 'absolute',
-          top: '38%',
+          top: '30%',
           left: '50%',
           transform: 'translateX(-50%)',
           opacity: resultAlpha,
@@ -253,11 +244,11 @@ export function AtBatOverlay({ state }: AtBatOverlayProps) {
         <div
           style={{
             fontFamily: 'Oswald, sans-serif',
-            fontSize: 42,
+            fontSize: 24,
             fontWeight: 700,
             color: resultColor,
             letterSpacing: '0.08em',
-            textShadow: `0 0 30px ${resultColor}99, 0 0 60px ${resultColor}44, 0 3px 10px rgba(0,0,0,0.9)`,
+            textShadow: `0 0 16px ${resultColor}88, 0 2px 6px rgba(0,0,0,0.9)`,
             whiteSpace: 'nowrap',
           }}
         >
@@ -265,114 +256,46 @@ export function AtBatOverlay({ state }: AtBatOverlayProps) {
         </div>
       </div>
 
-      {/* ── BOTTOM LEFT: Batter info ── */}
+      {/* ── BOTTOM: Compact count + names bar ── */}
       <div
         style={{
           position: 'absolute',
-          bottom: 16,
-          left: 16,
-          background: 'rgba(10,15,26,0.75)',
-          backdropFilter: 'blur(4px)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: 6,
-          padding: '8px 14px',
-          minWidth: 140,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: 'IBM Plex Mono, monospace',
-            fontSize: 9,
-            color: 'rgba(232,224,212,0.45)',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            marginBottom: 3,
-          }}
-        >
-          BATTER
-        </div>
-        <div
-          style={{
-            fontFamily: 'Oswald, sans-serif',
-            fontSize: 16,
-            fontWeight: 600,
-            color: '#e8e0d4',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {state.batterName || '—'}
-        </div>
-      </div>
-
-      {/* ── BOTTOM CENTER: Count display ── */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 16,
+          bottom: 60,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(10,15,26,0.75)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          background: 'rgba(10,15,26,0.7)',
           backdropFilter: 'blur(4px)',
           border: '1px solid rgba(232,224,212,0.12)',
           borderRadius: 6,
-          padding: '8px 16px',
+          padding: '5px 14px',
         }}
       >
-        <MiniStrikeZone balls={state.balls} strikes={state.strikes} />
-      </div>
-
-      {/* ── BOTTOM RIGHT: Pitcher info ── */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 16,
-          right: 16,
-          background: 'rgba(10,15,26,0.75)',
-          backdropFilter: 'blur(4px)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: 6,
-          padding: '8px 14px',
-          minWidth: 140,
-          textAlign: 'right',
-        }}
-      >
-        <div
-          style={{
-            fontFamily: 'IBM Plex Mono, monospace',
-            fontSize: 9,
-            color: 'rgba(232,224,212,0.45)',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            marginBottom: 3,
-          }}
-        >
-          PITCHER
-        </div>
-        <div
-          style={{
-            fontFamily: 'Oswald, sans-serif',
-            fontSize: 16,
-            fontWeight: 600,
-            color: '#e8e0d4',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {state.pitcherName || '—'}
-        </div>
-        {state.pitchCount > 0 && (
-          <div
-            style={{
-              fontFamily: 'IBM Plex Mono, monospace',
-              fontSize: 10,
-              color: 'rgba(212,168,67,0.6)',
-              marginTop: 2,
-            }}
-          >
-            {state.pitchCount}P
+        {/* Batter */}
+        <div style={{ textAlign: 'center', minWidth: 80 }}>
+          <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 8, color: 'rgba(232,224,212,0.4)', letterSpacing: '0.1em' }}>BAT</div>
+          <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: 12, fontWeight: 600, color: '#e8e0d4', textTransform: 'uppercase' }}>
+            {state.batterName || '—'}
           </div>
-        )}
+        </div>
+
+        {/* Count dots */}
+        <MiniStrikeZone balls={state.balls} strikes={state.strikes} />
+
+        {/* Pitcher */}
+        <div style={{ textAlign: 'center', minWidth: 80 }}>
+          <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 8, color: 'rgba(232,224,212,0.4)', letterSpacing: '0.1em' }}>PIT</div>
+          <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: 12, fontWeight: 600, color: '#e8e0d4', textTransform: 'uppercase' }}>
+            {state.pitcherName || '—'}
+          </div>
+          {state.pitchCount > 0 && (
+            <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, color: 'rgba(212,168,67,0.5)' }}>
+              {state.pitchCount}P
+            </div>
+          )}
+        </div>
       </div>
 
     </div>
