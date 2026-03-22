@@ -363,6 +363,19 @@ export function TradePage() {
             </p>
           )}
 
+          {/* Selection summary */}
+          {(userBlock.length > 0 || theirBlock.length > 0) && (
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className={userBlock.length > 0 ? 'text-green-light' : 'text-cream-dim/40'}>
+                You send: {userBlock.length} player{userBlock.length !== 1 ? 's' : ''}
+              </span>
+              <span className="text-cream-dim/30">⇄</span>
+              <span className={theirBlock.length > 0 ? 'text-green-light' : 'text-cream-dim/40'}>
+                You get: {theirBlock.length} player{theirBlock.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <Button
               variant="secondary"

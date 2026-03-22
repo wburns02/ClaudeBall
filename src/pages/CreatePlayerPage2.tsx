@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { addToast } from '@/stores/toastStore.ts';
 import { cn } from '@/lib/cn.ts';
 import type { Position, Hand } from '@/engine/types/enums.ts';
 import type { BattingRatings, PitchingRatings, MentalRatings, FieldingRatings } from '@/engine/types/player.ts';
@@ -204,7 +205,8 @@ export function CreatePlayerPage2() {
       },
       selectedTeamId
     );
-    navigate(-1);
+    addToast(`${firstName.trim()} ${lastName.trim()} added to roster`, 'success');
+    navigate('/franchise/roster');
   }
 
   const inputClass = cn(

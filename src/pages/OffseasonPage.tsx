@@ -71,7 +71,7 @@ export function OffseasonPage() {
               The offseason begins after the World Series ends.
             </p>
             <p className="font-mono text-cream-dim/50 text-xs mt-2">
-              {season.phase === 'regular' && `${season.schedule.filter(g => !g.played).length} games remaining`}
+              {season.phase === 'regular' && `${season.totalDays - season.currentDay} days remaining in the regular season`}
             </p>
             <div className="mt-6">
               <Button onClick={() => navigate('/franchise')}>Back to Dashboard</Button>
