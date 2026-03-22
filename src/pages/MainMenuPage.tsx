@@ -1,9 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button.tsx';
 import { Panel } from '@/components/ui/Panel.tsx';
+import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 
 export function MainMenuPage() {
   const navigate = useNavigate();
+  const { season, userTeamId, teams } = useFranchiseStore();
+
+  const hasFranchise = !!season && !!userTeamId;
+  const userTeam = hasFranchise ? teams?.find(t => t.id === userTeamId) : null;
+  const record = hasFranchise && season && userTeamId ? (() => {
+    const standing = season.standings?.getRecord?.(userTeamId);
+    if (standing) return `${standing.wins}-${standing.losses}`;
+    return null;
+  })() : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
@@ -18,6 +28,29 @@ export function MainMenuPage() {
           </p>
           <div className="w-24 h-0.5 bg-gold/30 mx-auto mt-4" />
         </div>
+
+        {/* Continue Franchise */}
+        {hasFranchise && (
+          <Panel className="text-center">
+            <div className="py-4 space-y-3">
+              <p className="text-cream-dim/40 text-[10px] font-mono tracking-widest uppercase">Continue</p>
+              <button
+                onClick={() => navigate('/franchise')}
+                className="w-72 mx-auto block rounded-lg border-2 border-gold/50 bg-gold/10 px-6 py-4 transition-all duration-200 hover:bg-gold/20 hover:border-gold hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                data-testid="continue-franchise-btn"
+              >
+                <p className="font-display text-gold text-lg tracking-wide uppercase">
+                  {userTeam ? `${userTeam.city} ${userTeam.name}` : 'Continue Franchise'}
+                </p>
+                {record && (
+                  <p className="font-mono text-cream-dim text-xs mt-1">
+                    {record} &middot; Season {season!.year} &middot; Day {season!.currentDay}
+                  </p>
+                )}
+              </button>
+            </div>
+          </Panel>
+        )}
 
         {/* Menu */}
         <Panel className="text-center">

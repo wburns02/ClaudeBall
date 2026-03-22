@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/cn.ts';
+import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 
 const NAV_LINKS = [
   { label: 'Home', path: '/' },
   { label: 'Quick Game', path: '/game/quick' },
-  { label: 'Franchise', path: '/franchise' },
+  { label: 'Franchise', path: '/franchise', altPath: '/franchise/new' },
   { label: 'Career', path: '/career' },
   { label: 'Historical', path: '/historical' },
   { label: 'Settings', path: '/settings' },
@@ -18,10 +19,16 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isInitialized = useFranchiseStore(s => s.isInitialized);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
+  };
+
+  const getNavPath = (link: typeof NAV_LINKS[number]) => {
+    if (link.altPath && !isInitialized) return link.altPath;
+    return link.path;
   };
 
   return (
@@ -42,7 +49,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             {NAV_LINKS.map(link => (
               <button
                 key={link.path}
-                onClick={() => navigate(link.path)}
+                onClick={() => navigate(getNavPath(link))}
                 className={cn(
                   'px-2.5 py-1.5 rounded font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap shrink-0',
                   isActive(link.path)

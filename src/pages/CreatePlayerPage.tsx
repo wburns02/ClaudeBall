@@ -306,8 +306,8 @@ export function CreatePlayerPage() {
               <span className={firstName.trim() && lastName.trim() ? 'text-green-light' : 'text-cream-dim/40'}>
                 {firstName.trim() && lastName.trim() ? '✓' : '○'} Name
               </span>
-              <span className={archetype !== null ? 'text-green-light' : 'text-gold'}>
-                {archetype !== null ? '✓' : '● Select archetype below'}
+              <span className={archetype !== null ? 'text-green-light' : 'text-gold animate-pulse'}>
+                {archetype !== null ? '✓' : '●'} Archetype {archetype === null && '→'}
               </span>
             </div>
           )}

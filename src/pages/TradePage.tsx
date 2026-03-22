@@ -389,6 +389,11 @@ export function TradePage() {
               ← Select players from both panels above to begin building a trade
             </p>
           )}
+          {deadlinePassed && (
+            <p className="font-mono text-xs text-red-400 bg-red-900/20 border border-red-500/30 rounded-md px-3 py-2">
+              The trade deadline has passed. No trades can be made until next season.
+            </p>
+          )}
           <p className="font-mono text-xs text-cream-dim">
             * AI will accept if the trade is reasonably fair for them. Heavily lopsided offers will be rejected.
           </p>
