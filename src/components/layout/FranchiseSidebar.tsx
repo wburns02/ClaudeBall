@@ -101,6 +101,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Roster', path: '/franchise/roster', icon: 'roster' },
       { label: 'Depth Chart', path: '/franchise/depth-chart', icon: 'depthChart' },
       { label: 'Development Hub', path: '/franchise/development', icon: 'development' },
+      { label: 'Projections', path: '/franchise/projections', icon: 'analytics' },
       { label: 'Training Center', path: '/franchise/training', icon: 'training' },
       { label: 'Lineup Editor', path: '/franchise/lineup-editor', icon: 'lineup' },
       { label: 'Create Player', path: '/franchise/create-player', icon: 'createPlayer' },
