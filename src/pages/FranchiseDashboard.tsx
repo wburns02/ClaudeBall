@@ -656,7 +656,7 @@ export function FranchiseDashboard() {
               </div>
               <button
                 onClick={() => navigate('/franchise/timeline')}
-                className="w-full mt-2 text-center font-mono text-[10px] text-gold/50 hover:text-gold py-1 rounded border border-transparent hover:border-gold/20 transition-all cursor-pointer"
+                className="w-full mt-2 text-center font-mono text-[10px] text-gold/70 hover:text-gold py-1.5 rounded border border-gold/15 hover:border-gold/30 bg-gold/5 hover:bg-gold/10 transition-all cursor-pointer"
               >
                 View Season Timeline →
               </button>

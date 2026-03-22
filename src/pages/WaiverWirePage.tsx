@@ -176,7 +176,7 @@ export function WaiverWirePage() {
             <div className="text-center py-8">
               <p className="font-mono text-cream-dim">No players available on waivers.</p>
               <p className="font-mono text-xs text-cream-dim/60 mt-1">
-                Release a player to populate the wire.
+                Players appear here when released by any team. Check back after roster moves or use the Release panel to place one of your players on waivers.
               </p>
             </div>
           ) : (

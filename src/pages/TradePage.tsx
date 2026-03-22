@@ -243,11 +243,11 @@ export function TradePage() {
 
       {/* Team Selector */}
       <div className="mb-4 flex items-center gap-3">
-        <span className="font-mono text-cream-dim text-sm">Trade partner:</span>
+        <span className="font-mono text-gold/70 text-xs uppercase tracking-wider">Trade with:</span>
         <select
           value={partnerId}
           onChange={e => { setPartnerId(e.target.value); setTheirBlock([]); setEvaluated(null); setResult(null); }}
-          className="bg-navy-light border border-navy-lighter rounded-md px-3 py-1.5 font-mono text-sm text-cream focus:outline-none focus:border-gold/50 appearance-none cursor-pointer pr-8"
+          className="bg-navy-light border border-gold/30 rounded-md px-4 py-2 font-mono text-sm text-cream focus:outline-none focus:border-gold/60 appearance-none cursor-pointer pr-8 hover:border-gold/50 transition-colors"
           style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d4a843' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
         >
           {otherTeams.map(t => (
