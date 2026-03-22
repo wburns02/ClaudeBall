@@ -226,16 +226,33 @@ export class DiamondRenderer {
 
   // ── Field background ──────────────────────────────────────────────────
 
+  /** Available stadium backgrounds. */
+  static readonly STADIUMS: Record<string, string> = {
+    default: '/sprites/gameplayfield2.png',
+    day:     '/sprites/stadium_day.png',
+    night:   '/sprites/stadium_night.png',
+    sunset:  '/sprites/stadium_sunset.png',
+  };
+
+  private _bgSprite: Sprite | null = null;
+
   /**
-   * Load gameplayfield2.png as a background sprite that fills the 600×500 viewport.
-   * Uses "cover" mode: scales uniformly so the image fills the viewport (cropping edges).
+   * Load a stadium background image that fills the 600×500 viewport.
+   * Uses "cover" mode: scales uniformly so the image fills the viewport.
    */
-  private async _loadFieldBackground(): Promise<void> {
+  private async _loadFieldBackground(stadiumKey = 'default'): Promise<void> {
     if (!this.backgroundLayer) return;
 
+    const url = DiamondRenderer.STADIUMS[stadiumKey] ?? DiamondRenderer.STADIUMS.default!;
+
     try {
-      const texture = await Assets.load('/sprites/gameplayfield2.png');
+      const texture = await Assets.load(url);
       if (this._destroyed) return;
+
+      // Remove old background if switching
+      if (this._bgSprite && !this._bgSprite.destroyed) {
+        this._bgSprite.destroy();
+      }
 
       const sprite = new Sprite(texture);
 
@@ -252,10 +269,15 @@ export class DiamondRenderer {
       sprite.y = (HEIGHT - imgH * coverScale) / 2;
 
       this.backgroundLayer.addChild(sprite);
+      this._bgSprite = sprite;
     } catch (err) {
-      console.warn('[DiamondRenderer] Failed to load gameplayfield2.png:', err);
-      // Fallback: dark navy background (already set as app background color)
+      console.warn(`[DiamondRenderer] Failed to load stadium ${stadiumKey}:`, err);
     }
+  }
+
+  /** Switch the stadium background at runtime. */
+  async setStadium(stadiumKey: string): Promise<void> {
+    await this._loadFieldBackground(stadiumKey);
   }
 
   // ── Player scene init ─────────────────────────────────────────────────
