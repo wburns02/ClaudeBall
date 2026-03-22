@@ -654,6 +654,12 @@ export function FranchiseDashboard() {
                 <span className="text-cream-dim">Streak: <span className="text-cream">{streakStr(userRecord)}</span></span>
                 <span className="text-cream-dim">L10: <span className="text-cream">{last10Str(userRecord)}</span></span>
               </div>
+              <button
+                onClick={() => navigate('/franchise/timeline')}
+                className="w-full mt-2 text-center font-mono text-[10px] text-gold/50 hover:text-gold py-1 rounded border border-transparent hover:border-gold/20 transition-all cursor-pointer"
+              >
+                View Season Timeline →
+              </button>
             </div>
           )}
         </Panel>
