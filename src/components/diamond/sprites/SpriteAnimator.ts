@@ -53,6 +53,11 @@ export class SpriteAnimator {
     this.sprite.visible = visible;
   }
 
+  /** Apply a color tint to the sprite (0xRRGGBB). 0xffffff = no tint. */
+  setTint(color: number): void {
+    this.sprite.tint = color;
+  }
+
   // ── Frame array preload ───────────────────────────────────────────
 
   /**

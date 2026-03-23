@@ -381,6 +381,14 @@ export class DiamondRenderer {
 
     try {
       const spriteScene = new SpritePlayerScene();
+
+      // Apply team color tinting — home team gets blue tint, away gets warm/red tint
+      // This makes home vs away visually distinct (Griffey Jr. style)
+      spriteScene.setTeamColors(
+        this._homeTeamTint ?? '#8899cc',  // subtle blue for home jerseys
+        this._awayTeamTint ?? '#cc9988',  // subtle warm for away jerseys
+      );
+
       const spriteLayer = await spriteScene.createScene(this.app!);
 
       if (this._destroyed) {
@@ -399,6 +407,18 @@ export class DiamondRenderer {
     } catch (err) {
       console.warn('[DiamondRenderer] Sprite load failed, using procedural figures:', err);
       return false;
+    }
+  }
+
+  /** Team tint colors (hex strings like '#1a3a6c'). Set before loadSprites(). */
+  private _homeTeamTint: string | null = null;
+  private _awayTeamTint: string | null = null;
+
+  setTeamTints(homeHex: string, awayHex: string): void {
+    this._homeTeamTint = homeHex;
+    this._awayTeamTint = awayHex;
+    if (this.spriteScene) {
+      this.spriteScene.setTeamColors(homeHex, awayHex);
     }
   }
 

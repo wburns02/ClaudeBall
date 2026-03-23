@@ -127,8 +127,31 @@ export class SpritePlayerScene {
   private _loaded = false;
   private _destroyed = false;
 
+  // Team color tints (Pixi tint: 0xRRGGBB, 0xffffff = no tint)
+  private _homeTint = 0xffffff;
+  private _awayTint = 0xffffff;
+
   constructor() {
     this.layer = new Container();
+  }
+
+  /** Set team jersey tints. Call before createScene or after for runtime changes. */
+  setTeamColors(homeColor: string, awayColor: string): void {
+    this._homeTint = parseInt(homeColor.replace('#', ''), 16) || 0xffffff;
+    this._awayTint = parseInt(awayColor.replace('#', ''), 16) || 0xffffff;
+
+    // Apply to existing sprites if already loaded
+    if (this._loaded) {
+      for (const [pos, anim] of this.fielderSprites) {
+        if (pos !== 'C') anim.setTint(this._homeTint);
+      }
+      if (this._catcher) this._catcher.setTint(this._homeTint);
+      if (this._pitcher) this._pitcher.setTint(this._homeTint);
+      if (this._batter) this._batter.setTint(this._awayTint);
+      for (const anim of this.runnerSprites.values()) {
+        anim.setTint(this._awayTint);
+      }
+    }
   }
 
   // ── Initialization ─────────────────────────────────────────────────
@@ -238,6 +261,7 @@ export class SpritePlayerScene {
       anim.setPosition(coord.x, coord.y);
       anim.setScale(scale);
       anim.setFlip(shouldFlip);
+      anim.setTint(this._homeTint); // fielders wear home team colors
 
       this.fielderSprites.set(pos, anim);
 
@@ -266,6 +290,7 @@ export class SpritePlayerScene {
     anim.setScale(BATTER_SCALE);
     anim.setFrame(BATTER_V2_FRAMES.stance);
     anim.setFlip(isLeftHanded);
+    anim.setTint(this._awayTint); // batter wears away team colors
 
     this._batter = anim;
   }
@@ -322,6 +347,7 @@ export class SpritePlayerScene {
     anim.setPosition(coord.x, coord.y);
     anim.setScale(RUNNER_SCALE);
     anim.setFrame(RUNNER_V2_FRAMES.run1);
+    anim.setTint(this._awayTint); // runners wear away team colors
 
     this.runnerSprites.set(base, anim);
   }
