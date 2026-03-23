@@ -297,9 +297,9 @@ export class DiamondRenderer {
     const overlay = new Graphics();
     switch (stadiumKey) {
       case 'sunset':
-        // Warm golden-orange tint
+        // Subtle warm golden tint (reduced from 0.06 to improve ball visibility)
         overlay.rect(0, 0, WIDTH, HEIGHT);
-        overlay.fill({ color: 0xff8c00, alpha: 0.06 });
+        overlay.fill({ color: 0xffa040, alpha: 0.04 });
         break;
       case 'night':
         // Cool blue-purple tint

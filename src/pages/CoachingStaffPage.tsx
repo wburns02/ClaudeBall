@@ -154,7 +154,7 @@ function BonusSummary({ bonus }: { bonus: StaffBonus }) {
   ];
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+    <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
       {items.map(({ label, value, suffix, abbr }) => (
         <div key={label} className="text-center p-2 rounded-lg bg-navy-lighter/15 border border-navy-lighter/30">
           <p className="font-mono text-[10px] text-gold/50 tracking-widest mb-1">{abbr}</p>

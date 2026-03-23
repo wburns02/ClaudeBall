@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -17,8 +17,13 @@ function CountdownRing({ daysLeft, total }: { daysLeft: number; total: number })
   const pct = Math.max(0, Math.min(100, (daysLeft / total) * 100));
   const radius = 54;
   const circ = 2 * Math.PI * radius;
-  const offset = circ - (pct / 100) * circ;
+  const targetOffset = circ - (pct / 100) * circ;
   const color = daysLeft <= 3 ? '#ef4444' : daysLeft <= 10 ? '#f59e0b' : '#d4a843';
+
+  // Animate from empty to filled on mount
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 100); return () => clearTimeout(t); }, []);
+  const offset = mounted ? targetOffset : circ;
 
   return (
     <div className="relative w-32 h-32">

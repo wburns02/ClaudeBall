@@ -76,17 +76,17 @@ export function PlayerQuickView() {
   const phaseColor = player.age <= 26 ? 'text-green-light' : player.age <= 31 ? 'text-gold' : player.age <= 36 ? 'text-orange-400' : 'text-red-400';
 
   const grades = isPitcher ? [
-    { label: 'Velo', val: scoutReport?.grades['Velocity']?.scoutedGrade ?? player.pitching.velocity },
+    { label: 'Velocity', val: scoutReport?.grades['Velocity']?.scoutedGrade ?? player.pitching.velocity },
     { label: 'Stuff', val: scoutReport?.grades['Stuff']?.scoutedGrade ?? player.pitching.stuff },
-    { label: 'Mvmt', val: scoutReport?.grades['Movement']?.scoutedGrade ?? player.pitching.movement },
-    { label: 'Ctrl', val: scoutReport?.grades['Control']?.scoutedGrade ?? player.pitching.control },
-    { label: 'Sta', val: scoutReport?.grades['Stamina']?.scoutedGrade ?? player.pitching.stamina },
+    { label: 'Movement', val: scoutReport?.grades['Movement']?.scoutedGrade ?? player.pitching.movement },
+    { label: 'Control', val: scoutReport?.grades['Control']?.scoutedGrade ?? player.pitching.control },
+    { label: 'Stamina', val: scoutReport?.grades['Stamina']?.scoutedGrade ?? player.pitching.stamina },
   ] : [
-    { label: 'Hit', val: scoutReport?.grades['Contact']?.scoutedGrade ?? Math.round((player.batting.contact_L + player.batting.contact_R) / 2) },
-    { label: 'Pwr', val: scoutReport?.grades['Power']?.scoutedGrade ?? Math.round((player.batting.power_L + player.batting.power_R) / 2) },
+    { label: 'Contact', val: scoutReport?.grades['Contact']?.scoutedGrade ?? Math.round((player.batting.contact_L + player.batting.contact_R) / 2) },
+    { label: 'Power', val: scoutReport?.grades['Power']?.scoutedGrade ?? Math.round((player.batting.power_L + player.batting.power_R) / 2) },
     { label: 'Eye', val: scoutReport?.grades['Eye']?.scoutedGrade ?? player.batting.eye },
-    { label: 'Spd', val: scoutReport?.grades['Speed']?.scoutedGrade ?? player.batting.speed },
-    { label: 'Fld', val: scoutReport?.grades['Field']?.scoutedGrade ?? player.batting.gap_power },
+    { label: 'Speed', val: scoutReport?.grades['Speed']?.scoutedGrade ?? player.batting.speed },
+    { label: 'Fielding', val: scoutReport?.grades['Field']?.scoutedGrade ?? player.batting.gap_power },
   ];
 
   // Compute WAR using league context
