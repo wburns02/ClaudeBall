@@ -135,7 +135,7 @@ export function MainMenuPage() {
         </Panel>
 
         <p className="text-center text-cream-dim/30 text-xs font-mono">
-          v0.1.0 — Inspired by Front Page Sports: Baseball Pro '98
+          v1.0.0 — Inspired by Front Page Sports: Baseball Pro '98
         </p>
       </div>
     </div>

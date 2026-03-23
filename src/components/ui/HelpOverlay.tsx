@@ -173,7 +173,7 @@ export function HelpOverlay() {
         </div>
 
         <p className="text-center font-mono text-[10px] text-cream-dim/30 mt-6">
-          v0.1.0 · Built with React + TypeScript + Pixi.js · Inspired by Front Page Sports: Baseball Pro '98
+          v1.0.0 · Built with React + TypeScript + Pixi.js · Inspired by Front Page Sports: Baseball Pro '98
         </p>
       </div>
     </div>
