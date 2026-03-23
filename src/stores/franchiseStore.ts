@@ -8,6 +8,7 @@ import { generateBatterLines, generatePitcherLine } from '@/engine/stats/QuickSi
 import { SeasonEngine } from '@/engine/season/index.ts';
 import type { SeriesMatchup } from '@/engine/season/index.ts';
 import { generateDraftClass } from '@/engine/gm/DraftEngine.ts';
+import { generateProspect } from '@/engine/player/PlayerGenerator.ts';
 import { makePick } from '@/engine/gm/DraftEngine.ts';
 import type { DraftClass } from '@/engine/gm/DraftEngine.ts';
 import { generateFreeAgents, FreeAgentPool } from '@/engine/gm/FreeAgency.ts';
@@ -24,6 +25,8 @@ import { computeFormSummary } from '@/engine/performance/HotColdEngine.ts';
 import { useHistoryStore } from '@/stores/historyStore.ts';
 import type { FranchisePlayerSeasonRecord } from '@/stores/historyStore.ts';
 import { useMoraleStore } from '@/stores/moraleStore.ts';
+import { useInboxStore } from '@/stores/inboxStore.ts';
+import { useScoutingStore } from '@/stores/scoutingStore.ts';
 
 /** Injured List slot — tracks a player placed on the IL */
 export interface ILSlot {
@@ -761,7 +764,33 @@ export const useFranchiseStore = create<FranchiseState>()(
   advanceSeason: () => {
     const { engine } = get();
     if (!engine) return;
+
+    // 1. Process contract expirations
+    const teamMap = new Map(engine.getAllTeams().map(t => [t.id, t]));
+    engine.contractEngine.processOffseasonContracts(teamMap);
+
+    // 2. Replenish rosters — generate replacement players for undermanned teams
+    const rng = engine.getRng();
+    for (const team of engine.getAllTeams()) {
+      const MIN_ROSTER = 25;
+      while (team.roster.players.length < MIN_ROSTER) {
+        const replacement = generateProspect(rng);
+        replacement.age = 22 + Math.floor(rng.next() * 6); // 22-27
+        team.roster.players.push(replacement);
+        engine.contractEngine.signContract(replacement, team.id, { years: 1 + Math.floor(rng.next() * 3), salaryPerYear: 500 + Math.floor(rng.next() * 2000) });
+      }
+    }
+
+    // 3. Advance the season engine
     engine.advanceToNextYear();
+    const newYear = engine.getState().year;
+
+    // 4. Reset per-season stores for the new year
+    useStatsStore.getState().resetSeason(newYear);
+    try { useInboxStore.getState().reset(); } catch {}
+    try { useScoutingStore.getState().reset(); } catch {}
+
+    // 5. Update franchise state
     set({
       season: { ...engine.getState() },
       teams: engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } })),
@@ -774,12 +803,14 @@ export const useFranchiseStore = create<FranchiseState>()(
       lastDayEvents: null,
       injuryLog: [],
       tradeLog: [],
+      userTradeLog: [],
       waiverLog: [],
       callupLog: [],
       ilRoster: [],
       prospectDevelopmentLog: [],
       lastProspectDevelopment: [],
       minorLeagueStats: {},
+      lastDevelopmentChanges: null,
     });
   },
 
