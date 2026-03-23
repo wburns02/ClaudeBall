@@ -181,6 +181,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Season Timeline', path: '/franchise/timeline', icon: 'analytics' },
       { label: 'Season Review', path: '/franchise/season-review', icon: 'records' },
       { label: 'Franchise History', path: '/franchise/history', icon: 'history' },
+      { label: 'Hall of Records', path: '/franchise/hall-of-records', icon: 'records' },
       { label: 'Player Career Stats', path: '/franchise/player-history', icon: 'leaders' },
     ],
   },
