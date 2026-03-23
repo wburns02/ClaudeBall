@@ -2,7 +2,7 @@
  * TeamComparisonPage — side-by-side comparison of any two teams.
  * Strengths, weaknesses, head-to-head, roster comparison.
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -47,8 +47,8 @@ export function TeamComparisonPage() {
   const [leftId, setLeftId] = useState<string>(userTeamId ?? '');
   const [rightId, setRightId] = useState<string>('');
 
-  // Auto-pick opponent
-  useMemo(() => {
+  // Auto-pick opponent on mount
+  useEffect(() => {
     if (!rightId && allTeams.length > 1) {
       const other = allTeams.find(t => t.id !== leftId);
       if (other) setRightId(other.id);

@@ -29,6 +29,8 @@ export function SimProgressOverlay({ startDay, endDay, days, onComplete, teamAbb
   useEffect(() => {
     if (days.length === 0) { onComplete(); return; }
 
+    // Adaptive tick speed: slower for short sims, faster for long
+    const tickMs = days.length <= 5 ? 400 : days.length <= 10 ? 250 : 150;
     intervalRef.current = window.setInterval(() => {
       setCurrentIdx(prev => {
         if (prev >= days.length - 1) {
@@ -38,7 +40,7 @@ export function SimProgressOverlay({ startDay, endDay, days, onComplete, teamAbb
         }
         return prev + 1;
       });
-    }, 150); // Fast ticker — 150ms per day
+    }, tickMs);
 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [days.length, onComplete]);
