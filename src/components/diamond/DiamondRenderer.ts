@@ -556,30 +556,35 @@ export class DiamondRenderer {
   private _createBall(): void {
     if (!this.ballLayer) return;
 
-    // Trail dots (behind ball, decreasing alpha)
-    const trailAlphas = [0.35, 0.25, 0.18, 0.12, 0.07];
-    for (let i = 0; i < 5; i++) {
+    // Trail dots — larger & more visible (Griffey Jr. style prominent trail)
+    const trailAlphas = [0.45, 0.35, 0.25, 0.16, 0.09, 0.04];
+    const trailSizes  = [4.5,  4.0,  3.5,  3.0,  2.5,  2.0];
+    for (let i = 0; i < 6; i++) {
       const dot = new Graphics();
-      dot.circle(0, 0, 3);
-      dot.fill({ color: this._ballColor, alpha: trailAlphas[i] });
+      dot.circle(0, 0, trailSizes[i]!);
+      dot.fill({ color: this._ballColor, alpha: trailAlphas[i]! });
       dot.visible = false;
       this.ballLayer.addChild(dot);
       this._trailDots.push(dot);
       this._trailPositions.push({ x: 0, y: 0 });
     }
 
-    // Glow ring (behind core ball)
+    // Outer glow halo — soft, large
     const glow = new Graphics();
-    glow.circle(0, 0, 10);
-    glow.fill({ color: 0xffffff, alpha: 0.25 });
+    glow.circle(0, 0, 14);
+    glow.fill({ color: 0xffffff, alpha: 0.18 });
     glow.visible = false;
     this.ballLayer.addChild(glow);
     this.ballGlow = glow;
 
-    // Core ball — bigger than before (5px radius)
+    // Core ball — bright white with dark outline for visibility on any background
     const ball = new Graphics();
+    ball.circle(0, 0, 6.5);
+    ball.fill({ color: 0x111111, alpha: 0.25 }); // subtle dark outline
     ball.circle(0, 0, 5);
-    ball.fill({ color: 0xffffff });
+    ball.fill({ color: 0xffffff }); // white core
+    ball.circle(0, 0, 2.5);
+    ball.fill({ color: 0xffffff, alpha: 0.95 }); // hot center glow
     ball.visible = false;
     this.ballLayer.addChild(ball);
     this.ballGraphic = ball;
@@ -595,16 +600,17 @@ export class DiamondRenderer {
     // Rebuild glow with new color
     if (this.ballGlow && !this.ballGlow.destroyed) {
       this.ballGlow.clear();
-      this.ballGlow.circle(0, 0, 10);
-      this.ballGlow.fill({ color, alpha: 0.25 });
+      this.ballGlow.circle(0, 0, 14);
+      this.ballGlow.fill({ color, alpha: 0.18 });
     }
-    // Rebuild trail dots with new color
-    const trailAlphas = [0.35, 0.25, 0.18, 0.12, 0.07];
+    // Rebuild trail dots with new color (matching _createBall sizes)
+    const trailAlphas = [0.45, 0.35, 0.25, 0.16, 0.09, 0.04];
+    const trailSizes  = [4.5,  4.0,  3.5,  3.0,  2.5,  2.0];
     for (let i = 0; i < this._trailDots.length; i++) {
       const dot = this._trailDots[i];
       if (dot && !dot.destroyed) {
         dot.clear();
-        dot.circle(0, 0, 3);
+        dot.circle(0, 0, trailSizes[i] ?? 3);
         dot.fill({ color, alpha: trailAlphas[i] ?? 0.1 });
       }
     }
