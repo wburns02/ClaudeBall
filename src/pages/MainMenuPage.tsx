@@ -75,6 +75,14 @@ export function MainMenuPage() {
               >
                 Quick Play
               </Button>
+              <Button
+                size="lg"
+                className="w-64 bg-gradient-to-r from-gold/80 to-gold border-gold"
+                onClick={() => navigate('/game/derby')}
+                data-testid="hr-derby-btn"
+              >
+                Home Run Derby
+              </Button>
             </div>
 
             {/* Other modes */}

@@ -20,6 +20,7 @@ import { LiveGamePage } from '@/pages/LiveGamePage.tsx';
 import { NewFranchisePage } from '@/pages/NewFranchisePage.tsx';
 import { ExhibitionSetupPage } from '@/pages/ExhibitionSetupPage.tsx';
 import { QuickPlayPage } from '@/pages/QuickPlayPage.tsx';
+import { HomeRunDerbyPage } from '@/pages/HomeRunDerbyPage.tsx';
 
 // Lazy-load heavier pages
 const SprintCTestPage = lazy(() => import('@/SprintCTestPage.tsx').then(m => ({ default: m.SprintCTestPage })));
@@ -96,6 +97,7 @@ const HallOfRecordsPage = lazy(() => import('@/pages/HallOfRecordsPage.tsx').the
 const AchievementsPage = lazy(() => import('@/pages/AchievementsPage.tsx').then(m => ({ default: m.AchievementsPage })));
 const TeamComparisonPage = lazy(() => import('@/pages/TeamComparisonPage.tsx').then(m => ({ default: m.TeamComparisonPage })));
 const SimProjectionPage = lazy(() => import('@/pages/SimProjectionPage.tsx').then(m => ({ default: m.SimProjectionPage })));
+const FranchiseOverviewPage = lazy(() => import('@/pages/FranchiseOverviewPage.tsx').then(m => ({ default: m.FranchiseOverviewPage })));
 
 // Preload coaching & trade-deadline chunks so they don't flash "LOADING..."
 if (typeof window !== 'undefined') {
@@ -176,6 +178,7 @@ function AppRoutes() {
           <Route path="/game/live" element={<GameLayout><LiveGamePage /></GameLayout>} />
           <Route path="/game/setup" element={<MainLayout><ExhibitionSetupPage /></MainLayout>} />
           <Route path="/game/quick" element={<MainLayout><QuickPlayPage /></MainLayout>} />
+          <Route path="/game/derby" element={<HomeRunDerbyPage />} />
 
           {/* ── New franchise setup (no sidebar yet) ────────────────── */}
           <Route
@@ -251,6 +254,7 @@ function AppRoutes() {
           <Route path="/franchise/achievements" element={<FranchiseLayout><AchievementsPage /></FranchiseLayout>} />
           <Route path="/franchise/team-compare" element={<FranchiseLayout><TeamComparisonPage /></FranchiseLayout>} />
           <Route path="/franchise/sim-projection" element={<FranchiseLayout><SimProjectionPage /></FranchiseLayout>} />
+          <Route path="/franchise/overview" element={<FranchiseLayout><FranchiseOverviewPage /></FranchiseLayout>} />
 
           {/* ── URL alias redirects (common alternative paths) ──────── */}
           <Route path="/franchise/dashboard" element={<Navigate to="/franchise" replace />} />
