@@ -50,7 +50,7 @@ function ScoutReportButton({ player, teamName, teamAbbr }: { player: Player; tea
   return (
     <>
       <button
-        onClick={() => setShow(true)}
+        onClick={() => { setShow(true); import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('prospect-scout')); }}
         className="w-full py-2 rounded-lg bg-blue-400/10 border border-blue-400/30 text-blue-400 text-xs font-mono hover:bg-blue-400/20 transition-colors cursor-pointer"
       >
         Scouting Report Card

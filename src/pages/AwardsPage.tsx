@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -428,7 +428,7 @@ export function AwardsPage() {
           </p>
         </div>
         {ceremonySteps.length > 0 && (
-          <Button variant="primary" size="sm" onClick={() => setShowCeremony(true)}>
+          <Button variant="primary" size="sm" onClick={() => { setShowCeremony(true); import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('awards-ceremony')); }}>
             Awards Ceremony
           </Button>
         )}

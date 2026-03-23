@@ -2,7 +2,7 @@
  * SeasonStoryPage — narrative retelling of the season as a story.
  * Generates dramatic prose from game results, streaks, trades, and milestones.
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -157,6 +157,9 @@ export function SeasonStoryPage() {
       </div>
     );
   }
+
+  // Unlock achievement on visit
+  useEffect(() => { import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('season-story')); }, []);
 
   const rec = season.standings.getRecord(userTeamId!);
   const totalGames = chapters.reduce((s, c) => {

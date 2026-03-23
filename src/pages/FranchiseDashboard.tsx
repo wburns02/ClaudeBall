@@ -15,6 +15,7 @@ import { cn } from '@/lib/cn.ts';
 import { ManagerDecisionModal } from '@/components/game/ManagerDecisionModal.tsx';
 import { generateGameDecisions, resolveDecision, type ManagerDecision, type DecisionOutcome } from '@/engine/manager/ManagerDecisions.ts';
 import { RandomProvider } from '@/engine/core/RandomProvider.ts';
+import { useAchievementStore } from '@/stores/achievementStore.ts';
 
 // Season milestones that generate inbox notifications
 const INBOX_MILESTONES: Array<{
@@ -453,6 +454,7 @@ export function FranchiseDashboard() {
     }
   };
 
+  const achieveUnlock = useAchievementStore(s => s.unlock);
   const doSim = (days: number) => {
     const rec = season.standings.getRecord(userTeamId);
     setSimFromDay(season.currentDay);
@@ -460,6 +462,14 @@ export function FranchiseDashboard() {
     setShowEvents(true);
     setRecapTab('summary');
     simDays(days);
+    if (days >= 30) achieveUnlock('sim-30');
+    // Check win milestones after sim
+    const after = season.standings.getRecord(userTeamId);
+    if (after) {
+      if (after.wins >= 50) achieveUnlock('win-50');
+      if (after.wins >= 75) achieveUnlock('win-75');
+      if (after.wins >= 100) achieveUnlock('win-100');
+    }
   };
 
   const handleSimWeek = () => doSim(7);

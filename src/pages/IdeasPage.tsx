@@ -81,6 +81,7 @@ export function IdeasPage() {
     setIdeas(prev => [created, ...prev]);
     setNewIdea('');
     setSubmitting(false);
+    import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('idea-submit'));
   };
 
   const handleSetUsername = () => {

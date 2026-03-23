@@ -5,6 +5,7 @@ import { Panel } from '@/components/ui/Panel.tsx';
 import { useSaveStore } from '@/stores/saveStore.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { cn } from '@/lib/cn.ts';
+import { useAchievementStore } from '@/stores/achievementStore.ts';
 import type { SaveSlot } from '@/stores/saveStore.ts';
 
 type Tab = 'save' | 'load';
@@ -221,11 +222,13 @@ export function SaveLoadPage() {
     setPendingSaveSlotId(slotId ?? undefined);
   };
 
+  const achieveUnlock = useAchievementStore(s => s.unlock);
   const handleNameConfirm = (name: string) => {
     const slot = saveStore.saveGame(name, pendingSaveSlotId ?? undefined);
     setPendingSaveSlotId(null);
     if (slot) {
       showToast(`Saved: "${slot.name}"`);
+      achieveUnlock('first-save');
     } else {
       showToast('Save failed — no active franchise.');
     }
