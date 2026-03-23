@@ -150,7 +150,7 @@ function BonusSummary({ bonus }: { bonus: StaffBonus }) {
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
       {items.map(({ label, value, suffix, icon }) => (
         <div key={label} className="text-center p-2 rounded-lg bg-navy-lighter/15 border border-navy-lighter/30">
           <p className="text-lg mb-0.5">{icon}</p>
@@ -195,7 +195,7 @@ function HiringModal({
           <button onClick={onClose} className="text-cream-dim/50 hover:text-cream-dim font-mono text-xl leading-none cursor-pointer">✕</button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 max-h-[50vh] overflow-y-auto">
           {candidates.map(c => (
             <div
               key={c.id}
