@@ -402,9 +402,36 @@ export function PlayerComparisonPage() {
 
       {selectedCount < 2 && (
         <Panel>
-          <p className="font-mono text-cream-dim text-center py-10 text-sm">
+          <p className="font-mono text-cream-dim text-center pt-6 pb-2 text-sm">
             Select at least 2 players above to compare them side-by-side.
           </p>
+          {/* Suggested comparisons */}
+          {allPlayers.length >= 4 && (() => {
+            const topBatters = allPlayers.filter(p => p.pos !== 'P').sort((a, b) => b.ovr - a.ovr).slice(0, 6);
+            const topPitchers = allPlayers.filter(p => p.pos === 'P').sort((a, b) => b.ovr - a.ovr).slice(0, 4);
+            const suggestions = [
+              ...(topBatters.length >= 2 ? [{ label: 'Top Hitters', p1: topBatters[0], p2: topBatters[1] }] : []),
+              ...(topPitchers.length >= 2 ? [{ label: 'Top Pitchers', p1: topPitchers[0], p2: topPitchers[1] }] : []),
+              ...(topBatters.length >= 4 ? [{ label: 'Power vs Speed', p1: topBatters[0], p2: topBatters[3] }] : []),
+            ];
+            return suggestions.length > 0 ? (
+              <div className="pt-2 pb-4">
+                <p className="font-mono text-[10px] text-cream-dim/40 uppercase tracking-wider text-center mb-3">Quick Comparisons</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {suggestions.map(s => (
+                    <button
+                      key={s.label}
+                      onClick={() => setSlots([s.p1.id, s.p2.id, null])}
+                      className="px-3 py-2 rounded-lg border border-navy-lighter/40 hover:border-gold/40 hover:bg-gold/5 transition-all cursor-pointer text-left"
+                    >
+                      <p className="font-mono text-[10px] text-gold/60 uppercase tracking-wider">{s.label}</p>
+                      <p className="font-body text-xs text-cream mt-0.5">{s.p1.name} vs {s.p2.name}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null;
+          })()}
         </Panel>
       )}
 

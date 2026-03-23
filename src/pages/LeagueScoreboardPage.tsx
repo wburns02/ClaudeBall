@@ -111,11 +111,15 @@ export function LeagueScoreboardPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId } = useFranchiseStore();
 
-  // Default to most recent day with played games, or currentDay
+  // Default to most recent day with played games, falling back to currentDay or first game day
   const defaultDay = useMemo(() => {
-    const played = season?.schedule.filter(g => g.played).map(g => g.date) ?? [];
-    return played.length > 0 ? Math.max(...played) : (season?.currentDay ?? 1);
-  }, []); // only compute once on mount
+    if (!season) return 1;
+    const played = season.schedule.filter(g => g.played).map(g => g.date);
+    if (played.length > 0) return Math.max(...played);
+    // No games played yet — show the current day or first upcoming game day
+    const upcoming = season.schedule.filter(g => g.date >= season.currentDay).map(g => g.date);
+    return upcoming.length > 0 ? Math.min(...upcoming) : season.currentDay;
+  }, [season]);
 
   const [selectedDay, setSelectedDay] = useState<number>(defaultDay);
 
@@ -223,7 +227,7 @@ export function LeagueScoreboardPage() {
                     : 'border-navy-lighter/20 text-cream-dim/50 hover:bg-navy-lighter/10',
                 )}
               >
-                {isCurrent ? `Day ${day} ★` : `Day ${day}`}
+                {isCurrent ? `Day ${day} (Today)` : `Day ${day}`}
               </button>
             );
           })}
@@ -250,9 +254,11 @@ export function LeagueScoreboardPage() {
           <div className="text-center py-12">
             <p className="font-display text-cream-dim text-lg">No games on Day {activeDay}</p>
             <p className="font-mono text-cream-dim/60 text-xs mt-2">
-              {activeDay < currentDay
+              {activeDay === 0
+                ? 'The season hasn\'t started yet. Advance days from the Dashboard to begin.'
+                : activeDay < currentDay
                 ? 'Off day in the schedule.'
-                : 'Simulate days to see results here.'}
+                : 'Simulate days from the Dashboard to see results here.'}
             </p>
           </div>
         </Panel>

@@ -187,7 +187,7 @@ export function BroadcastControls({
             disabled={blocked}
             className={cn(btnBase, btnSecondary)}
           >
-            Next Pitch [Space]
+            Next Pitch
           </button>
         )}
 

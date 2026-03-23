@@ -781,11 +781,14 @@ export function LiveGamePage() {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 10,
-              pointerEvents: 'none',
               whiteSpace: 'nowrap',
             }}
           >
-            <span
+            <button
+              onClick={() => {
+                if (phase === 'game_over') return;
+                nextPitch();
+              }}
               style={{
                 background: 'rgba(10,15,26,0.85)',
                 border: '1px solid rgba(212,168,67,0.3)',
@@ -795,14 +798,15 @@ export function LiveGamePage() {
                 fontSize: 13,
                 color: phase === 'game_over' ? '#d4a843' : '#b8b0a4',
                 letterSpacing: '0.05em',
+                cursor: phase === 'game_over' ? 'default' : 'pointer',
               }}
             >
               {phase === 'game_over'
                 ? `FINAL — ${gameState.away.abbreviation} ${awayScore}, ${gameState.home.abbreviation} ${homeScore}`
                 : phase === 'idle'
-                ? 'Press Space to begin'
-                : 'Space → next batter'}
-            </span>
+                ? 'Tap or press Space to begin'
+                : 'Tap or Space → next batter'}
+            </button>
           </div>
         )}
 
@@ -815,10 +819,10 @@ export function LiveGamePage() {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 10,
-              pointerEvents: 'none',
             }}
           >
-            <span
+            <button
+              onClick={() => nextPitch()}
               style={{
                 background: 'rgba(10,15,26,0.75)',
                 borderRadius: 5,
@@ -826,10 +830,11 @@ export function LiveGamePage() {
                 fontFamily: 'IBM Plex Mono, monospace',
                 fontSize: 12,
                 color: 'rgba(184,176,164,0.7)',
+                cursor: 'pointer',
               }}
             >
-              CPU pitching… [Space]
-            </span>
+              CPU pitching… Tap or [Space]
+            </button>
           </div>
         )}
 

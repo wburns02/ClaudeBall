@@ -272,13 +272,14 @@ export function TradeMachinePage() {
                 <button
                   key={p.id}
                   onClick={() => setYourPlayers(prev => [...prev, p.id])}
-                  className="w-full text-left px-2 py-1.5 rounded hover:bg-navy-lighter/30 transition-colors cursor-pointer flex items-center gap-2"
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-gold/10 transition-colors cursor-pointer flex items-center gap-2 group border border-transparent hover:border-gold/20"
                 >
                   <span className={cn('font-mono text-[10px] w-5 shrink-0',
                     ovr >= 70 ? 'text-gold' : ovr >= 55 ? 'text-green-light' : 'text-cream-dim',
                   )}>{ovr}</span>
                   <span className="font-body text-xs text-cream truncate flex-1">{getPlayerName(p)}</span>
                   <span className="font-mono text-[10px] text-cream-dim/40">{p.position}</span>
+                  <span className="font-mono text-xs text-gold/0 group-hover:text-gold/70 transition-colors shrink-0">+</span>
                 </button>
               );
             })}
@@ -362,7 +363,7 @@ export function TradeMachinePage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="font-mono text-cream-dim/40 text-sm">Add players from both sides to see analysis</p>
+              <p className="font-mono text-cream-dim/40 text-sm">Click players from each roster to add them</p>
               <p className="font-mono text-cream-dim/25 text-xs mt-2">WAR impact, salary changes, and fairness grade</p>
             </div>
           )}
@@ -402,13 +403,14 @@ export function TradeMachinePage() {
                 <button
                   key={p.id}
                   onClick={() => setTheirPlayers(prev => [...prev, p.id])}
-                  className="w-full text-left px-2 py-1.5 rounded hover:bg-navy-lighter/30 transition-colors cursor-pointer flex items-center gap-2"
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-gold/10 transition-colors cursor-pointer flex items-center gap-2 group border border-transparent hover:border-gold/20"
                 >
                   <span className={cn('font-mono text-[10px] w-5 shrink-0',
                     ovr >= 70 ? 'text-gold' : ovr >= 55 ? 'text-green-light' : 'text-cream-dim',
                   )}>{ovr}</span>
                   <span className="font-body text-xs text-cream truncate flex-1">{getPlayerName(p)}</span>
                   <span className="font-mono text-[10px] text-cream-dim/40">{p.position}</span>
+                  <span className="font-mono text-xs text-gold/0 group-hover:text-gold/70 transition-colors shrink-0">+</span>
                 </button>
               );
             })}
