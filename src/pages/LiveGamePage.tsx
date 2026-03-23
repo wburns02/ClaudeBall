@@ -155,6 +155,8 @@ export function LiveGamePage() {
   const [wpHistory, setWpHistory] = useState<WPSnapshot[]>([]);
   const [paText, setPaText] = useState<string | null>(null);
   const [stadium, setStadium] = useState('default');
+  const [inningGraphic, setInningGraphic] = useState<{ text: string; sub: string } | null>(null);
+  const prevInningRef = useRef<string>('');
   const lastInningHalfRef = useRef<string>('');
   const lastBatterRef = useRef<string>('');
 
@@ -277,9 +279,10 @@ export function LiveGamePage() {
     const currentState = eng.getState();
     setEvents([...currentState.events]);
 
-    // Track WP snapshot at each inning change
+    // Track WP snapshot at each inning change + show inning graphic
     const halfKey = `${currentState.inning.inning}-${currentState.inning.half}`;
     if (halfKey !== lastInningHalfRef.current) {
+      const isFirst = lastInningHalfRef.current === '';
       lastInningHalfRef.current = halfKey;
       const aS = currentState.score.away.reduce((a, b) => a + b, 0);
       const hS = currentState.score.home.reduce((a, b) => a + b, 0);
@@ -292,6 +295,20 @@ export function LiveGamePage() {
         label: `${currentState.inning.half === 'top' ? 'T' : 'B'}${currentState.inning.inning}`,
         homeWP: wp,
       }]);
+
+      // Show dramatic inning transition graphic (skip the very first)
+      if (!isFirst) {
+        const ordinal = (n: number) => {
+          const s = ['th', 'st', 'nd', 'rd'];
+          const v = n % 100;
+          return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        };
+        const halfText = currentState.inning.half === 'top' ? 'TOP' : 'BOTTOM';
+        const inningText = ordinal(currentState.inning.inning);
+        const scoreLine = `${currentState.away.abbreviation} ${aS}  —  ${currentState.home.abbreviation} ${hS}`;
+        setInningGraphic({ text: `${halfText} OF THE ${inningText}`.toUpperCase(), sub: scoreLine });
+        setTimeout(() => setInningGraphic(null), 2500);
+      }
     }
 
     if (!ab) {
@@ -552,6 +569,58 @@ export function LiveGamePage() {
           height={600}
           stadium={stadium}
         />
+
+        {/* ── INNING TRANSITION graphic ── */}
+        {inningGraphic && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 25,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(10,15,26,0.88)',
+              animation: 'fadeInOut 2.5s ease',
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                fontFamily: 'Oswald, sans-serif',
+                fontSize: 42,
+                fontWeight: 700,
+                color: '#d4a843',
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                textShadow: '0 0 30px rgba(212,168,67,0.4), 0 4px 12px rgba(0,0,0,0.8)',
+              }}
+            >
+              {inningGraphic.text}
+            </div>
+            <div
+              style={{
+                fontFamily: 'IBM Plex Mono, monospace',
+                fontSize: 18,
+                color: '#e8e0d4',
+                marginTop: 12,
+                letterSpacing: '0.2em',
+                opacity: 0.8,
+              }}
+            >
+              {inningGraphic.sub}
+            </div>
+            <div
+              style={{
+                width: 120,
+                height: 2,
+                background: 'linear-gradient(90deg, transparent, #d4a843, transparent)',
+                marginTop: 16,
+              }}
+            />
+          </div>
+        )}
 
         {/* ── PA ANNOUNCER overlay ── */}
         {paText && (

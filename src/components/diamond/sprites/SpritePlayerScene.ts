@@ -338,15 +338,29 @@ export class SpritePlayerScene {
   }
 
   // ── Animation: Pitcher ────────────────────────────────────────────
-  // Full 12-frame windup cycle: frames 0→11 over 800ms
-  // Each frame: 800/12 ≈ 67ms (~4 screen frames @ 60fps) — clean, no flicker
+  // Full 12-frame windup cycle: frames 0→11 over 1200ms (slowed for drama)
+  // Includes brief pause at leg kick peak for TLR2/KGJ feel
 
   async animatePitcherWindup(): Promise<void> {
     if (!this._loaded || this._pitcher === null || this._destroyed) return;
 
     const pitcher = this._pitcher;
-    // Play all 12 frames of the windup sequence
-    await pitcher.playAnimation(this.pitcherFrames, 800, false);
+
+    // Phase 1: Set → leg kick peak (frames 0-4, 500ms)
+    const windupPhase1 = this.pitcherFrames.slice(0, 5)
+      .filter((t): t is Texture => t !== undefined);
+    await pitcher.playAnimation(windupPhase1, 500, false);
+    if (this._destroyed) return;
+
+    // Brief hold at peak of leg kick for dramatic tension
+    await _delay(150);
+    if (this._destroyed) return;
+
+    // Phase 2: Delivery (frames 5-11, 550ms)
+    const windupPhase2 = this.pitcherFrames.slice(5)
+      .filter((t): t is Texture => t !== undefined);
+    await pitcher.playAnimation(windupPhase2, 550, false);
+
     if (!this._destroyed) {
       pitcher.setFrame(PITCHER_V2_FRAMES.standing);
     }

@@ -74,7 +74,7 @@ export interface GameState {
 
 // Discriminated union for game events
 export type GameEvent =
-  | { type: 'pitch'; description: string; balls: number; strikes: number; result: string }
+  | { type: 'pitch'; description: string; balls: number; strikes: number; result: string; pitchType?: string; velocity?: number }
   | { type: 'at_bat_result'; description: string; batter: string; pitcher: string; result: string; rbiCount: number }
   | { type: 'baserunning'; description: string; runner: string }
   | { type: 'pitching_change'; description: string; outgoing: string; incoming: string }

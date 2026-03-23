@@ -258,10 +258,7 @@ export class PlaySequencer {
     event: Extract<GameEvent, { type: 'pitch' }>,
   ): Promise<void> {
     const result = event.result;
-    // Extract pitch type from event data
-    const pitchType = (event as Record<string, unknown>).pitchType as string | undefined
-      ?? (event as Record<string, unknown>).pitch_type as string | undefined
-      ?? 'fastball';
+    const pitchType = event.pitchType ?? 'fastball';
 
     if (result === 'ball') {
       await this.playBallPitch(pitchType);

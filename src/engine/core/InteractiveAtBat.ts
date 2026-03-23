@@ -116,6 +116,8 @@ export class InteractiveAtBat {
         balls: this.balls,
         strikes: this.strikes,
         result: 'ball',
+        pitchType,
+        velocity,
       });
 
       if (this.balls >= 4) {
@@ -143,6 +145,8 @@ export class InteractiveAtBat {
         balls: this.balls,
         strikes: this.strikes,
         result,
+        pitchType,
+        velocity,
       });
 
       if (this.strikes >= 3) {
@@ -168,6 +172,8 @@ export class InteractiveAtBat {
         balls: this.balls,
         strikes: this.strikes,
         result: 'foul',
+        pitchType,
+        velocity,
       });
     } else if (result === 'contact') {
       // Contact — apply swing-type modifiers if batting input was provided
@@ -177,6 +183,8 @@ export class InteractiveAtBat {
         balls: this.balls,
         strikes: this.strikes,
         result: 'contact',
+        pitchType,
+        velocity,
       });
 
       const timingMod = userInput && 'action' in userInput && userInput.action === 'swing'
@@ -218,6 +226,8 @@ export class InteractiveAtBat {
                 balls: this.balls,
                 strikes: this.strikes,
                 result: missResult,
+        pitchType,
+        velocity,
               });
             } else {
               this.strikes++;
@@ -228,6 +238,8 @@ export class InteractiveAtBat {
                 balls: this.balls,
                 strikes: this.strikes,
                 result: missResult,
+        pitchType,
+        velocity,
               });
               if (this.strikes >= 3) {
                 events.push({
