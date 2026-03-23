@@ -54,8 +54,8 @@ export function FranchiseOverviewPage() {
   const playerStats = useStatsStore(s => s.playerStats);
   const { staff, staffBonus } = useCoachingStore();
   const { getProgress } = useAchievementStore();
-  const moraleData = useMoraleStore(s => (s as any).data ?? {});
-  const goals = useGoalsStore(s => s.goals);
+  const moraleData = useMoraleStore(s => s.playerMorales);
+  const goals = useGoalsStore(s => s.goals ?? []);
 
   const team = useMemo(() => {
     if (!engine || !userTeamId) return null;
