@@ -582,7 +582,17 @@ export class PlaySequencer {
     this.renderer.screenShake(5, 200);
     soundEngine.playBatCrack(1.4);
     spawnBatCrack(this.renderer.getApp()!, HOME_X - 12, HOME_Y - 18, this._fx());
-    if (ss) void ss.animateBatterRunning?.();
+    if (ss) {
+      void ss.animateBatterRunning?.();
+      // Animate runner doing full home run trot (fire-and-forget)
+      ss.addRunner(0);
+      void (async () => {
+        await ss.animateRunnerAdvance(0, 1);
+        if (!this._destroyed) await ss.animateRunnerAdvance(1, 2);
+        if (!this._destroyed) await ss.animateRunnerAdvance(2, 3);
+        if (!this._destroyed) ss.removeRunner(3); // crosses home
+      })();
+    }
 
     // Quick zoom out to field (400ms), then pan to follow ball
     this._updateOverlay({ visible: false });
@@ -940,6 +950,13 @@ export class PlaySequencer {
     ]);
     if (this._destroyed) return;
 
+    // Animate batter running to 1B concurrently with fielder catching
+    if (ss) {
+      // Add batter as runner heading to 1B
+      ss.addRunner(0); // runner at home
+      void ss.animateRunnerAdvance(0, 1); // fire-and-forget: home → 1B
+    }
+
     // Outfielder catches the ball
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;
@@ -997,6 +1014,25 @@ export class PlaySequencer {
       fielderMovePromise,
     ]);
     if (this._destroyed) return;
+
+    // Animate batter running the bases concurrently with fielder catching
+    if (ss) {
+      ss.addRunner(0); // runner at home
+      if (hitType === 'triple') {
+        // Run home → 1B → 2B → 3B
+        void (async () => {
+          await ss.animateRunnerAdvance(0, 1);
+          if (!this._destroyed) await ss.animateRunnerAdvance(1, 2);
+          if (!this._destroyed) await ss.animateRunnerAdvance(2, 3);
+        })();
+      } else {
+        // Double: run home → 1B → 2B
+        void (async () => {
+          await ss.animateRunnerAdvance(0, 1);
+          if (!this._destroyed) await ss.animateRunnerAdvance(1, 2);
+        })();
+      }
+    }
 
     const catchAnim = ss ? ss.animateFielderCatch(fielderPos) : Promise.resolve();
     await catchAnim;

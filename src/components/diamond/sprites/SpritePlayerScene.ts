@@ -452,14 +452,13 @@ export class SpritePlayerScene {
 
     await new Promise<void>((resolve) => {
       const onTick = () => {
-        if (this._destroyed) {
+        if (this._destroyed || !this.fielderSprites.has(position)) {
           Ticker.shared.remove(onTick);
           resolve();
           return;
         }
         const elapsed = performance.now() - startTime;
         const t = Math.min(elapsed / Math.max(1, duration), 1);
-        // easeInOut for natural accel/decel
         const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
         anim.setPosition(
           startX + (targetX - startX) * e,
@@ -475,7 +474,7 @@ export class SpritePlayerScene {
 
     anim.stop();
     void runPromise;
-    if (!this._destroyed) {
+    if (!this._destroyed && this.fielderSprites.has(position)) {
       anim.setFrame(FIELDER_V2_FRAMES.ready);
     }
   }
@@ -647,7 +646,8 @@ export class SpritePlayerScene {
 
     await new Promise<void>((resolve) => {
       const onTick = (_ticker: Ticker) => {
-        if (this._destroyed) {
+        // Guard: stop if scene destroyed or this runner sprite was removed
+        if (this._destroyed || !this.runnerSprites.has(fromBase)) {
           Ticker.shared.remove(onTick);
           resolve();
           return;
