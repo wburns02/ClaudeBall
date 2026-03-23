@@ -12,6 +12,9 @@ import { useMoraleStore, getMoraleColor } from '@/stores/moraleStore.ts';
 import { winPct, gamesBehind, streakStr, last10Str, runDifferential } from '@/engine/season/index.ts';
 import type { TeamRecord, ScheduledGame } from '@/engine/season/index.ts';
 import { cn } from '@/lib/cn.ts';
+import { ManagerDecisionModal } from '@/components/game/ManagerDecisionModal.tsx';
+import { generateGameDecisions, resolveDecision, type ManagerDecision, type DecisionOutcome } from '@/engine/manager/ManagerDecisions.ts';
+import { RandomProvider } from '@/engine/core/RandomProvider.ts';
 
 // Season milestones that generate inbox notifications
 const INBOX_MILESTONES: Array<{
@@ -220,6 +223,8 @@ export function FranchiseDashboard() {
   const [simFromDay, setSimFromDay] = useState<number | null>(null);
   const [simFromRecord, setSimFromRecord] = useState<{ wins: number; losses: number } | null>(null); // days pending confirm
   const [pendingUserGame, setPendingUserGame] = useState<ScheduledGame | null>(null);
+  const [managerDecision, setManagerDecision] = useState<ManagerDecision | null>(null);
+  const [decisionOutcome, setDecisionOutcome] = useState<DecisionOutcome | null>(null);
 
   // Close game-choice modal on Escape
   useEffect(() => {
@@ -438,6 +443,14 @@ export function FranchiseDashboard() {
     simDays(1);
     setSimFromDay(prevDay);
     setSimFromRecord(rec ? { wins: rec.wins, losses: rec.losses } : null);
+    // 40% chance of a manager decision after auto-sim
+    const rng = new RandomProvider(Date.now());
+    if (rng.next() < 0.40) {
+      const decisions = generateGameDecisions(rng);
+      if (decisions.length > 0) {
+        setTimeout(() => { setManagerDecision(decisions[0]); setDecisionOutcome(null); }, 800);
+      }
+    }
   };
 
   const doSim = (days: number) => {
@@ -1237,6 +1250,20 @@ export function FranchiseDashboard() {
           </div>
         );
       })()}
+
+      {/* Manager Decision Modal */}
+      {managerDecision && (
+        <ManagerDecisionModal
+          decision={managerDecision}
+          outcome={decisionOutcome}
+          onResolve={(optionId) => {
+            const rng = new RandomProvider(Date.now());
+            const outcome = resolveDecision(managerDecision, optionId, rng);
+            setDecisionOutcome(outcome);
+          }}
+          onDismiss={() => { setManagerDecision(null); setDecisionOutcome(null); }}
+        />
+      )}
     </div>
   );
 }
