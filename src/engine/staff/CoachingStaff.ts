@@ -193,8 +193,12 @@ export function ratingLabel(value: number): string {
   return 'Poor';
 }
 
-export function personalityEmoji(p: Coach['personality']): string {
-  return { fiery: '🔥', calm: '🧊', analytical: '📊', motivator: '💪', 'old-school': '📖' }[p];
+export function personalityIcon(p: Coach['personality']): string {
+  return { fiery: 'F', calm: 'C', analytical: 'A', motivator: 'M', 'old-school': 'O' }[p];
+}
+
+export function personalityColor(p: Coach['personality']): string {
+  return { fiery: '#ef4444', calm: '#3b82f6', analytical: '#8b5cf6', motivator: '#22c55e', 'old-school': '#d4a843' }[p];
 }
 
 export function totalStaffSalary(staff: Coach[]): number {

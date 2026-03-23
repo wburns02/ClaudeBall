@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -6,7 +6,7 @@ import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useCoachingStore } from '@/stores/coachingStore.ts';
 import {
   ROLE_LABELS, ROLE_ORDER, overallRating, ratingColor, ratingLabel,
-  personalityEmoji, totalStaffSalary, type Coach, type CoachRole, type StaffBonus,
+  personalityIcon, personalityColor, totalStaffSalary, type Coach, type CoachRole, type StaffBonus,
 } from '@/engine/staff/CoachingStaff.ts';
 import { cn } from '@/lib/cn.ts';
 
@@ -86,8 +86,12 @@ function CoachCard({
         <span className="px-2 py-0.5 rounded bg-gold/10 border border-gold/20 font-mono text-[10px] text-gold">
           {coach.specialty}
         </span>
-        <span className="font-mono text-xs" title={coach.personality}>
-          {personalityEmoji(coach.personality)} {coach.personality}
+        <span
+          className="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border"
+          style={{ color: personalityColor(coach.personality), borderColor: `${personalityColor(coach.personality)}40`, backgroundColor: `${personalityColor(coach.personality)}10` }}
+          title={coach.personality}
+        >
+          {personalityIcon(coach.personality)} {coach.personality}
         </span>
       </div>
 
@@ -117,7 +121,7 @@ function CoachCard({
           ) : (
             <button
               onClick={() => setShowActions(true)}
-              className="font-mono text-[10px] text-cream-dim/40 hover:text-cream-dim transition-colors cursor-pointer"
+              className="font-mono text-[10px] text-cream-dim/40 hover:text-gold/70 hover:underline underline-offset-2 transition-colors cursor-pointer"
             >
               Manage →
             </button>
@@ -131,7 +135,7 @@ function CoachCard({
 // ── Empty slot ──────────────────────────────────────────────────
 function EmptySlot({ role, onHire }: { role: CoachRole; onHire: () => void }) {
   return (
-    <div className="rounded-xl border-2 border-dashed border-navy-lighter/40 p-4 flex flex-col items-center justify-center gap-3 min-h-[200px] hover:border-gold/30 transition-colors">
+    <div className="rounded-xl border-2 border-dashed border-navy-lighter/40 p-4 flex flex-col items-center justify-center gap-3 min-h-[200px] hover:border-gold/30 hover:bg-gold/[0.02] transition-all duration-200">
       <p className="font-mono text-[10px] text-gold/60 uppercase tracking-widest">{ROLE_LABELS[role]}</p>
       <p className="font-mono text-cream-dim/30 text-sm">Position Vacant</p>
       <Button size="sm" variant="secondary" onClick={onHire}>Hire Coach</Button>
@@ -142,18 +146,18 @@ function EmptySlot({ role, onHire }: { role: CoachRole; onHire: () => void }) {
 // ── Bonus summary ───────────────────────────────────────────────
 function BonusSummary({ bonus }: { bonus: StaffBonus }) {
   const items = [
-    { label: 'Batting Dev', value: bonus.battingDev, suffix: '%', icon: '🏏' },
-    { label: 'Pitching Dev', value: bonus.pitchingDev, suffix: '%', icon: '⚾' },
-    { label: 'Morale', value: bonus.morale, suffix: '', icon: '💪' },
-    { label: 'Strategy', value: bonus.gameStrategy, suffix: '%', icon: '🧠' },
-    { label: 'Scouting', value: bonus.scoutAccuracy, suffix: '%', icon: '🔭' },
+    { label: 'Batting Dev', value: bonus.battingDev, suffix: '%', abbr: 'BAT' },
+    { label: 'Pitching Dev', value: bonus.pitchingDev, suffix: '%', abbr: 'PIT' },
+    { label: 'Morale', value: bonus.morale, suffix: '', abbr: 'MOR' },
+    { label: 'Strategy', value: bonus.gameStrategy, suffix: '%', abbr: 'STR' },
+    { label: 'Scouting', value: bonus.scoutAccuracy, suffix: '%', abbr: 'SCT' },
   ];
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-      {items.map(({ label, value, suffix, icon }) => (
+      {items.map(({ label, value, suffix, abbr }) => (
         <div key={label} className="text-center p-2 rounded-lg bg-navy-lighter/15 border border-navy-lighter/30">
-          <p className="text-lg mb-0.5">{icon}</p>
+          <p className="font-mono text-[10px] text-gold/50 tracking-widest mb-1">{abbr}</p>
           <p className={cn(
             'font-display text-lg font-bold',
             value >= 10 ? 'text-gold' : value >= 5 ? 'text-green-light' : 'text-cream-dim',
@@ -181,18 +185,27 @@ function HiringModal({
 }) {
   const [selected, setSelected] = useState<string | null>(null);
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div
-        className="bg-navy-light border border-navy-lighter rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto p-6"
-        onClick={e => e.stopPropagation()}
-      >
+    <div
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="bg-navy-light border border-navy-lighter rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="font-display text-2xl text-gold uppercase tracking-wide">Hire {ROLE_LABELS[role]}</h2>
             <p className="font-mono text-cream-dim text-xs mt-1">Interview candidates and choose your new coach</p>
           </div>
-          <button onClick={onClose} className="text-cream-dim/50 hover:text-cream-dim font-mono text-xl leading-none cursor-pointer">✕</button>
+          <button onClick={onClose} className="text-cream-dim/50 hover:text-cream-dim font-mono text-xl leading-none cursor-pointer" aria-label="Close">✕</button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 max-h-[50vh] overflow-y-auto">
