@@ -129,7 +129,7 @@ export function MainMenuPage() {
             </div>
 
             <p className="text-cream-dim/50 text-xs font-mono mt-4">
-              64 pages · 17 features · 23 achievements
+              65 pages · 19 features · 23 achievements
             </p>
           </div>
         </Panel>
