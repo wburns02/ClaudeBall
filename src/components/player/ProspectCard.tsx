@@ -167,7 +167,10 @@ export function ProspectCard({ player, teamName, teamAbbr, compact }: Props) {
 
       {/* Tools / 20-80 Grades */}
       <div className="px-4 py-3">
-        <p className="font-mono text-[9px] text-cream-dim/40 uppercase tracking-widest mb-2">Tool Grades (Current / Potential)</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="font-mono text-[9px] text-cream-dim/40 uppercase tracking-widest">20-80 Tool Grades</p>
+          <p className="font-mono text-[8px] text-cream-dim/30">NOW / PROJ</p>
+        </div>
         {tools.map(t => <ToolBar key={t.label} {...t} />)}
       </div>
 

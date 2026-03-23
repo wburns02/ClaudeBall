@@ -53,6 +53,7 @@ export function IdeasPage() {
   const navigate = useNavigate();
   const [ideas, setIdeas] = useState<Idea[]>(() => loadIdeasFromStorage());
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [newIdea, setNewIdea] = useState('');
   const [category, setCategory] = useState<Idea['category']>('feature');
   const [sortBy, setSortBy] = useState<'votes' | 'newest'>('votes');
@@ -322,12 +323,12 @@ export function IdeasPage() {
                 .sort((a, b) => b.votes - a.votes)
                 .map((i, idx) => `${idx + 1}. [${i.votes} votes] ${i.text} (${i.category}) — ${i.author}`)
                 .join('\n');
-              navigator.clipboard.writeText(text);
-              alert('Ideas copied to clipboard!');
+              navigator.clipboard.writeText(text).catch(() => {});
+              setCopied(true); setTimeout(() => setCopied(false), 2000);
             }}
             className="text-cream-dim/50 hover:text-cream text-xs font-mono cursor-pointer underline underline-offset-4"
           >
-            Copy all ideas to clipboard
+            {copied ? 'Copied to clipboard!' : 'Copy all ideas to clipboard'}
           </button>
         </div>
       )}

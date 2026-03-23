@@ -180,11 +180,13 @@ export function SeasonStoryPage() {
       <Panel>
         <div className="text-center py-4">
           <p className="font-body text-cream leading-relaxed max-w-lg mx-auto">
-            The {season.year} {team.city} {team.name} season was{' '}
+            {totalGames >= 150 ? 'The' : 'So far, the'} {season.year} {team.city} {team.name} season {totalGames >= 150 ? 'was' : 'has been'}{' '}
             {rec && rec.wins > rec.losses ? 'a tale of resilience and triumph' :
              rec && rec.wins < rec.losses ? 'a challenging journey through adversity' :
              'a season of tight margins and competitive play'}.
-            Over {totalGames} games, this is how their story unfolded.
+            {totalGames >= 150
+              ? ` Over ${totalGames} games, this is how their story unfolded.`
+              : ` Through ${totalGames} games, here's the story so far.`}
           </p>
         </div>
       </Panel>

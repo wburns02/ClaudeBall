@@ -40,8 +40,8 @@ function CountdownRing({ daysLeft, total }: { daysLeft: number; total: number })
         <span className="font-display text-3xl font-bold" style={{ color }}>
           {daysLeft}
         </span>
-        <span className="font-mono text-[9px] text-cream-dim/60 uppercase tracking-widest">
-          {daysLeft === 1 ? 'day left' : 'days left'}
+        <span className="font-mono text-[8px] text-cream-dim/60 uppercase tracking-wider whitespace-nowrap">
+          {daysLeft === 1 ? 'day left' : 'days'}
         </span>
       </div>
     </div>
