@@ -68,11 +68,12 @@ export function BroadcastControls({
         background: 'rgba(10,15,26,0.90)',
         borderTop: '1px solid rgba(212,168,67,0.18)',
         backdropFilter: 'blur(6px)',
-        height: 68,
+        minHeight: 52,
         display: 'flex',
         alignItems: 'center',
-        padding: '0 16px',
-        gap: 16,
+        padding: '6px 12px',
+        gap: 8,
+        flexWrap: 'wrap' as const,
         overflow: 'hidden',
       }}
     >

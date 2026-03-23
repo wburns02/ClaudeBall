@@ -247,10 +247,20 @@ export function TradeDeadlinePage() {
                 <p className="font-mono text-[9px] text-cream-dim/50">Losses</p>
               </div>
             </div>
+            {!deadlinePassed && userAnalysis?.type === 'seller' && (
+              <p className="font-mono text-[10px] text-red-400/60 text-center mb-1">
+                Consider shopping your high-OVR veterans for prospects
+              </p>
+            )}
+            {!deadlinePassed && userAnalysis?.type === 'buyer' && (
+              <p className="font-mono text-[10px] text-green-light/60 text-center mb-1">
+                Target pitching or hitting upgrades from selling teams
+              </p>
+            )}
             <div className="flex gap-2 justify-center">
               {!deadlinePassed && (
                 <Button size="sm" variant="primary" onClick={() => navigate('/franchise/trade')}>
-                  Make a Trade
+                  {userAnalysis?.type === 'seller' ? 'Shop Veterans' : userAnalysis?.type === 'buyer' ? 'Add Talent' : 'Make a Trade'}
                 </Button>
               )}
               <Button size="sm" variant="ghost" onClick={() => navigate('/franchise/trade-machine')}>

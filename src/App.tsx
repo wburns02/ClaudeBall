@@ -88,6 +88,12 @@ const FranchiseReportCard = lazy(() => import('@/pages/FranchiseReportCard.tsx')
 const CoachingStaffPage = lazy(() => import('@/pages/CoachingStaffPage.tsx').then(m => ({ default: m.CoachingStaffPage })));
 const TradeDeadlinePage = lazy(() => import('@/pages/TradeDeadlinePage.tsx').then(m => ({ default: m.TradeDeadlinePage })));
 
+// Preload coaching & trade-deadline chunks so they don't flash "LOADING..."
+if (typeof window !== 'undefined') {
+  const preload = () => { import('@/pages/CoachingStaffPage.tsx'); import('@/pages/TradeDeadlinePage.tsx'); };
+  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(preload); else setTimeout(preload, 2000);
+}
+
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
   const seen = new Set<string>();

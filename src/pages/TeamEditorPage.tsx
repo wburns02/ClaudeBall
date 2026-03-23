@@ -91,16 +91,16 @@ export function TeamEditorPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-cream-dim text-xs font-mono uppercase tracking-wide mb-1">City</label>
-                  <input className={inputClass} value={city} onChange={e => setCity(e.target.value)} />
+                  <input type="text" className={inputClass} value={city} onChange={e => setCity(e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-cream-dim text-xs font-mono uppercase tracking-wide mb-1">Team Name</label>
-                  <input className={inputClass} value={name} onChange={e => setName(e.target.value)} />
+                  <input type="text" className={inputClass} value={name} onChange={e => setName(e.target.value)} />
                 </div>
               </div>
               <div>
                 <label className="block text-cream-dim text-xs font-mono uppercase tracking-wide mb-1">Abbreviation</label>
-                <input className={inputClass} value={abbreviation} maxLength={3}
+                <input type="text" className={inputClass} value={abbreviation} maxLength={3}
                   onChange={e => setAbbreviation(e.target.value.toUpperCase())} />
               </div>
             </div>
