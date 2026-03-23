@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { ToastContainer } from '@/components/ui/Toast.tsx';
 import { SplashScreen } from '@/components/ui/SplashScreen.tsx';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner.tsx';
+import { HelpOverlay } from '@/components/ui/HelpOverlay.tsx';
 import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { FranchiseLayout } from '@/components/layout/FranchiseLayout.tsx';
@@ -280,6 +281,7 @@ function App() {
       <BrowserRouter>
         <AppRoutes />
         <ToastContainer />
+        <HelpOverlay />
       </BrowserRouter>
     </>
   );
