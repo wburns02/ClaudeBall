@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/cn.ts';
+import { useAchievementStore } from '@/stores/achievementStore.ts';
 
 interface ShortcutGroup {
   title: string;
@@ -76,7 +77,10 @@ export function HelpOverlay() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  const toggle = useCallback(() => setOpen(v => !v), []);
+  const unlock = useAchievementStore(s => s.unlock);
+  const toggle = useCallback(() => {
+    setOpen(v => { if (!v) unlock('help-reader'); return !v; });
+  }, [unlock]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

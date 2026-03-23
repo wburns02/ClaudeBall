@@ -111,6 +111,9 @@ export function MainMenuPage() {
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/settings')}>
                 Settings
               </Button>
+              <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/achievements')}>
+                Achievements
+              </Button>
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/ideas')}>
                 Ideas & Feedback
               </Button>

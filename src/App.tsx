@@ -91,6 +91,7 @@ const TradeDeadlinePage = lazy(() => import('@/pages/TradeDeadlinePage.tsx').the
 const LeagueHighlightsPage = lazy(() => import('@/pages/LeagueHighlightsPage.tsx').then(m => ({ default: m.LeagueHighlightsPage })));
 const SeasonStoryPage = lazy(() => import('@/pages/SeasonStoryPage.tsx').then(m => ({ default: m.SeasonStoryPage })));
 const HallOfRecordsPage = lazy(() => import('@/pages/HallOfRecordsPage.tsx').then(m => ({ default: m.HallOfRecordsPage })));
+const AchievementsPage = lazy(() => import('@/pages/AchievementsPage.tsx').then(m => ({ default: m.AchievementsPage })));
 
 // Preload coaching & trade-deadline chunks so they don't flash "LOADING..."
 if (typeof window !== 'undefined') {
@@ -165,6 +166,7 @@ function AppRoutes() {
           <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
           <Route path="/saves" element={<MainLayout><SaveLoadPage /></MainLayout>} />
           <Route path="/ideas" element={<MainLayout><IdeasPage /></MainLayout>} />
+          <Route path="/achievements" element={<MainLayout><AchievementsPage /></MainLayout>} />
 
           {/* ── Live game routes (minimal GameLayout) ───────────────── */}
           <Route path="/game/live" element={<GameLayout><LiveGamePage /></GameLayout>} />
@@ -242,6 +244,7 @@ function AppRoutes() {
           <Route path="/franchise/highlights" element={<FranchiseLayout><LeagueHighlightsPage /></FranchiseLayout>} />
           <Route path="/franchise/season-story" element={<FranchiseLayout><SeasonStoryPage /></FranchiseLayout>} />
           <Route path="/franchise/hall-of-records" element={<FranchiseLayout><HallOfRecordsPage /></FranchiseLayout>} />
+          <Route path="/franchise/achievements" element={<FranchiseLayout><AchievementsPage /></FranchiseLayout>} />
 
           {/* ── URL alias redirects (common alternative paths) ──────── */}
           <Route path="/franchise/dashboard" element={<Navigate to="/franchise" replace />} />
