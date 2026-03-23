@@ -91,7 +91,7 @@ const LeagueHighlightsPage = lazy(() => import('@/pages/LeagueHighlightsPage.tsx
 
 // Preload coaching & trade-deadline chunks so they don't flash "LOADING..."
 if (typeof window !== 'undefined') {
-  const preload = () => { import('@/pages/CoachingStaffPage.tsx'); import('@/pages/TradeDeadlinePage.tsx'); import('@/pages/LeagueHighlightsPage.tsx'); };
+  const preload = () => { import('@/pages/CoachingStaffPage.tsx'); import('@/pages/TradeDeadlinePage.tsx'); import('@/pages/LeagueHighlightsPage.tsx'); import('@/pages/PlayerStatsPage.tsx'); import('@/pages/AwardsPage.tsx'); };
   if ('requestIdleCallback' in window) (window as any).requestIdleCallback(preload); else setTimeout(preload, 2000);
 }
 

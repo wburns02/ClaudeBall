@@ -123,6 +123,13 @@ export function AwardsCeremony({ steps, year, userTeamId, getTeamName, onClose }
   const [revealedCount, setRevealedCount] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
 
+  // Escape key closes ceremony
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+
   const revealNext = useCallback(() => {
     setRevealedCount(c => Math.min(c + 1, steps.length));
   }, [steps.length]);

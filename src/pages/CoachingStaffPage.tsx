@@ -121,9 +121,9 @@ function CoachCard({
           ) : (
             <button
               onClick={() => setShowActions(true)}
-              className="font-mono text-[10px] text-cream-dim/40 hover:text-gold/70 hover:underline underline-offset-2 transition-colors cursor-pointer"
+              className="font-mono text-[10px] text-gold/40 hover:text-gold hover:bg-gold/10 px-2 py-1 rounded border border-gold/20 hover:border-gold/40 transition-all cursor-pointer"
             >
-              Manage →
+              Manage Coach
             </button>
           )}
         </div>
