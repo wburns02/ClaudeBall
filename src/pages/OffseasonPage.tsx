@@ -37,7 +37,7 @@ export function OffseasonPage() {
   const navigate = useNavigate();
   const {
     season, engine, userTeamId, isInitialized,
-    startOffseason, initDraft, initFreeAgency, advanceSeason,
+    startOffseason, initDraft, initFreeAgency, advanceSeason, dynastyYear,
   } = useFranchiseStore();
 
   useEffect(() => {
@@ -122,7 +122,7 @@ export function OffseasonPage() {
             {season.year} Offseason
           </h1>
           <p className="font-mono text-cream-dim text-sm mt-1">
-            {userTeam?.city} {userTeam?.name} — {season.year}→{season.year + 1}
+            {userTeam?.city} {userTeam?.name} — {season.year}→{season.year + 1}{dynastyYear > 1 ? ` · Dynasty Year ${dynastyYear}` : ''}
           </p>
         </div>
         <div className="flex gap-2">

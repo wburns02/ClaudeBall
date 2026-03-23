@@ -41,9 +41,9 @@ const STEPS: Step[] = [
     detail: 'Every tool a real GM needs: scouting reports with 20-80 grades, contract extensions, waiver wire claims, and a full trade deadline experience.',
   },
   {
-    title: 'Track Your Legacy',
-    description: 'Season Story, Awards Ceremony, Hall of Records, and 23 Achievements to unlock.',
-    detail: 'Your franchise journey is told through chapters, with dramatic award reveals and league-wide highlights. Press ? anytime for help.',
+    title: 'Build a Dynasty',
+    description: 'Play endless seasons with Dynasty Mode. Season Story, Awards Ceremony, Hall of Records, and 23 Achievements.',
+    detail: 'Advance through offseasons with player aging, contract expiration, drafts, and free agency. Build a multi-year legacy. Press ? anytime for help.',
     action: { label: 'Get Started', path: '/' },
   },
 ];

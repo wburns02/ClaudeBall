@@ -216,7 +216,7 @@ function OwnerWidget() {
 
 export function FranchiseDashboard() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals } = useFranchiseStore();
+  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals, dynastyYear } = useFranchiseStore();
   const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount, items: inboxItems } = useInboxStore();
   const playerStats = useStatsStore(s => s.playerStats);
   const [showEvents, setShowEvents] = useState(true);
@@ -599,7 +599,7 @@ export function FranchiseDashboard() {
             {userTeam?.city} {userTeam?.name}
           </h1>
           <p className="font-mono text-cream-dim text-sm mt-1">
-            {season.currentDay === 0 ? 'Opening Day' : `Day ${season.currentDay}`} of {season.totalDays} — {season.year} Season
+            {season.currentDay === 0 ? 'Opening Day' : `Day ${season.currentDay}`} of {season.totalDays} — {season.year} Season{dynastyYear > 1 ? ` (Year ${dynastyYear})` : ''}
             {' '}
             <span className={cn(
               'uppercase text-xs font-bold ml-1 px-1.5 py-0.5 rounded',

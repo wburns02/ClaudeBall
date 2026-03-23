@@ -56,6 +56,7 @@ interface FranchiseState {
   teams: Team[];
   leagueStructure: Record<string, Record<string, string[]>>;
   isInitialized: boolean;
+  dynastyYear: number; // 1-based counter: year 1, year 2, etc.
 
   // Draft state
   draftClass: DraftClass | null;
@@ -179,6 +180,7 @@ export const useFranchiseStore = create<FranchiseState>()(
   teams: [],
   leagueStructure: {},
   isInitialized: false,
+  dynastyYear: 1,
   draftClass: null,
   previewDraftClass: null,
   draftPickOrder: [],
@@ -794,6 +796,7 @@ export const useFranchiseStore = create<FranchiseState>()(
     set({
       season: { ...engine.getState() },
       teams: engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } })),
+      dynastyYear: get().dynastyYear + 1,
       draftClass: null,
       previewDraftClass: null,
       draftPickOrder: [],
@@ -1243,6 +1246,7 @@ export const useFranchiseStore = create<FranchiseState>()(
         teams: state.teams,
         leagueStructure: state.leagueStructure,
         isInitialized: state.isInitialized,
+        dynastyYear: state.dynastyYear,
         draftClass: state.draftClass,
         draftPickOrder: state.draftPickOrder,
         currentDraftPick: state.currentDraftPick,
