@@ -440,6 +440,7 @@ export function RosterPage() {
     if (result.success) {
       addToast(`✓ ${name} extended: ${years}yr / $${(salary / 1000).toFixed(1)}M`, 'success');
       setExtendingPlayer(null);
+      import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('extension'));
     } else {
       addToast(`✗ ${result.reason ?? 'Extension rejected'}`, 'error');
     }

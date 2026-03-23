@@ -1273,6 +1273,7 @@ export function FranchiseDashboard() {
             const rng = new RandomProvider(Date.now());
             const outcome = resolveDecision(managerDecision, optionId, rng);
             setDecisionOutcome(outcome);
+            achieveUnlock('manager-decision');
           }}
           onDismiss={() => { setManagerDecision(null); setDecisionOutcome(null); }}
         />

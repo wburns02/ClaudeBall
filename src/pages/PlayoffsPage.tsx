@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
@@ -163,6 +164,12 @@ export function PlayoffsPage() {
   const champion = bracket?.getChampion();
   const championTeam = champion ? engine.getTeam(champion) : null;
   const isComplete = bracket?.isComplete() ?? false;
+
+  // Achievement hooks
+  useEffect(() => {
+    if (season.phase === 'postseason') import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('playoffs'));
+    if (isComplete && champion === userTeamId) import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('world-series'));
+  }, [season.phase, isComplete, champion, userTeamId]);
   const currentRound = bracket?.getCurrentRound();
 
   // Derive actual league names from qualifiers (avoid hardcoding 'AL'/'NL')

@@ -206,6 +206,7 @@ export function TradePage() {
       setTheirBlock([]);
       setEvaluated(null);
       setResult('Trade accepted! Rosters updated.');
+      import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('first-trade'));
     } else {
       const hint = score < -10 ? ' (Offer heavily favors you — they need more value.)' :
                    score < -3  ? ' (Offer slightly favors you — try adding depth.)' :
