@@ -160,6 +160,7 @@ export function FloatingPlayByPlay({
                   const commentary = generateCommentary(cType, {
                     batter: 'batter' in ev ? ev.batter : undefined,
                     pitcher: 'pitcher' in ev ? ev.pitcher : undefined,
+                    rbi: 'rbiCount' in ev ? (ev as any).rbiCount : undefined,
                   }, rng);
                   return (
                     <div

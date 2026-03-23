@@ -37,7 +37,7 @@ const STEPS: Step[] = [
   },
   {
     title: 'Deep Management',
-    description: 'Trade Machine, Free Agency, Draft, Minor Leagues, Coaching Staff, and more.',
+    description: 'Trade Machine, Free Agency, Draft, Minor Leagues, Coaching Staff, Team Compare, and more.',
     detail: 'Every tool a real GM needs: scouting reports with 20-80 grades, contract extensions, waiver wire claims, and a full trade deadline experience.',
   },
   {

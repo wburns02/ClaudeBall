@@ -59,6 +59,7 @@ const QUICK_LINKS: QuickLink[] = [
   { label: 'Free Agency', path: '/franchise/free-agency', desc: 'Sign available players to your roster', category: 'GM' },
   { label: 'Coaching Staff', path: '/franchise/coaching-staff', desc: 'Hire/fire coaches, see bonus impacts', category: 'GM' },
   { label: 'Scouting Hub', path: '/franchise/scouting', desc: '20-80 tool grades and team needs', category: 'GM' },
+  { label: 'Compare Teams', path: '/franchise/team-compare', desc: 'Side-by-side team analysis with head-to-head', category: 'GM' },
   { label: 'League Highlights', path: '/franchise/highlights', desc: 'Shutouts, walk-offs, streaks across the league', category: 'Season' },
   { label: 'Season Story', path: '/franchise/season-story', desc: 'Narrative retelling of your season', category: 'Season' },
   { label: 'Awards Ceremony', path: '/franchise/awards', desc: 'MVP, Cy Young, ROY reveals', category: 'Season' },
