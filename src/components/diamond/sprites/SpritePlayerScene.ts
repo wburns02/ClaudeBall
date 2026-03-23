@@ -1,6 +1,6 @@
 // ── SpritePlayerScene.ts ──────────────────────────────────────────────────
-// Sprite-based player scene using V3 PIL-generated sprites with native alpha
-// transparency. No green-screen removal needed.
+// Sprite-based player scene using V2 pixel-art sprites with green-screen
+// chroma-key removal. These are proper 16-bit style hand-crafted sprites.
 
 import type { Application } from 'pixi.js';
 import { Container, Ticker } from 'pixi.js';
@@ -62,23 +62,24 @@ const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
 //   Outfielders (top ~30% of image): ~30px → 0.059
 //   CF (furthest back):              ~26px → 0.051
 
-// V3 sprites are 48px tall per frame. Scale to match perspective depth.
-// Target rendered heights: batter ~70px, pitcher ~55px, infield ~40px, outfield ~25px
+// V2 sprites: each frame is ~200-250px tall from the green-screen sheets.
+// Scale down to match perspective depth on the 600×500 game canvas.
+// Target rendered heights: batter ~75px, pitcher ~60px, infield ~45px, outfield ~28px
 const FIELDER_SCALES: Record<string, number> = {
-  P:    1.15,    // pitcher on mound: 48 * 1.15 ≈ 55px
-  C:    1.40,    // catcher at plate: 48 * 1.40 ≈ 67px
-  '1B': 0.85,   // corner infielder: 48 * 0.85 ≈ 41px
-  '2B': 0.75,   // middle infield: 48 * 0.75 ≈ 36px
-  SS:   0.75,
-  '3B': 0.85,
-  LF:   0.55,   // outfielder: 48 * 0.55 ≈ 26px
-  CF:   0.48,   // CF furthest back: 48 * 0.48 ≈ 23px
-  RF:   0.55,
+  P:    0.28,    // pitcher on mound: ~60px
+  C:    0.32,    // catcher at plate: ~70px
+  '1B': 0.22,   // corner infielder: ~48px
+  '2B': 0.19,   // middle infield: ~42px
+  SS:   0.19,
+  '3B': 0.22,
+  LF:   0.14,   // outfielder: ~30px
+  CF:   0.12,   // CF furthest back: ~26px
+  RF:   0.14,
 };
 
-const BATTER_SCALE  = 1.50;  // batter — largest: 48 * 1.50 ≈ 72px
-const UMPIRE_SCALE  = 1.30;  // umpire behind plate: 48 * 1.30 ≈ 62px
-const RUNNER_SCALE  = 0.75;  // base runners: 48 * 0.75 ≈ 36px
+const BATTER_SCALE  = 0.35;  // batter — largest: ~75px
+const UMPIRE_SCALE  = 0.30;  // umpire behind plate: ~65px
+const RUNNER_SCALE  = 0.19;  // base runners: ~42px
 
 // ── Facing / flip rules ───────────────────────────────────────────────────
 // Sprite sheets drawn facing LEFT by default (player faces left).
@@ -152,6 +153,7 @@ export class SpritePlayerScene {
   }
 
   private async _loadAllSheets(): Promise<void> {
+    // Load V2 pixel-art sprites (green-screen removal handled by SpriteSheetLoader)
     const [
       batterFrames,
       pitcherFrames,
@@ -159,11 +161,11 @@ export class SpritePlayerScene {
       runnerFrames,
       catcherUmpireFrames,
     ] = await Promise.all([
-      loadSheet(SPRITE_SHEETS.batterV3),
-      loadSheet(SPRITE_SHEETS.pitcherV3),
-      loadSheet(SPRITE_SHEETS.fielderV3),
-      loadSheet(SPRITE_SHEETS.runnerV3),
-      loadSheet(SPRITE_SHEETS.catcherUmpireV3),
+      loadSheet(SPRITE_SHEETS.batterV2),
+      loadSheet(SPRITE_SHEETS.pitcherV2),
+      loadSheet(SPRITE_SHEETS.fielderV2),
+      loadSheet(SPRITE_SHEETS.runnerV2),
+      loadSheet(SPRITE_SHEETS.catcherUmpireV2),
     ]);
 
     this.batterFrames        = batterFrames;
