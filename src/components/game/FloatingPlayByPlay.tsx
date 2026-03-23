@@ -1,6 +1,8 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/cn.ts';
 import type { GameEvent } from '@/engine/types/index.ts';
+import { generateCommentary, moodColor } from '@/engine/commentary/BroadcastCommentary.ts';
+import { RandomProvider } from '@/engine/core/RandomProvider.ts';
 
 interface FloatingPlayByPlayProps {
   events: GameEvent[];
@@ -31,6 +33,23 @@ function isExtraBase(ev: GameEvent): boolean {
   );
 }
 
+function eventToCommentaryType(ev: GameEvent): string | null {
+  if (ev.type === 'at_bat_result') {
+    if (ev.result.includes('home_run')) return 'homerun';
+    if (ev.result.includes('triple')) return 'triple';
+    if (ev.result.includes('double') && !ev.result.includes('double_play')) return 'double';
+    if (ev.result.includes('single')) return 'single';
+    if (ev.result.includes('strikeout')) return 'strikeout';
+    if (ev.result.includes('walk')) return 'walk';
+    if (ev.result.includes('double_play')) return 'double_play';
+    if (ev.result.includes('fly') || ev.result.includes('pop')) return 'flyout';
+    if (ev.result.includes('ground')) return 'groundout';
+    return 'groundout';
+  }
+  if (ev.type === 'inning_change') return 'inning_start';
+  return null;
+}
+
 export function FloatingPlayByPlay({
   events,
   visible,
@@ -38,6 +57,7 @@ export function FloatingPlayByPlay({
   className,
 }: FloatingPlayByPlayProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [broadcastMode, setBroadcastMode] = useState(true);
 
   // Auto-scroll to latest
   useEffect(() => {
@@ -99,7 +119,13 @@ export function FloatingPlayByPlay({
               flexShrink: 0,
             }}
           >
-            Play-by-Play
+            <span>Play-by-Play</span>
+            <button
+              onClick={() => setBroadcastMode(v => !v)}
+              style={{ float: 'right', color: broadcastMode ? '#d4a843' : 'rgba(184,176,164,0.4)', cursor: 'pointer', fontSize: 9 }}
+            >
+              {broadcastMode ? 'BROADCAST' : 'RAW'}
+            </button>
           </div>
 
           {/* Events list */}
@@ -125,28 +151,52 @@ export function FloatingPlayByPlay({
                 No plays yet
               </div>
             )}
-            {recent.map((ev, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'py-0.5 font-mono text-[11px] leading-snug truncate',
-                  isHomRun(ev)
-                    ? 'text-gold font-bold'
-                    : isExtraBase(ev)
-                    ? 'text-gold-dim'
+            {recent.map((ev, i) => {
+              // In broadcast mode, generate commentary for significant events
+              if (broadcastMode && ev.type !== 'pitch') {
+                const cType = eventToCommentaryType(ev);
+                if (cType) {
+                  const rng = new RandomProvider(i * 1000 + ev.description.length);
+                  const commentary = generateCommentary(cType, {
+                    batter: 'batter' in ev ? ev.batter : undefined,
+                    pitcher: 'pitcher' in ev ? ev.pitcher : undefined,
+                  }, rng);
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        'py-0.5 font-mono text-[11px] leading-snug',
+                        ev.type === 'inning_change' && 'mt-2 pt-1.5 border-t border-navy-lighter/60'
+                      )}
+                      style={{ color: moodColor(commentary.mood) }}
+                      title={ev.description}
+                    >
+                      {commentary.text}
+                    </div>
+                  );
+                }
+              }
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    'py-0.5 font-mono text-[11px] leading-snug truncate',
+                    isHomRun(ev) ? 'text-gold font-bold'
+                    : isExtraBase(ev) ? 'text-gold-dim'
                     : EVENT_COLOR[ev.type] || 'text-cream-dim',
-                  ev.type === 'inning_change' && 'mt-2 pt-1.5 border-t border-navy-lighter/60'
-                )}
-                title={ev.description}
-              >
-                {ev.type === 'pitch' && (
-                  <span style={{ color: 'rgba(184,176,164,0.35)' }} className="mr-1">
-                    {ev.balls}-{ev.strikes}
-                  </span>
-                )}
-                {ev.description}
-              </div>
-            ))}
+                    ev.type === 'inning_change' && 'mt-2 pt-1.5 border-t border-navy-lighter/60'
+                  )}
+                  title={ev.description}
+                >
+                  {ev.type === 'pitch' && (
+                    <span style={{ color: 'rgba(184,176,164,0.35)' }} className="mr-1">
+                      {ev.balls}-{ev.strikes}
+                    </span>
+                  )}
+                  {ev.description}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
