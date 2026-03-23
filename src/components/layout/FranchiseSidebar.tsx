@@ -158,6 +158,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'SEASON',
     items: [
       { label: "Owner's Office", path: '/franchise/goals', icon: 'goals' },
+      { label: 'Report Card', path: '/franchise/report-card', icon: 'records' },
       { label: 'Team Morale', path: '/franchise/morale', icon: 'morale' },
       { label: 'Hot & Cold', path: '/franchise/hot-cold', icon: 'hotCold' },
       { label: 'Awards', path: '/franchise/awards', icon: 'awards' },
