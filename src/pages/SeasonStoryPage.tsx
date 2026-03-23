@@ -217,7 +217,7 @@ export function SeasonStoryPage() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className={cn('font-mono text-lg font-bold', style.accent)}>{ch.record}</p>
-                  <p className="font-mono text-[9px] text-cream-dim/40 mt-0.5">{isExpanded ? 'collapse' : 'read more'}</p>
+                  <p className={cn('font-mono text-[10px] mt-1', isExpanded ? 'text-cream-dim/50' : 'text-gold/50 underline underline-offset-2')}>{isExpanded ? '- collapse' : '+ read more'}</p>
                 </div>
               </div>
             </button>

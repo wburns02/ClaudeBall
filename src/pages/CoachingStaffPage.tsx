@@ -146,17 +146,17 @@ function EmptySlot({ role, onHire }: { role: CoachRole; onHire: () => void }) {
 // ── Bonus summary ───────────────────────────────────────────────
 function BonusSummary({ bonus }: { bonus: StaffBonus }) {
   const items = [
-    { label: 'Batting Dev', value: bonus.battingDev, suffix: '%', abbr: 'BAT' },
-    { label: 'Pitching Dev', value: bonus.pitchingDev, suffix: '%', abbr: 'PIT' },
-    { label: 'Morale', value: bonus.morale, suffix: '', abbr: 'MOR' },
-    { label: 'Strategy', value: bonus.gameStrategy, suffix: '%', abbr: 'STR' },
-    { label: 'Scouting', value: bonus.scoutAccuracy, suffix: '%', abbr: 'SCT' },
+    { label: 'Batting Dev', value: bonus.battingDev, suffix: '%', abbr: 'BAT', tip: 'Bonus to hitter development during sim' },
+    { label: 'Pitching Dev', value: bonus.pitchingDev, suffix: '%', abbr: 'PIT', tip: 'Bonus to pitcher development during sim' },
+    { label: 'Morale', value: bonus.morale, suffix: '', abbr: 'MOR', tip: 'Flat boost to team morale each day' },
+    { label: 'Strategy', value: bonus.gameStrategy, suffix: '%', abbr: 'STR', tip: 'Improves in-game decision quality' },
+    { label: 'Scouting', value: bonus.scoutAccuracy, suffix: '%', abbr: 'SCT', tip: 'Improves scouting report accuracy' },
   ];
 
   return (
     <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
-      {items.map(({ label, value, suffix, abbr }) => (
-        <div key={label} className="text-center p-2 rounded-lg bg-navy-lighter/15 border border-navy-lighter/30">
+      {items.map(({ label, value, suffix, abbr, tip }) => (
+        <div key={label} className="text-center p-2 rounded-lg bg-navy-lighter/15 border border-navy-lighter/30" title={tip}>
           <p className="font-mono text-[10px] text-gold/50 tracking-widest mb-1">{abbr}</p>
           <p className={cn(
             'font-display text-lg font-bold',

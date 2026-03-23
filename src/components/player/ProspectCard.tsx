@@ -75,7 +75,7 @@ function getComp(ovr: number, isPitcher: boolean) {
 }
 
 // ── Tool Bar ────────────────────────────────────────────────────
-function ToolBar({ label, current, potential }: { label: string; current: number; potential: number }) {
+function ToolBar({ label, current, potential, delay }: { label: string; current: number; potential: number; delay?: number }) {
   const curColor = gradeColor(current);
   const potColor = gradeColor(potential);
   return (
@@ -83,7 +83,7 @@ function ToolBar({ label, current, potential }: { label: string; current: number
       <span className="font-mono text-[10px] text-cream-dim/60 w-14 shrink-0 uppercase tracking-wider">{label}</span>
       <div className="flex-1 relative h-2.5 bg-navy-lighter/30 rounded-full overflow-hidden">
         {/* Potential (background) */}
-        <div className="absolute inset-y-0 left-0 rounded-full opacity-30" style={{ width: `${(potential / 80) * 100}%`, backgroundColor: potColor }} />
+        <div className="absolute inset-y-0 left-0 rounded-full opacity-30 transition-all duration-700" style={{ width: `${(potential / 80) * 100}%`, backgroundColor: potColor, transitionDelay: `${delay ?? 0}ms` }} />
         {/* Current (foreground) */}
         <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700" style={{ width: `${(current / 80) * 100}%`, backgroundColor: curColor }} />
       </div>
@@ -171,7 +171,7 @@ export function ProspectCard({ player, teamName, teamAbbr, compact }: Props) {
           <p className="font-mono text-[9px] text-cream-dim/40 uppercase tracking-widest">20-80 Tool Grades</p>
           <p className="font-mono text-[8px] text-cream-dim/30">NOW / PROJ</p>
         </div>
-        {tools.map(t => <ToolBar key={t.label} {...t} />)}
+        {tools.map((t, i) => <ToolBar key={t.label} {...t} delay={i * 80} />)}
       </div>
 
       {/* Projection + Risk */}
