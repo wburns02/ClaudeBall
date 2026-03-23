@@ -132,6 +132,95 @@ function TeamSelector({
   );
 }
 
+// ── Pitch timing bar — visual indicator for swing timing ──────────────────────
+function PitchTimingBar({
+  startTime,
+  durationMs,
+  sweetSpotStart,
+  sweetSpotEnd,
+}: {
+  startTime: number;
+  durationMs: number;
+  sweetSpotStart: number;
+  sweetSpotEnd: number;
+}) {
+  const barRef = useRef<HTMLDivElement>(null);
+  const markerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let animId: number;
+    const animate = () => {
+      const elapsed = performance.now() - startTime;
+      const pct = Math.min(elapsed / durationMs, 1);
+      if (markerRef.current) {
+        markerRef.current.style.left = `${pct * 100}%`;
+      }
+      if (pct < 1) {
+        animId = requestAnimationFrame(animate);
+      }
+    };
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [startTime, durationMs]);
+
+  const barWidth = 200;
+
+  return (
+    <div style={{ width: barWidth, textAlign: 'center' }}>
+      <div
+        style={{
+          fontFamily: 'IBM Plex Mono, monospace',
+          fontSize: 9,
+          color: 'rgba(232,224,212,0.5)',
+          marginBottom: 4,
+          letterSpacing: '0.1em',
+        }}
+      >
+        SWING NOW!
+      </div>
+      <div
+        ref={barRef}
+        style={{
+          position: 'relative',
+          width: barWidth,
+          height: 12,
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: 6,
+          overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.15)',
+        }}
+      >
+        {/* Sweet spot zone (green) */}
+        <div
+          style={{
+            position: 'absolute',
+            left: `${sweetSpotStart * 100}%`,
+            width: `${(sweetSpotEnd - sweetSpotStart) * 100}%`,
+            height: '100%',
+            background: 'rgba(34,197,94,0.4)',
+            borderLeft: '2px solid rgba(34,197,94,0.8)',
+            borderRight: '2px solid rgba(34,197,94,0.8)',
+          }}
+        />
+        {/* Moving marker */}
+        <div
+          ref={markerRef}
+          style={{
+            position: 'absolute',
+            top: -2,
+            width: 4,
+            height: 16,
+            background: '#d4a843',
+            borderRadius: 2,
+            boxShadow: '0 0 6px rgba(212,168,67,0.6)',
+            transform: 'translateX(-50%)',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function LiveGamePage() {
@@ -161,6 +250,15 @@ export function LiveGamePage() {
   });
   const [inningGraphic, setInningGraphic] = useState<{ text: string; sub: string } | null>(null);
   const prevInningRef = useRef<string>('');
+
+  // ── Pitch timing mechanic ──────────────────────────────────────────
+  // When batting, the pitch auto-starts and the player must TIME their swing
+  const [pitchInFlight, setPitchInFlight] = useState(false);
+  const [swingTimingResult, setSwingTimingResult] = useState<string | null>(null);
+  const pitchStartTimeRef = useRef<number>(0);
+  const PITCH_FLIGHT_MS = 3000; // Total time: windup + ball flight to plate
+  const SWEET_SPOT_START = 0.60; // Perfect timing window starts at 60% of flight
+  const SWEET_SPOT_END = 0.75; // Perfect timing window ends at 75% of flight
   const lastInningHalfRef = useRef<string>('');
   const lastBatterRef = useRef<string>('');
 
@@ -412,15 +510,63 @@ export function LiveGamePage() {
     resolveOnePitch();
   }, [phase, resolveOnePitch, startNextAtBat]);
 
-  // Batting: swing
+  // ── Pitch timing: auto-start pitch when awaiting_swing ──────────────
+  useEffect(() => {
+    if (phase === 'awaiting_swing' && !pitchInFlight && !isAutoPlaying) {
+      // Auto-launch the pitch after a brief pause (between-pitch feel)
+      const timer = setTimeout(() => {
+        setPitchInFlight(true);
+        pitchStartTimeRef.current = performance.now();
+        setSwingTimingResult(null);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, pitchInFlight, isAutoPlaying]);
+
+  // Auto-take if player doesn't swing before pitch arrives
+  useEffect(() => {
+    if (!pitchInFlight || phase !== 'awaiting_swing') return;
+    const timer = setTimeout(() => {
+      // Pitch arrived at plate — player didn't swing → it's a take
+      setPitchInFlight(false);
+      resolveOnePitch({ action: 'take' });
+    }, PITCH_FLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [pitchInFlight, phase, resolveOnePitch]);
+
+  // Calculate swing timing based on when the player pressed swing
+  const calculateTiming = useCallback((): import('@/engine/types/interactive.ts').SwingTiming => {
+    const elapsed = performance.now() - pitchStartTimeRef.current;
+    const pct = elapsed / PITCH_FLIGHT_MS;
+
+    if (pct < 0.40) return 'very_early';
+    if (pct < SWEET_SPOT_START) return 'early';
+    if (pct <= SWEET_SPOT_END) return 'perfect';
+    if (pct < 0.88) return 'late';
+    return 'very_late';
+  }, []);
+
+  // Batting: swing with timing
   const handleSwing = useCallback((type: SwingType) => {
     if (phase !== 'awaiting_swing') return;
-    resolveOnePitch({ action: 'swing', swingType: type });
-  }, [phase, resolveOnePitch]);
 
-  // Batting: take
+    if (pitchInFlight) {
+      // Player swung during pitch flight — calculate timing
+      const timing = calculateTiming();
+      setPitchInFlight(false);
+      setSwingTimingResult(timing === 'perfect' ? 'PERFECT!' : timing === 'early' ? 'EARLY' : timing === 'late' ? 'LATE' : timing === 'very_early' ? 'WAY EARLY' : 'WAY LATE');
+      setTimeout(() => setSwingTimingResult(null), 800);
+      resolveOnePitch({ action: 'swing', swingType: type, timing });
+    } else {
+      // Pitch hasn't started yet or already arrived — just resolve normally
+      resolveOnePitch({ action: 'swing', swingType: type });
+    }
+  }, [phase, pitchInFlight, resolveOnePitch, calculateTiming]);
+
+  // Batting: take (let the pitch go by)
   const handleTake = useCallback(() => {
     if (phase !== 'awaiting_swing') return;
+    setPitchInFlight(false);
     resolveOnePitch({ action: 'take' });
   }, [phase, resolveOnePitch]);
 
@@ -625,6 +771,59 @@ export function LiveGamePage() {
                 background: 'linear-gradient(90deg, transparent, #d4a843, transparent)',
                 marginTop: 16,
               }}
+            />
+          </div>
+        )}
+
+        {/* ── SWING TIMING result flash ── */}
+        {swingTimingResult && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '40%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 20,
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                fontFamily: 'Oswald, sans-serif',
+                fontSize: 28,
+                fontWeight: 700,
+                color: swingTimingResult === 'PERFECT!'
+                  ? '#22c55e'
+                  : swingTimingResult.includes('WAY')
+                  ? '#ef4444'
+                  : '#eab308',
+                letterSpacing: '0.1em',
+                textShadow: '0 2px 8px rgba(0,0,0,0.9)',
+                animation: 'fadeInOut 0.8s ease',
+              }}
+            >
+              {swingTimingResult}
+            </div>
+          </div>
+        )}
+
+        {/* ── PITCH TIMING BAR (shown when pitch is in flight and user is batting) ── */}
+        {pitchInFlight && phase === 'awaiting_swing' && !isAutoPlaying && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 90,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 18,
+              pointerEvents: 'none',
+            }}
+          >
+            <PitchTimingBar
+              startTime={pitchStartTimeRef.current}
+              durationMs={PITCH_FLIGHT_MS}
+              sweetSpotStart={SWEET_SPOT_START}
+              sweetSpotEnd={SWEET_SPOT_END}
             />
           </div>
         )}
