@@ -177,6 +177,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: 'HISTORY',
     items: [
+      { label: 'Season Story', path: '/franchise/season-story', icon: 'news' },
       { label: 'Season Timeline', path: '/franchise/timeline', icon: 'analytics' },
       { label: 'Season Review', path: '/franchise/season-review', icon: 'records' },
       { label: 'Franchise History', path: '/franchise/history', icon: 'history' },
