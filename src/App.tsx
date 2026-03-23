@@ -86,6 +86,7 @@ const TradeMachinePage = lazy(() => import('@/pages/TradeMachinePage.tsx').then(
 const SeasonReviewPage = lazy(() => import('@/pages/SeasonReviewPage.tsx').then(m => ({ default: m.SeasonReviewPage })));
 const FranchiseReportCard = lazy(() => import('@/pages/FranchiseReportCard.tsx').then(m => ({ default: m.FranchiseReportCard })));
 const CoachingStaffPage = lazy(() => import('@/pages/CoachingStaffPage.tsx').then(m => ({ default: m.CoachingStaffPage })));
+const TradeDeadlinePage = lazy(() => import('@/pages/TradeDeadlinePage.tsx').then(m => ({ default: m.TradeDeadlinePage })));
 
 // Build team options for the new franchise screen (deduplicated — some teams appear in multiple divisions)
 const TEAM_OPTIONS = (() => {
@@ -227,6 +228,7 @@ function AppRoutes() {
           <Route path="/franchise/season-review" element={<FranchiseLayout><SeasonReviewPage /></FranchiseLayout>} />
           <Route path="/franchise/report-card" element={<FranchiseLayout><FranchiseReportCard /></FranchiseLayout>} />
           <Route path="/franchise/coaching-staff" element={<FranchiseLayout><CoachingStaffPage /></FranchiseLayout>} />
+          <Route path="/franchise/trade-deadline" element={<FranchiseLayout><TradeDeadlinePage /></FranchiseLayout>} />
 
           {/* ── URL alias redirects (common alternative paths) ──────── */}
           <Route path="/franchise/dashboard" element={<Navigate to="/franchise" replace />} />
