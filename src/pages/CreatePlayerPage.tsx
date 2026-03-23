@@ -282,7 +282,7 @@ export function CreatePlayerPage() {
 
           {/* Right: Archetype selector */}
           <div>
-            <Panel title="Choose Archetype">
+            <Panel title={`Choose Archetype (${ARCHETYPE_TEMPLATES.length})`}>
               <div className="grid grid-cols-1 gap-2.5 max-h-[520px] overflow-y-auto pr-1">
                 {ARCHETYPE_TEMPLATES.map(t => (
                   <ArchetypeCard

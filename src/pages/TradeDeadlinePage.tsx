@@ -257,6 +257,11 @@ export function TradeDeadlinePage() {
                 Target pitching or hitting upgrades from selling teams
               </p>
             )}
+            {!deadlinePassed && userAnalysis?.type === 'neutral' && (
+              <p className="font-mono text-[10px] text-cream-dim/50 text-center mb-1">
+                Evaluate your roster — buy a piece to contend, or sell and rebuild?
+              </p>
+            )}
             <div className="flex gap-2 justify-center">
               {!deadlinePassed && (
                 <Button size="sm" variant="primary" onClick={() => navigate('/franchise/trade')}>

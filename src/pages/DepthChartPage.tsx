@@ -419,6 +419,20 @@ export function DepthChartPage() {
         </div>
       </div>
 
+      {/* Quick-jump links */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="font-mono text-[10px] text-cream-dim/30 uppercase tracking-wider">Jump to:</span>
+        {['Position Players', 'Starting Rotation', 'Bullpen'].map(s => (
+          <button
+            key={s}
+            onClick={() => document.getElementById(`dc-${s.toLowerCase().replace(/ /g,'-')}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="px-2.5 py-1 rounded border border-navy-lighter/40 font-mono text-[10px] text-cream-dim hover:text-gold hover:border-gold/40 transition-colors cursor-pointer"
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
       {/* Scout grade legend */}
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         <span className="font-mono text-[10px] text-cream-dim/30 uppercase tracking-wider mr-1">20-80 Scale:</span>
@@ -439,7 +453,7 @@ export function DepthChartPage() {
       </div>
 
       {/* Field positions grid */}
-      <Panel title="Position Players" className="mb-6">
+      <Panel title="Position Players" className="mb-6" id="dc-position-players">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FIELD_POSITIONS.map(pos => (
             <PositionColumn
@@ -456,7 +470,7 @@ export function DepthChartPage() {
       {/* Pitching staff */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Starting rotation */}
-        <Panel title="Starting Rotation">
+        <Panel title="Starting Rotation" id="dc-starting-rotation">
           <div className="space-y-2">
             {startingRotation.map((p, i) => (
               <PitcherRow
@@ -476,7 +490,7 @@ export function DepthChartPage() {
         </Panel>
 
         {/* Bullpen */}
-        <Panel title="Bullpen">
+        <Panel title="Bullpen" id="dc-bullpen">
           <div className="space-y-2">
             {bullpen.slice(0, 8).map((p, i) => (
               <PitcherRow
