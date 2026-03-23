@@ -16,6 +16,7 @@ import { ManagerDecisionModal } from '@/components/game/ManagerDecisionModal.tsx
 import { generateGameDecisions, resolveDecision, type ManagerDecision, type DecisionOutcome } from '@/engine/manager/ManagerDecisions.ts';
 import { RandomProvider } from '@/engine/core/RandomProvider.ts';
 import { useAchievementStore } from '@/stores/achievementStore.ts';
+import { SimProgressOverlay } from '@/components/game/SimProgressOverlay.tsx';
 
 // Season milestones that generate inbox notifications
 const INBOX_MILESTONES: Array<{
@@ -226,6 +227,7 @@ export function FranchiseDashboard() {
   const [pendingUserGame, setPendingUserGame] = useState<ScheduledGame | null>(null);
   const [managerDecision, setManagerDecision] = useState<ManagerDecision | null>(null);
   const [decisionOutcome, setDecisionOutcome] = useState<DecisionOutcome | null>(null);
+  const [simProgress, setSimProgress] = useState<{ startDay: number; endDay: number; days: { day: number; userWon: boolean | null; userScore?: number; oppScore?: number; oppAbbr?: string }[] } | null>(null);
 
   // Unlock first-franchise achievement on dashboard mount
   useEffect(() => { achieveUnlock('first-franchise'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -459,13 +461,31 @@ export function FranchiseDashboard() {
 
   const achieveUnlock = useAchievementStore(s => s.unlock);
   const doSim = (days: number) => {
+    const startDay = season.currentDay;
     const rec = season.standings.getRecord(userTeamId);
-    setSimFromDay(season.currentDay);
+    setSimFromDay(startDay);
     setSimFromRecord(rec ? { wins: rec.wins, losses: rec.losses } : null);
     setShowEvents(true);
     setRecapTab('summary');
     simDays(days);
     if (days >= 30) achieveUnlock('sim-30');
+    // Build sim progress data for overlay (only for multi-day sims)
+    if (days >= 7) {
+      const simDays: typeof simProgress extends { days: infer D } | null ? D : never = [];
+      for (let d = startDay + 1; d <= season.currentDay; d++) {
+        const game = season.schedule.find(g => g.played && g.date === d && (g.awayId === userTeamId || g.homeId === userTeamId));
+        if (game) {
+          const isHome = game.homeId === userTeamId;
+          const us = isHome ? (game.homeScore ?? 0) : (game.awayScore ?? 0);
+          const them = isHome ? (game.awayScore ?? 0) : (game.homeScore ?? 0);
+          const oppId = isHome ? game.awayId : game.homeId;
+          simDays.push({ day: d, userWon: us > them, userScore: us, oppScore: them, oppAbbr: engine?.getTeam(oppId)?.abbreviation ?? '???' });
+        } else {
+          simDays.push({ day: d, userWon: null });
+        }
+      }
+      setSimProgress({ startDay, endDay: season.currentDay, days: simDays });
+    }
     // Check win milestones after sim
     const after = season.standings.getRecord(userTeamId);
     if (after) {
@@ -1273,6 +1293,17 @@ export function FranchiseDashboard() {
           </div>
         );
       })()}
+
+      {/* Sim Progress Overlay */}
+      {simProgress && (
+        <SimProgressOverlay
+          startDay={simProgress.startDay}
+          endDay={simProgress.endDay}
+          days={simProgress.days}
+          teamAbbr={engine?.getTeam(userTeamId)?.abbreviation ?? 'THK'}
+          onComplete={() => setSimProgress(null)}
+        />
+      )}
 
       {/* Manager Decision Modal */}
       {managerDecision && (
