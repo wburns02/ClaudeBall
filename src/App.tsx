@@ -244,10 +244,12 @@ function App() {
   const [splashDone, setSplashDone] = useState(hasFranchise);
 
   // Only show splash on first-ever load (no saved franchise)
+  // Safety: always dismiss splash after max 2.5s even if something goes wrong
   useEffect(() => {
     if (hasFranchise) return;
     const t = setTimeout(() => setSplashDone(true), 1200);
-    return () => clearTimeout(t);
+    const safety = setTimeout(() => setSplashDone(true), 2500);
+    return () => { clearTimeout(t); clearTimeout(safety); };
   }, [hasFranchise]);
 
   return (

@@ -229,6 +229,25 @@ export function FranchiseDashboard() {
     return () => window.removeEventListener('keydown', onKey);
   }, [pendingUserGame]);
 
+  // Keyboard shortcuts for common actions
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (pendingUserGame || simConfirm !== null) return;
+
+      if (e.key === 'n' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        handleAdvance();
+      } else if (e.key === 'w' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        handleSimWeek();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   // Track which lastDayEvents we've already processed to avoid duplicates
   const prevEventsRef = useRef<typeof lastDayEvents>(null);
   const prevDayRef = useRef<number>(-1);
@@ -671,9 +690,11 @@ export function FranchiseDashboard() {
               <>
                 <Button className="w-full" onClick={handleAdvance}>
                   Advance Day {season.currentDay + 1}
+                  <span className="ml-2 text-navy/50 text-[10px] font-mono">[N]</span>
                 </Button>
                 <Button className="w-full" variant="secondary" onClick={handleSimWeek}>
                   Sim 7 Days
+                  <span className="ml-2 text-cream-dim/30 text-[10px] font-mono">[W]</span>
                 </Button>
                 <Button className="w-full" variant="secondary" onClick={() => doSim(30)}>
                   Sim 30 Days
