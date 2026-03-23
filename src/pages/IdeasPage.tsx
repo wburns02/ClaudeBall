@@ -25,12 +25,23 @@ const CATEGORIES = [
 const USERNAME_KEY = 'claudeball-username';
 const IDEAS_KEY = 'claudeball-ideas-v2';
 
+const SEED_IDEAS: Idea[] = [
+  { id: 'seed-1', text: 'Add spring training mode where you can evaluate prospects before the season starts', author: 'BaseballFan99', votes: 12, votedBy: [], createdAt: '2026-01-15T10:00:00Z', category: 'feature' },
+  { id: 'seed-2', text: 'International free agency with scouting trips to Japan, Korea, Cuba', author: 'ScoutMaster', votes: 9, votedBy: [], createdAt: '2026-01-18T14:30:00Z', category: 'feature' },
+  { id: 'seed-3', text: 'Salary arbitration hearings — argue your case for player contracts', author: 'GMofTheYear', votes: 7, votedBy: [], createdAt: '2026-02-01T09:00:00Z', category: 'gameplay' },
+  { id: 'seed-4', text: 'The sunset stadium atmosphere is gorgeous! More weather effects please', author: 'PixelArtLover', votes: 5, votedBy: [], createdAt: '2026-02-10T16:00:00Z', category: 'graphics' },
+  { id: 'seed-5', text: 'Rain delay mini-game while waiting for the weather to clear', author: 'FunFirst', votes: 3, votedBy: [], createdAt: '2026-02-15T11:00:00Z', category: 'gameplay' },
+];
+
 function loadIdeasFromStorage(): Idea[] {
   try {
     const raw = localStorage.getItem(IDEAS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (raw) return JSON.parse(raw);
+    // First load — seed with starter ideas
+    saveIdeasToStorage(SEED_IDEAS);
+    return SEED_IDEAS;
   } catch {
-    return [];
+    return SEED_IDEAS;
   }
 }
 
