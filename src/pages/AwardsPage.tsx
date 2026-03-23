@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useHistoryStore } from '@/stores/historyStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
+import { AwardsCeremony, type CeremonyAward } from '@/components/game/AwardsCeremony.tsx';
 import { cn } from '@/lib/cn.ts';
 import { ops } from '@/engine/types/stats.ts';
 import { getFieldingForPosition } from '@/engine/types/player.ts';
@@ -326,6 +327,8 @@ export function AwardsPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId } = useFranchiseStore();
   const { awardHistory } = useHistoryStore();
+  const [showCeremony, setShowCeremony] = useState(false);
+  const playerStats = useStatsStore(s => s.playerStats);
 
   if (!season || !engine || !userTeamId) {
     return (
@@ -348,14 +351,87 @@ export function AwardsPage() {
     return t ? `${t.city} ${t.name}` : id;
   };
 
+  // Build ceremony steps from current awards
+  const ceremonySteps = useMemo(() => {
+    const leagueStructure = engine.getLeagueStructure();
+    const steps: { awardType: string; league: string; winner: CeremonyAward; runnersUp: CeremonyAward[] }[] = [];
+
+    for (const [league, divisions] of Object.entries(leagueStructure)) {
+      const leagueTeamIds = new Set<string>();
+      for (const teamIds of Object.values(divisions)) teamIds.forEach(id => leagueTeamIds.add(id));
+      const leagueStats = Object.values(playerStats).filter(ps => leagueTeamIds.has(ps.teamId));
+
+      // MVP
+      const batters = leagueStats.filter(ps => ps.position !== 'P' && ps.batting.pa >= 30);
+      if (batters.length >= 2) {
+        const sorted = [...batters].sort((a, b) => {
+          const sa = (a.batting.h / Math.max(1, a.batting.ab)) * 100 + a.batting.hr * 3 + a.batting.rbi * 0.5;
+          const sb = (b.batting.h / Math.max(1, b.batting.ab)) * 100 + b.batting.hr * 3 + b.batting.rbi * 0.5;
+          return sb - sa;
+        });
+        const w = sorted[0]!;
+        const mkBatLine = (p: typeof w) => `.${Math.round((p.batting.h / Math.max(1, p.batting.ab)) * 1000).toString().padStart(3, '0')} / ${p.batting.hr} HR / ${p.batting.rbi} RBI`;
+        const mkBatShort = (p: typeof w) => `.${Math.round((p.batting.h / Math.max(1, p.batting.ab)) * 1000).toString().padStart(3, '0')} / ${p.batting.hr} HR`;
+        steps.push({
+          awardType: 'MVP', league: `${league} League`,
+          winner: { playerName: w.playerName, teamId: w.teamId, position: w.position, statLine: mkBatLine(w) },
+          runnersUp: sorted.slice(1, 4).map(p => ({ playerName: p.playerName, teamId: p.teamId, position: p.position, statLine: mkBatShort(p) })),
+        });
+      }
+
+      // Cy Young
+      const pitchers = leagueStats.filter(ps => ps.position === 'P' && ps.pitching.ip >= 20);
+      if (pitchers.length >= 2) {
+        const sorted = [...pitchers].sort((a, b) => {
+          const eraA = a.pitching.ip > 0 ? (a.pitching.er / a.pitching.ip) * 9 : 99;
+          const eraB = b.pitching.ip > 0 ? (b.pitching.er / b.pitching.ip) * 9 : 99;
+          return eraA - eraB;
+        });
+        const w = sorted[0]!;
+        const era = w.pitching.ip > 0 ? ((w.pitching.er / w.pitching.ip) * 9).toFixed(2) : '0.00';
+        steps.push({
+          awardType: 'CyYoung', league: `${league} League`,
+          winner: { playerName: w.playerName, teamId: w.teamId, position: 'P', statLine: `${era} ERA / ${w.pitching.so} K` },
+          runnersUp: sorted.slice(1, 4).map(p => { const pe = p.pitching.ip > 0 ? ((p.pitching.er / p.pitching.ip) * 9).toFixed(2) : '0.00'; return { playerName: p.playerName, teamId: p.teamId, position: 'P', statLine: `${pe} ERA / ${p.pitching.so} K` }; }),
+        });
+      }
+
+      // ROY
+      const rookies = leagueStats.filter(ps => ps.position !== 'P' && ps.batting.pa >= 20);
+      if (rookies.length >= 2) {
+        const youngest = [...rookies].sort((a, b) => {
+          const sa = a.batting.hr * 2 + a.batting.rbi + (a.batting.h / Math.max(1, a.batting.ab)) * 50;
+          const sb = b.batting.hr * 2 + b.batting.rbi + (b.batting.h / Math.max(1, b.batting.ab)) * 50;
+          return sb - sa;
+        });
+        const w = youngest[0]!;
+        const mkLine = (p: typeof w) => `.${Math.round((p.batting.h / Math.max(1, p.batting.ab)) * 1000).toString().padStart(3, '0')} / ${p.batting.hr} HR / ${p.batting.rbi} RBI`;
+        steps.push({
+          awardType: 'ROY', league: `${league} League`,
+          winner: { playerName: w.playerName, teamId: w.teamId, position: w.position, statLine: mkLine(w) },
+          runnersUp: youngest.slice(1, 3).map(p => ({ playerName: p.playerName, teamId: p.teamId, position: p.position, statLine: `.${Math.round((p.batting.h / Math.max(1, p.batting.ab)) * 1000).toString().padStart(3, '0')} / ${p.batting.hr} HR` })),
+        });
+      }
+    }
+
+    return steps;
+  }, [engine, playerStats, season.year]);
+
   return (
     <div className="min-h-screen p-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Awards</h1>
-        <p className="font-mono text-cream-dim text-sm mt-1">
-          Season honors — MVP, Cy Young, Rookie of the Year
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-display text-3xl text-gold tracking-wide uppercase">Awards</h1>
+          <p className="font-mono text-cream-dim text-sm mt-1">
+            Season honors — MVP, Cy Young, Rookie of the Year
+          </p>
+        </div>
+        {ceremonySteps.length > 0 && (
+          <Button variant="primary" size="sm" onClick={() => setShowCeremony(true)}>
+            Awards Ceremony
+          </Button>
+        )}
       </div>
 
       {/* Current Season */}
@@ -366,6 +442,17 @@ export function AwardsPage() {
           userTeamId={userTeamId}
         />
       </Panel>
+
+      {/* Awards Ceremony Overlay */}
+      {showCeremony && (
+        <AwardsCeremony
+          steps={ceremonySteps}
+          year={season.year}
+          userTeamId={userTeamId}
+          getTeamName={getTeamName}
+          onClose={() => setShowCeremony(false)}
+        />
+      )}
 
       {/* Past Seasons */}
       {pastYears.length > 0 && (
