@@ -11,6 +11,7 @@ import { getPlayerName } from '@/engine/types/player.ts';
 import { battingAvg, onBasePct, slugging, era, whip, formatIP } from '@/engine/types/stats.ts';
 import { calcBattingAdvanced, calcPitchingAdvanced, deriveLeagueContext, DEFAULT_LEAGUE_CONTEXT, POSITION_ADJ } from '@/engine/stats/AdvancedStats.ts';
 import { cn } from '@/lib/cn.ts';
+import { DevelopmentTimeline } from '@/components/player/DevelopmentTimeline.tsx';
 
 function gradeColor(v: number) {
   return v >= 70 ? 'text-gold' : v >= 60 ? 'text-green-light' : v >= 50 ? 'text-cream' : v >= 40 ? 'text-cream-dim' : 'text-red-400';
@@ -284,6 +285,10 @@ export function PlayerQuickView() {
               </div>
             </div>
           )}
+
+          {/* Actions */}
+          {/* Development Arc */}
+          <DevelopmentTimeline player={player} />
 
           {/* Actions */}
           <div className="space-y-2 pt-2 border-t border-navy-lighter">
