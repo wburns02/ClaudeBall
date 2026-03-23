@@ -34,15 +34,15 @@ const MOUND_Y = 310;
 // ── Default fielder positions ──────────────────────────────────────────────
 
 const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
-  P:    { x: MOUND_X, y: MOUND_Y },
-  C:    { x: HOME_X, y: HOME_Y + 12 },
-  '1B': { x: 382, y: 330 },
-  '2B': { x: 345, y: 268 },
-  SS:   { x: 255, y: 268 },
-  '3B': { x: 218, y: 330 },
-  LF:   { x: 160, y: 215 },
-  CF:   { x: 300, y: 190 },
-  RF:   { x: 440, y: 215 },
+  P:    { x: 300, y: 319 },
+  C:    { x: 300, y: 448 },
+  '1B': { x: 439, y: 361 },
+  '2B': { x: 362, y: 326 },
+  SS:   { x: 203, y: 326 },
+  '3B': { x: 133, y: 361 },
+  LF:   { x: 112, y: 264 },
+  CF:   { x: 300, y: 257 },
+  RF:   { x: 488, y: 264 },
 };
 
 // ── Perspective scale factors ──────────────────────────────────────────────
@@ -289,7 +289,7 @@ export class SpritePlayerScene {
       this.catcherUmpireFrames[CATCHER_UMP_V2_FRAMES.umpireStanding],
       this.catcherUmpireFrames,
     );
-    anim.setPosition(HOME_X + 18, HOME_Y + 30);
+    anim.setPosition(HOME_X + 18, HOME_Y + 40);
     anim.setScale(UMPIRE_SCALE * 0.85);
     anim.setFrame(CATCHER_UMP_V2_FRAMES.umpireStanding);
 

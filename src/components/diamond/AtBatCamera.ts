@@ -171,9 +171,9 @@ export class AtBatCamera {
 
     // Outfield target positions (world coords) — aligned with fielder positions
     const ofTargets = {
-      left:   { x: 160, y: 215 },
-      right:  { x: 440, y: 215 },
-      center: { x: 300, y: 190 },
+      left:   { x: 112, y: 264 },
+      right:  { x: 488, y: 264 },
+      center: { x: 300, y: 257 },
     };
     const target = ofTargets[direction];
 
