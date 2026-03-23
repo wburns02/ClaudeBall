@@ -154,7 +154,11 @@ export function LiveGamePage() {
   const [showBoxScore, setShowBoxScore] = useState(false);
   const [wpHistory, setWpHistory] = useState<WPSnapshot[]>([]);
   const [paText, setPaText] = useState<string | null>(null);
-  const [stadium, setStadium] = useState('default');
+  // Auto-select random stadium atmosphere for each game (Griffey Jr. style)
+  const [stadium, setStadium] = useState(() => {
+    const variants = ['day', 'sunset', 'night'];
+    return variants[Math.floor(Math.random() * variants.length)]!;
+  });
   const [inningGraphic, setInningGraphic] = useState<{ text: string; sub: string } | null>(null);
   const prevInningRef = useRef<string>('');
   const lastInningHalfRef = useRef<string>('');
@@ -721,10 +725,9 @@ export function LiveGamePage() {
               backdropFilter: 'blur(4px)',
             }}
           >
-            <option value="default">Night (Default)</option>
             <option value="day">Day Game</option>
-            <option value="night">Night Game</option>
             <option value="sunset">Sunset</option>
+            <option value="night">Night Game</option>
           </select>
 
           {/* Box score toggle (shown when game over) */}

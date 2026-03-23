@@ -114,6 +114,11 @@ export function DiamondView({
         // Fire-and-forget: scene renders fine without them, they just layer on top.
         void renderer.loadSceneSprites();
 
+        // Load stadium background if not default (supports day/sunset/night atmosphere)
+        if (stadium !== 'default') {
+          void renderer.setStadium(stadium);
+        }
+
         if (preferSprites) {
           const loaded = await renderer.loadSprites();
           setSpriteStatus(loaded ? 'sprites' : 'procedural');

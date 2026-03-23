@@ -275,9 +275,48 @@ export class DiamondRenderer {
     }
   }
 
-  /** Switch the stadium background at runtime. */
+  /** Switch the stadium background at runtime with atmospheric overlay. */
   async setStadium(stadiumKey: string): Promise<void> {
     await this._loadFieldBackground(stadiumKey);
+    this._applyAtmosphere(stadiumKey);
+  }
+
+  /** Apply atmospheric color overlay for time-of-day. */
+  private _atmosphereOverlay: Graphics | null = null;
+
+  private _applyAtmosphere(stadiumKey: string): void {
+    // Remove existing atmosphere overlay
+    if (this._atmosphereOverlay && !this._atmosphereOverlay.destroyed) {
+      this._atmosphereOverlay.destroy();
+      this._atmosphereOverlay = null;
+    }
+
+    if (!this.backgroundLayer) return;
+
+    // Subtle color tinting for atmosphere
+    const overlay = new Graphics();
+    switch (stadiumKey) {
+      case 'sunset':
+        // Warm golden-orange tint
+        overlay.rect(0, 0, WIDTH, HEIGHT);
+        overlay.fill({ color: 0xff8c00, alpha: 0.06 });
+        break;
+      case 'night':
+        // Cool blue-purple tint
+        overlay.rect(0, 0, WIDTH, HEIGHT);
+        overlay.fill({ color: 0x1a1a4e, alpha: 0.08 });
+        break;
+      case 'day':
+        // Very subtle warm daylight
+        overlay.rect(0, 0, WIDTH, HEIGHT);
+        overlay.fill({ color: 0xffffcc, alpha: 0.03 });
+        break;
+      default:
+        return; // no overlay for default
+    }
+
+    this.backgroundLayer.addChild(overlay);
+    this._atmosphereOverlay = overlay;
   }
 
   // ── Player scene init ─────────────────────────────────────────────────
