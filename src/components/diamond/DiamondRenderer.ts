@@ -79,6 +79,7 @@ export class DiamondRenderer {
 
   // Layers (bottom → top)
   private backgroundLayer: Container | null = null;
+  private gameContainer: Container | null = null; // wraps game layers for stadium transform
   private playerLayer: Container | null = null;
   private ballLayer: Container | null = null;
   private effectsLayer: Container | null = null;
@@ -210,18 +211,22 @@ export class DiamondRenderer {
     if (!this.root) return;
 
     // Z-order (bottom → top):
-    //   backgroundLayer → playerLayer → ballLayer → effectsLayer → labelLayer
+    //   backgroundLayer → gameContainer[ playerLayer → ballLayer → effectsLayer → labelLayer ]
     this.backgroundLayer = new Container();
+    this.gameContainer   = new Container();
     this.playerLayer     = new Container();
     this.ballLayer       = new Container();
     this.effectsLayer    = new Container();
     this.labelLayer      = new Container();
 
+    // Game layers go inside gameContainer (so stadium transform applies to all)
+    this.gameContainer.addChild(this.playerLayer);
+    this.gameContainer.addChild(this.ballLayer);
+    this.gameContainer.addChild(this.effectsLayer);
+    this.gameContainer.addChild(this.labelLayer);
+
     this.root.addChild(this.backgroundLayer);  // 0 — field background image
-    this.root.addChild(this.playerLayer);      // 1 — player sprites / procedural figures
-    this.root.addChild(this.ballLayer);        // 2 — ball
-    this.root.addChild(this.effectsLayer);     // 3 — particle effects
-    this.root.addChild(this.labelLayer);       // 4 — text labels
+    this.root.addChild(this.gameContainer);    // 1 — all game elements (transformed per stadium)
   }
 
   // ── Field background ──────────────────────────────────────────────────
@@ -275,10 +280,50 @@ export class DiamondRenderer {
     }
   }
 
-  /** Switch the stadium background at runtime with atmospheric overlay. */
+  /** Switch the stadium background at runtime with atmospheric overlay + coordinate alignment. */
   async setStadium(stadiumKey: string): Promise<void> {
     await this._loadFieldBackground(stadiumKey);
     this._applyAtmosphere(stadiumKey);
+    this._alignGameToStadium(stadiumKey);
+  }
+
+  /**
+   * Transform the game container to align player/ball positions with the
+   * actual field geometry in each stadium background.
+   *
+   * The new hi-res stadiums (day/sunset/night) show more sky and crowd,
+   * so the playing field occupies a smaller, lower portion of the viewport.
+   * This compresses the vertical coordinate range and shifts everything down
+   * to match where the grass/dirt actually is in the image.
+   */
+  private _alignGameToStadium(stadiumKey: string): void {
+    if (!this.gameContainer) return;
+
+    if (stadiumKey === 'default') {
+      // Old gameplayfield2 — coordinates are native, no transform needed
+      this.gameContainer.scale.set(1, 1);
+      this.gameContainer.x = 0;
+      this.gameContainer.y = 0;
+      return;
+    }
+
+    // New stadiums: field is lower & more compressed vertically.
+    // Old system: CF at y=100 (20%), home at y=425 (85%) → 325px range
+    // New stadiums: CF at ~y=230 (46%), home at ~y=445 (89%) → 215px range
+    //
+    // Transform: scaleY compresses the range, offsetY shifts it down.
+    // scaleX stays ~1.0 (horizontal alignment is close enough).
+    //
+    // Math: scaleY = 215/325 ≈ 0.66, offsetY = homeNewY - homeOldY*scaleY
+    //       offsetY = 445 - 425*0.66 = 445 - 280.5 = 164.5
+    const scaleY = 0.66;
+    const offsetY = 145;
+    const scaleX = 0.95;
+    const offsetX = 15;
+
+    this.gameContainer.scale.set(scaleX, scaleY);
+    this.gameContainer.x = offsetX;
+    this.gameContainer.y = offsetY;
   }
 
   /** Apply atmospheric color overlay for time-of-day. */
