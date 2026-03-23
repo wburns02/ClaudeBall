@@ -5,6 +5,7 @@ import { SplashScreen } from '@/components/ui/SplashScreen.tsx';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner.tsx';
 import { HelpOverlay } from '@/components/ui/HelpOverlay.tsx';
 import { AchievementToast } from '@/components/ui/AchievementToast.tsx';
+import { OnboardingFlow } from '@/components/ui/OnboardingFlow.tsx';
 import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { FranchiseLayout } from '@/components/layout/FranchiseLayout.tsx';
@@ -287,6 +288,7 @@ function App() {
         <ToastContainer />
         <HelpOverlay />
         <AchievementToast />
+        <OnboardingFlow />
       </BrowserRouter>
     </>
   );
