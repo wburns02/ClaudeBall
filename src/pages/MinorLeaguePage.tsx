@@ -951,6 +951,7 @@ export function MinorLeaguePage() {
       showFeedback(event.message);
       setSelectedProspectId(null);
       setVersion(v => v + 1);
+      import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('callup'));
     } else {
       showFeedback('Could not call up — roster may be full.', false);
     }

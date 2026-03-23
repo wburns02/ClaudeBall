@@ -227,6 +227,9 @@ export function FranchiseDashboard() {
   const [managerDecision, setManagerDecision] = useState<ManagerDecision | null>(null);
   const [decisionOutcome, setDecisionOutcome] = useState<DecisionOutcome | null>(null);
 
+  // Unlock first-franchise achievement on dashboard mount
+  useEffect(() => { achieveUnlock('first-franchise'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Close game-choice modal on Escape
   useEffect(() => {
     if (!pendingUserGame) return;

@@ -359,7 +359,7 @@ export function CoachingStaffPage() {
         <HiringModal
           role={hiringRole}
           candidates={hiringPool}
-          onHire={hireCoach}
+          onHire={(id: string) => { hireCoach(id); import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('coaching-hire')); }}
           onClose={closeHiring}
         />
       )}

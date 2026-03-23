@@ -168,6 +168,9 @@ export function LiveGamePage() {
   const engineRef = useRef<InteractiveGameEngine | null>(null);
   const statsRecordedRef = useRef(false);
 
+  // Achievement unlock on game start
+  useEffect(() => { import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('first-game')); }, []);
+
   // Franchise + stats store for recording results
   const { season, recordGameResult } = useFranchiseStore();
   const { recordGameStats } = useStatsStore();

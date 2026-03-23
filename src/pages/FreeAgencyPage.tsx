@@ -185,6 +185,7 @@ export function FreeAgencyPage() {
     const msg = result.reason ?? `Signed ${getPlayerName(fa.player)}! ${years}yr / $${(salary / 1000).toFixed(1)}M`;
     setNotice({ msg, ok: result.success });
     addToast(msg, result.success ? 'success' : 'error');
+    if (result.success) import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('first-signing'));
     setSigning(null);
     setTimeout(() => setNotice(null), 3500);
   };
