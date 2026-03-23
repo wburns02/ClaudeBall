@@ -94,6 +94,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Dashboard', path: '/franchise', icon: 'home' },
       { label: 'GM Inbox', path: '/franchise/inbox', icon: 'inbox' },
       { label: 'League News', path: '/franchise/news', icon: 'news' },
+      { label: 'League Highlights', path: '/franchise/highlights', icon: 'allStar' },
     ],
   },
   {

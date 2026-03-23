@@ -87,10 +87,11 @@ const SeasonReviewPage = lazy(() => import('@/pages/SeasonReviewPage.tsx').then(
 const FranchiseReportCard = lazy(() => import('@/pages/FranchiseReportCard.tsx').then(m => ({ default: m.FranchiseReportCard })));
 const CoachingStaffPage = lazy(() => import('@/pages/CoachingStaffPage.tsx').then(m => ({ default: m.CoachingStaffPage })));
 const TradeDeadlinePage = lazy(() => import('@/pages/TradeDeadlinePage.tsx').then(m => ({ default: m.TradeDeadlinePage })));
+const LeagueHighlightsPage = lazy(() => import('@/pages/LeagueHighlightsPage.tsx').then(m => ({ default: m.LeagueHighlightsPage })));
 
 // Preload coaching & trade-deadline chunks so they don't flash "LOADING..."
 if (typeof window !== 'undefined') {
-  const preload = () => { import('@/pages/CoachingStaffPage.tsx'); import('@/pages/TradeDeadlinePage.tsx'); };
+  const preload = () => { import('@/pages/CoachingStaffPage.tsx'); import('@/pages/TradeDeadlinePage.tsx'); import('@/pages/LeagueHighlightsPage.tsx'); };
   if ('requestIdleCallback' in window) (window as any).requestIdleCallback(preload); else setTimeout(preload, 2000);
 }
 
@@ -235,6 +236,7 @@ function AppRoutes() {
           <Route path="/franchise/report-card" element={<FranchiseLayout><FranchiseReportCard /></FranchiseLayout>} />
           <Route path="/franchise/coaching-staff" element={<FranchiseLayout><CoachingStaffPage /></FranchiseLayout>} />
           <Route path="/franchise/trade-deadline" element={<FranchiseLayout><TradeDeadlinePage /></FranchiseLayout>} />
+          <Route path="/franchise/highlights" element={<FranchiseLayout><LeagueHighlightsPage /></FranchiseLayout>} />
 
           {/* ── URL alias redirects (common alternative paths) ──────── */}
           <Route path="/franchise/dashboard" element={<Navigate to="/franchise" replace />} />
