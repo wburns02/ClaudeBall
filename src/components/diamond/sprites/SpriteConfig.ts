@@ -16,6 +16,8 @@ export interface SpriteSheetConfig {
    */
   trimTop?: number;
   trimBottom?: number;
+  /** If true, skip background removal — the PNG already has alpha transparency. */
+  hasAlpha?: boolean;
 }
 
 export const SPRITE_SHEETS: Record<string, SpriteSheetConfig> = {
@@ -42,6 +44,13 @@ export const SPRITE_SHEETS: Record<string, SpriteSheetConfig> = {
   fielderV2:         { url: '/sprites/fielder32bit.png',         cols: 4, rows: 4 },
   runnerV2:          { url: '/sprites/runner-v2.png',            cols: 2, rows: 4 },
   catcherUmpireV2:   { url: '/sprites/catcher-umpire-v2.png',    cols: 4, rows: 2 },
+
+  // ── V3 sprites: PIL-generated with native alpha transparency ───────────
+  pitcherV3:         { url: '/sprites/pitcher-v3.png',          cols: 4, rows: 3, hasAlpha: true },
+  batterV3:          { url: '/sprites/batter-v3.png',           cols: 4, rows: 3, hasAlpha: true },
+  fielderV3:         { url: '/sprites/fielder-v3.png',          cols: 4, rows: 3, hasAlpha: true },
+  runnerV3:          { url: '/sprites/runner-v3.png',           cols: 2, rows: 4, hasAlpha: true },
+  catcherUmpireV3:   { url: '/sprites/catcher-umpire-v3.png',   cols: 4, rows: 2, hasAlpha: true },
 
   // ── Scene / environment assets ───────────────────────────────────────────
   // stadium1.png — panoramic stadium background (NOT green-screened, use as-is)

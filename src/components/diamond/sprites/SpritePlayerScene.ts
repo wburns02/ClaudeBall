@@ -1,7 +1,6 @@
 // ── SpritePlayerScene.ts ──────────────────────────────────────────────────
-// Sprite-based replacement for PlayerScene. Uses AI-generated sprite sheet
-// images sliced from PNG files with green chroma-key background removal applied.
-// V2 sprites have solid #00FF00 backgrounds and 12-frame sequences.
+// Sprite-based player scene using V3 PIL-generated sprites with native alpha
+// transparency. No green-screen removal needed.
 
 import type { Application } from 'pixi.js';
 import { Container, Ticker } from 'pixi.js';
@@ -63,21 +62,23 @@ const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
 //   Outfielders (top ~30% of image): ~30px → 0.059
 //   CF (furthest back):              ~26px → 0.051
 
+// V3 sprites are 48px tall per frame. Scale to match perspective depth.
+// Target rendered heights: batter ~70px, pitcher ~55px, infield ~40px, outfield ~25px
 const FIELDER_SCALES: Record<string, number> = {
-  P:    0.22,    // pitcher on mound — prominent
-  C:    0.25,    // catcher at plate — large
-  '1B': 0.17,   // infielder
-  '2B': 0.15,   // middle infield
-  SS:   0.15,
-  '3B': 0.17,
-  LF:   0.09,   // outfielder — smaller for perspective depth
-  CF:   0.07,   // CF furthest back — smallest
-  RF:   0.09,
+  P:    1.15,    // pitcher on mound: 48 * 1.15 ≈ 55px
+  C:    1.40,    // catcher at plate: 48 * 1.40 ≈ 67px
+  '1B': 0.85,   // corner infielder: 48 * 0.85 ≈ 41px
+  '2B': 0.75,   // middle infield: 48 * 0.75 ≈ 36px
+  SS:   0.75,
+  '3B': 0.85,
+  LF:   0.55,   // outfielder: 48 * 0.55 ≈ 26px
+  CF:   0.48,   // CF furthest back: 48 * 0.48 ≈ 23px
+  RF:   0.55,
 };
 
-const BATTER_SCALE  = 0.28;  // batter — largest, closest to camera
-const UMPIRE_SCALE  = 0.25;  // umpire behind plate
-const RUNNER_SCALE  = 0.14;  // base runners
+const BATTER_SCALE  = 1.50;  // batter — largest: 48 * 1.50 ≈ 72px
+const UMPIRE_SCALE  = 1.30;  // umpire behind plate: 48 * 1.30 ≈ 62px
+const RUNNER_SCALE  = 0.75;  // base runners: 48 * 0.75 ≈ 36px
 
 // ── Facing / flip rules ───────────────────────────────────────────────────
 // Sprite sheets drawn facing LEFT by default (player faces left).
@@ -158,11 +159,11 @@ export class SpritePlayerScene {
       runnerFrames,
       catcherUmpireFrames,
     ] = await Promise.all([
-      loadSheet(SPRITE_SHEETS.batterV2),
-      loadSheet(SPRITE_SHEETS.pitcherV2),
-      loadSheet(SPRITE_SHEETS.fielderV2),
-      loadSheet(SPRITE_SHEETS.runnerV2),
-      loadSheet(SPRITE_SHEETS.catcherUmpireV2),
+      loadSheet(SPRITE_SHEETS.batterV3),
+      loadSheet(SPRITE_SHEETS.pitcherV3),
+      loadSheet(SPRITE_SHEETS.fielderV3),
+      loadSheet(SPRITE_SHEETS.runnerV3),
+      loadSheet(SPRITE_SHEETS.catcherUmpireV3),
     ]);
 
     this.batterFrames        = batterFrames;
@@ -299,7 +300,7 @@ export class SpritePlayerScene {
   // ── Runners ───────────────────────────────────────────────────────
 
   addRunner(base: number): void {
-    if (!this._loaded) return;
+    if (!this._loaded || this._destroyed) return;
 
     this.removeRunner(base);
 
@@ -620,6 +621,10 @@ export class SpritePlayerScene {
 
     const anim = this.runnerSprites.get(fromBase);
     if (anim === undefined) return;
+
+    // Guard: if the sprite was already destroyed, bail out
+    const sprite = anim.getSprite();
+    if (sprite.destroyed) return;
 
     const baseCoords: Record<number, { x: number; y: number }> = {
       0: { x: HOME_X, y: HOME_Y },

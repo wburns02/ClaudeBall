@@ -39,8 +39,9 @@ export async function loadSpriteSheet(
   rows: number,
   trimTop = 0,
   trimBottom = 1,
+  hasAlpha = false,
 ): Promise<Texture[]> {
-  const cacheKey = `${url}:${cols}x${rows}:${trimTop}:${trimBottom}`;
+  const cacheKey = `${url}:${cols}x${rows}:${trimTop}:${trimBottom}:${hasAlpha}`;
 
   const cached = _frameCache.get(cacheKey);
   if (cached !== undefined) {
@@ -50,15 +51,18 @@ export async function loadSpriteSheet(
   // ── Step 1: load & clean the image on a canvas ─────────────────────────
   let canvas = _canvasCache.get(url);
   if (canvas === undefined) {
-    try {
-      canvas = await removeBackground(url, _isGreenScreen(url));
-      _canvasCache.set(url, canvas);
-    } catch (err) {
-      console.warn('[SpriteSheetLoader] BackgroundRemover failed, using raw image:', err);
-      // Fallback: create a plain canvas from the raw image
+    if (hasAlpha) {
+      // V3 sprites already have alpha transparency — skip background removal
       canvas = await _loadRawCanvas(url);
-      _canvasCache.set(url, canvas);
+    } else {
+      try {
+        canvas = await removeBackground(url, _isGreenScreen(url));
+      } catch (err) {
+        console.warn('[SpriteSheetLoader] BackgroundRemover failed, using raw image:', err);
+        canvas = await _loadRawCanvas(url);
+      }
     }
+    _canvasCache.set(url, canvas);
   }
 
   // ── Step 2: build a Pixi ImageSource from the canvas ───────────────────
@@ -107,6 +111,7 @@ export async function loadSheet(config: SpriteSheetConfig): Promise<Texture[]> {
     config.rows,
     config.trimTop ?? 0,
     config.trimBottom ?? 1,
+    config.hasAlpha ?? false,
   );
 }
 

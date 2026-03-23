@@ -33,6 +33,7 @@ export class SpriteAnimator {
   // ── Positioning / transform ───────────────────────────────────────
 
   setPosition(x: number, y: number): void {
+    if (this.sprite.destroyed) return;
     this.sprite.x = x;
     this.sprite.y = y;
   }
@@ -74,7 +75,7 @@ export class SpriteAnimator {
    * Show a specific frame from the current frame array without animating.
    */
   setFrame(index: number): void {
-    if (this._frames.length === 0) return;
+    if (this._frames.length === 0 || this.sprite.destroyed) return;
     const clamped = Math.max(0, Math.min(index, this._frames.length - 1));
     this._currentFrame = clamped;
     const tex = this._frames[clamped];
@@ -126,7 +127,10 @@ export class SpriteAnimator {
       const msPerFrame = duration / frames.length;
 
       const onTick = (ticker: Ticker) => {
-        if (!this._playing) return;
+        if (!this._playing || this.sprite.destroyed) {
+          this._stopInternal(true);
+          return;
+        }
 
         this._elapsed += ticker.deltaMS;
 
