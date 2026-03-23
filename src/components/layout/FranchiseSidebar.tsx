@@ -139,6 +139,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Finances', path: '/franchise/finances', icon: 'finances' },
       { label: 'Payroll', path: '/franchise/payroll', icon: 'payroll' },
       { label: 'Trades', path: '/franchise/trade', icon: 'trades' },
+      { label: 'Trade Machine', path: '/franchise/trade-machine', icon: 'analytics' },
       { label: 'Free Agency', path: '/franchise/free-agency', icon: 'freeAgency' },
       { label: 'Draft', path: '/franchise/draft', icon: 'draft' },
       { label: 'Roster Manager', path: '/franchise/roster-manager', icon: 'rosterMgr' },
