@@ -396,27 +396,64 @@ export class SpritePlayerScene {
   }
 
   // ── Animation: Batter ─────────────────────────────────────────────
-  // Swing frames 0–7 over 500ms, then running frames 8–11
+  // Griffey Jr.-style phased swing with distinct timing per phase:
+  //   Phase 1 — Load/coil (slow, deliberate weight shift)
+  //   Phase 2 — Explosion (fast bat whip through zone)
+  //   Phase 3 — Contact hold (brief freeze at impact point)
+  //   Phase 4 — Follow-through (smooth deceleration)
 
-  async animateBatterSwing(_timing?: string): Promise<void> {
+  async animateBatterSwing(timing?: string): Promise<void> {
     if (!this._loaded || this._batter === null || this._destroyed) return;
 
     const batter = this._batter;
+    const F = BATTER_V2_FRAMES;
 
-    // Swing phase: frames 0–7 (stance → contact → follow-through)
-    const swingFrames = this.batterFrames.slice(
-      BATTER_V2_FRAMES.stance,
-      BATTER_V2_FRAMES.watching + 1,  // frames 0–8 inclusive
-    ).filter((t): t is Texture => t !== undefined);
+    // Timing multipliers based on swing quality
+    const speedMult = timing === 'early' ? 0.85 : timing === 'late' ? 1.15 : 1.0;
 
-    await batter.playAnimation(swingFrames, 500, false);
+    // Phase 1: Load/coil — slow, deliberate (frames 0→2)
+    // Stance → loaded → stride begins. Player shifts weight back.
+    const loadFrames = [
+      this.batterFrames[F.stance],
+      this.batterFrames[F.loaded],
+      this.batterFrames[F.strideBegin],
+    ].filter((t): t is Texture => t !== undefined);
+    await batter.playAnimation(loadFrames, 200 * speedMult, false);
     if (this._destroyed) return;
 
-    batter.setFrame(BATTER_V2_FRAMES.followFull);
+    // Phase 2: Explosion — FAST bat whip (frames 3→5)
+    // Hips rotate → bat enters zone → CONTACT. This is the money shot.
+    const explosionFrames = [
+      this.batterFrames[F.hipsRotate],
+      this.batterFrames[F.batEntering],
+      this.batterFrames[F.contact],
+    ].filter((t): t is Texture => t !== undefined);
+    await batter.playAnimation(explosionFrames, 80, false);
+    if (this._destroyed) return;
 
-    await _delay(300);
+    // Phase 3: Contact hold — freeze on the contact frame
+    // This is where hitlag kicks in from the PlaySequencer.
+    // Hold the contact frame briefly for visual emphasis.
+    batter.setFrame(F.contact);
+    await _delay(40);
+    if (this._destroyed) return;
+
+    // Phase 4: Follow-through — smooth deceleration (frames 6→7)
+    // Bat wraps around body, weight transfers forward.
+    const followFrames = [
+      this.batterFrames[F.followStart],
+      this.batterFrames[F.followFull],
+    ].filter((t): t is Texture => t !== undefined);
+    await batter.playAnimation(followFrames, 180 * speedMult, false);
+    if (this._destroyed) return;
+
+    // Hold follow-through pose briefly
+    batter.setFrame(F.followFull);
+    await _delay(200);
+
+    // Return to stance (unless running animation takes over)
     if (!this._destroyed) {
-      batter.setFrame(BATTER_V2_FRAMES.stance);
+      batter.setFrame(F.stance);
     }
   }
 
