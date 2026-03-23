@@ -18,6 +18,13 @@ export default async function globalSetup() {
   await page.goto(BASE);
   await page.waitForTimeout(2000);
 
+  // Dismiss onboarding overlay if present
+  const skipTour = page.locator('button, a, span').filter({ hasText: /Skip Tour/i }).first();
+  if (await skipTour.count() > 0) {
+    await skipTour.click();
+    await page.waitForTimeout(500);
+  }
+
   // Create franchise if needed
   const newBtn = page.locator('button:has-text("New Franchise")');
   if (await newBtn.count() > 0) {
