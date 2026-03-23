@@ -861,29 +861,149 @@ export class DiamondRenderer {
     this._showScreenFlash(0xffd700, 0.25);
   }
 
-  /** Screen shake effect — offsets the ball/effects layers (not root, to avoid fighting camera). */
+  /**
+   * Griffey Jr.-style screen shake — shakes ALL layers for visceral impact.
+   * Uses the root container for full-scene shake that actually FEELS like a hit.
+   */
   screenShake(intensity: number, durationMs: number): void {
-    if (this._destroyed) return;
-    // Shake the effects layer instead of root to avoid conflicting with camera tweens
-    const target = this.effectsLayer;
-    if (!target) return;
+    if (this._destroyed || !this.root) return;
+    const root = this.root;
+    const baseX = root.x;
+    const baseY = root.y;
     let elapsed = 0;
 
     const onTick = (ticker: Ticker) => {
-      if (this._destroyed || !target || target.destroyed) {
+      if (this._destroyed || !root || root.destroyed) {
         Ticker.shared.remove(onTick);
         return;
       }
       elapsed += ticker.deltaMS;
       if (elapsed >= durationMs) {
         Ticker.shared.remove(onTick);
-        target.x = 0;
-        target.y = 0;
+        root.x = baseX;
+        root.y = baseY;
         return;
       }
       const decay = 1 - elapsed / durationMs;
-      target.x = (Math.random() - 0.5) * 2 * intensity * decay;
-      target.y = (Math.random() - 0.5) * 2 * intensity * decay;
+      // Stronger vertical component (more impactful feeling)
+      root.x = baseX + (Math.random() - 0.5) * 2 * intensity * decay;
+      root.y = baseY + (Math.random() - 0.5) * 2.5 * intensity * decay;
+    };
+    Ticker.shared.add(onTick);
+  }
+
+  /**
+   * Hitlag — brief freeze-frame on hard contact for dramatic impact.
+   * This is the #1 technique that makes hits feel POWERFUL in fighting games
+   * and baseball games alike. Pauses the Pixi ticker for a few frames.
+   */
+  async hitlag(durationMs: number): Promise<void> {
+    if (this._destroyed || !this.app) return;
+    // Pause the ticker to freeze all animations
+    this.app.ticker.speed = 0;
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        if (this.app && !this._destroyed) {
+          this.app.ticker.speed = 1;
+        }
+        resolve();
+      }, durationMs);
+    });
+  }
+
+  /**
+   * Speed lines emanating from a pitch — shows velocity and power.
+   * White/colored lines that trail behind the ball during fast pitches.
+   */
+  spawnSpeedLines(
+    fromX: number, fromY: number,
+    toX: number, toY: number,
+    color: number = 0xffffff,
+    count: number = 6,
+  ): void {
+    if (this._destroyed || !this.effectsLayer) return;
+    const layer = this.effectsLayer;
+
+    // Direction vector
+    const dx = toX - fromX;
+    const dy = toY - fromY;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len === 0) return;
+    const nx = dx / len;
+    const ny = dy / len;
+
+    for (let i = 0; i < count; i++) {
+      const line = new Graphics();
+      // Perpendicular offset for spread
+      const perpSpread = (Math.random() - 0.5) * 30;
+      const startOffset = Math.random() * 40; // stagger along path
+      const lineLen = 15 + Math.random() * 25;
+
+      const sx = fromX + nx * startOffset - ny * perpSpread;
+      const sy = fromY + ny * startOffset + nx * perpSpread;
+      const ex = sx + nx * lineLen;
+      const ey = sy + ny * lineLen;
+
+      line.moveTo(sx, sy);
+      line.lineTo(ex, ey);
+      line.stroke({ width: 1 + Math.random() * 1.5, color, alpha: 0.5 + Math.random() * 0.3 });
+      layer.addChild(line);
+
+      // Fade out over 200ms
+      let life = 0;
+      const lifetime = 200 + Math.random() * 100;
+      const onTick = (ticker: Ticker) => {
+        if (this._destroyed || line.destroyed) {
+          Ticker.shared.remove(onTick);
+          return;
+        }
+        life += ticker.deltaMS;
+        line.alpha = Math.max(0, (0.5 + Math.random() * 0.3) * (1 - life / lifetime));
+        if (life >= lifetime) {
+          Ticker.shared.remove(onTick);
+          if (line.parent) line.parent.removeChild(line);
+          line.destroy();
+        }
+      };
+      Ticker.shared.add(onTick);
+    }
+  }
+
+  /**
+   * Zoom pulse — brief 1.05x zoom on the root for dramatic impact moments.
+   * Immediately scales up slightly and eases back to normal.
+   */
+  zoomPulse(intensity: number = 1.05, durationMs: number = 200): void {
+    if (this._destroyed || !this.root) return;
+    const root = this.root;
+    const baseScaleX = root.scale.x;
+    const baseScaleY = root.scale.y;
+    const baseCX = root.x + (WIDTH * baseScaleX) / 2;
+    const baseCY = root.y + (HEIGHT * baseScaleY) / 2;
+    let elapsed = 0;
+
+    const onTick = (ticker: Ticker) => {
+      if (this._destroyed || !root || root.destroyed) {
+        Ticker.shared.remove(onTick);
+        return;
+      }
+      elapsed += ticker.deltaMS;
+      const t = Math.min(elapsed / durationMs, 1);
+      // Ease out cubic for smooth snap-back
+      const easeT = 1 - Math.pow(1 - t, 3);
+      const scale = intensity - (intensity - 1) * easeT;
+
+      const newScaleX = baseScaleX * scale;
+      const newScaleY = baseScaleY * scale;
+      root.scale.set(newScaleX, newScaleY);
+      // Keep centered
+      root.x = baseCX - (WIDTH * newScaleX) / 2;
+      root.y = baseCY - (HEIGHT * newScaleY) / 2;
+
+      if (t >= 1) {
+        Ticker.shared.remove(onTick);
+        root.scale.set(baseScaleX, baseScaleY);
+      }
     };
     Ticker.shared.add(onTick);
   }

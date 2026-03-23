@@ -457,10 +457,11 @@ export class PlaySequencer {
     await Promise.all([ballPromise, swingPromise]);
     if (this._destroyed) return;
 
-    // Contact flash + bat crack + screen shake
+    // Contact flash + bat crack + screen shake + hitlag
     this._showResultFlash('FOUL!');
     this.renderer.showContactFlash(HOME_X, HOME_Y - 10);
-    this.renderer.screenShake(2, 100);
+    this.renderer.screenShake(3, 120);
+    await this.renderer.hitlag(40); // brief freeze for foul impact
     soundEngine.playBatCrack();
     soundEngine.playCrowdOoh();
     spawnBatCrack(this.renderer.getApp()!, HOME_X, HOME_Y - 10, this._fx());
@@ -509,10 +510,11 @@ export class PlaySequencer {
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // Contact flash + bat crack + screen shake + crowd ooh
+    // Contact flash + bat crack + screen shake + hitlag + crowd ooh
     this._showResultFlash('IN PLAY!');
     this.renderer.showContactFlash(HOME_X - 10, HOME_Y - 15);
-    this.renderer.screenShake(3, 150);
+    this.renderer.screenShake(4, 180);
+    await this.renderer.hitlag(55); // freeze frame — makes hits feel POWERFUL
     soundEngine.playBatCrack();
     soundEngine.playCrowdOoh();
     spawnBatCrack(this.renderer.getApp()!, HOME_X - 10, HOME_Y - 15, this._fx());
@@ -575,11 +577,13 @@ export class PlaySequencer {
     await Promise.all([ballToPlate, swingDelay]);
     if (this._destroyed) return;
 
-    // BIG contact flash + screen shake + bat crack
+    // BIG contact flash + screen shake + hitlag + zoom pulse + bat crack
     this._showResultFlash('HOME RUN!');
     this.renderer.showContactFlash(HOME_X - 12, HOME_Y - 18);
     this.renderer.showHomeRunFlash();
-    this.renderer.screenShake(5, 200);
+    this.renderer.screenShake(6, 250);
+    this.renderer.zoomPulse(1.06, 200); // dramatic zoom pulse on HR contact
+    await this.renderer.hitlag(80); // long freeze — the BIGGEST hit feels
     soundEngine.playBatCrack(1.4);
     spawnBatCrack(this.renderer.getApp()!, HOME_X - 12, HOME_Y - 18, this._fx());
     if (ss) {
@@ -804,6 +808,13 @@ export class PlaySequencer {
       x: mid.x + (cfg?.ctrlOffsetX ?? 0),
       y: mid.y + (cfg?.ctrlOffsetY ?? 0),
     };
+
+    // Speed lines for fast pitches (fastball, sinker, cutter — 92+ mph)
+    const isFast = pitchType === 'fastball' || pitchType === 'sinker' || pitchType === 'cutter';
+    if (isFast) {
+      const pitchColor = PITCH_COLORS[pitchType] ?? 0xFFFFFF;
+      this.renderer.spawnSpeedLines(start.x, start.y, end.x, end.y, pitchColor, 5);
+    }
 
     await this.renderer.animateBallBezier(start, ctrl, end, this.dur(650));
   }
