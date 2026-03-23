@@ -181,9 +181,11 @@ export function SeasonStoryPage() {
         <div className="text-center py-4">
           <p className="font-body text-cream leading-relaxed max-w-lg mx-auto">
             {totalGames >= 150 ? 'The' : 'So far, the'} {season.year} {team.city} {team.name} season {totalGames >= 150 ? 'was' : 'has been'}{' '}
-            {rec && rec.wins > rec.losses ? 'a tale of resilience and triumph' :
+            {rec && rec.wins - rec.losses >= 20 ? 'a dominant campaign that left the league in awe' :
+             rec && rec.wins > rec.losses ? 'a tale of resilience and triumph' :
+             rec && rec.losses - rec.wins >= 20 ? 'a long rebuilding year that tested the franchise\'s patience' :
              rec && rec.wins < rec.losses ? 'a challenging journey through adversity' :
-             'a season of tight margins and competitive play'}.
+             'a season of tight margins and razor-thin competitive play'}.
             {totalGames >= 150
               ? ` Over ${totalGames} games, this is how their story unfolded.`
               : ` Through ${totalGames} games, here's the story so far.`}

@@ -208,9 +208,9 @@ export function ProspectCard({ player, teamName, teamAbbr, compact }: Props) {
       </div>
 
       {/* Mental Ratings */}
-      <div className="px-4 py-2.5 border-t border-navy-lighter/30 bg-navy/40">
-        <p className="font-mono text-[8px] text-cream-dim/30 uppercase tracking-wider mb-1.5">Intangibles</p>
-        <div className="flex gap-3 flex-wrap">
+      <div className="px-4 py-3 border-t border-navy-lighter/30 bg-navy/40">
+        <p className="font-mono text-[8px] text-cream-dim/30 uppercase tracking-wider mb-2">Intangibles</p>
+        <div className="flex gap-4 flex-wrap justify-between">
           {[
             { label: 'IQ', val: player.mental.intelligence },
             { label: 'Work', val: player.mental.work_ethic },
