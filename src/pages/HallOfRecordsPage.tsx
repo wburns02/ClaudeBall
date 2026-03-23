@@ -43,6 +43,7 @@ function RecordRow({ entry, onClick }: { entry: RecordEntry; onClick: () => void
         {entry.rank}
       </span>
       <span className="font-body text-sm text-cream truncate flex-1">{entry.playerName}</span>
+      <span className="font-mono text-[9px] text-cream-dim/30 shrink-0">{entry.season}</span>
       <span className="font-mono text-[10px] text-cream-dim/50 shrink-0">{entry.teamAbbr}</span>
       <span className={cn(
         'font-mono text-sm font-bold shrink-0 w-16 text-right',

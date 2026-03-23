@@ -1,6 +1,7 @@
 /**
  * AchievementsPage — trophy case showing unlocked and locked achievements.
  */
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -78,6 +79,9 @@ export function AchievementsPage() {
     { key: 'hidden', label: 'Hidden' },
   ];
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 100); return () => clearTimeout(t); }, []);
+
   return (
     <div className="min-h-screen p-4 md:p-6 max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -100,7 +104,7 @@ export function AchievementsPage() {
         <div className="h-3 bg-navy-lighter/30 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-[#cd7f32] via-gold to-cyan-300 transition-all duration-1000"
-            style={{ width: `${progress.pct}%` }}
+            style={{ width: mounted ? `${progress.pct}%` : '0%' }}
           />
         </div>
         <div className="flex justify-between mt-2">

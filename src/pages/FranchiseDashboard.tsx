@@ -473,6 +473,16 @@ export function FranchiseDashboard() {
       if (after.wins >= 75) achieveUnlock('win-75');
       if (after.wins >= 100) achieveUnlock('win-100');
     }
+    // Check for shutouts and blowouts in recent user games
+    const recentGames = season.schedule.filter(g => g.played && g.date >= season.currentDay - days && (g.awayId === userTeamId || g.homeId === userTeamId));
+    for (const g of recentGames) {
+      if (!g.awayScore && g.awayScore !== 0) continue;
+      const isHome = g.homeId === userTeamId;
+      const us = isHome ? (g.homeScore ?? 0) : (g.awayScore ?? 0);
+      const them = isHome ? (g.awayScore ?? 0) : (g.homeScore ?? 0);
+      if (us > them && them === 0) achieveUnlock('shutout-win');
+      if (us - them >= 10) achieveUnlock('blowout');
+    }
   };
 
   const handleSimWeek = () => doSim(7);
