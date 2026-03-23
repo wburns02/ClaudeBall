@@ -70,6 +70,7 @@ const Icons = {
   scoreboard: 'M2 3h20v14H2z M8 21h8 M12 17v4',
   transactions: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2 M9 12h6 M9 16h4',
   morale: 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z',
+  coaching: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z M23 11h-6 M20 8v6',
 };
 
 interface NavItem {
@@ -103,6 +104,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Development Hub', path: '/franchise/development', icon: 'development' },
       { label: 'Projections', path: '/franchise/projections', icon: 'analytics' },
       { label: 'Training Center', path: '/franchise/training', icon: 'training' },
+      { label: 'Coaching Staff', path: '/franchise/coaching-staff', icon: 'coaching' },
       { label: 'Lineup Editor', path: '/franchise/lineup-editor', icon: 'lineup' },
       { label: 'Create Player', path: '/franchise/create-player', icon: 'createPlayer' },
       {
