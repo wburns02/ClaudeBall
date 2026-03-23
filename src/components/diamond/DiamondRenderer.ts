@@ -316,8 +316,8 @@ export class DiamondRenderer {
     //
     // Math: scaleY = 215/325 ≈ 0.66, offsetY = homeNewY - homeOldY*scaleY
     //       offsetY = 445 - 425*0.66 = 445 - 280.5 = 164.5
-    const scaleY = 0.66;
-    const offsetY = 145;
+    const scaleY = 0.60;
+    const offsetY = 165;
     const scaleX = 0.95;
     const offsetX = 15;
 
