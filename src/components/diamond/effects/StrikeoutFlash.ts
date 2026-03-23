@@ -1,13 +1,20 @@
 // ── StrikeoutFlash.ts ─────────────────────────────────────────────────────────
-// Dramatic K (or backwards K) zoom-in and fade effect for strikeouts.
-// Total duration ~700ms.
+// Griffey Jr.-style dramatic K that punches in big and fades up.
+// Gold K with black outline, bounce-in animation. Total duration ~900ms.
 
-import { Text, Ticker, Container } from 'pixi.js';
+import { Text, Graphics, Ticker, Container } from 'pixi.js';
 import type { Application } from 'pixi.js';
 
-const ZOOM_MS  = 300;  // scale 0.5 → 1.5
-const FADE_MS  = 400;  // fade over last portion
-const TOTAL_MS = ZOOM_MS + FADE_MS;
+const PUNCH_MS = 200;    // scale from 3.0 → 1.0 with bounce
+const HOLD_MS  = 350;    // hold at full
+const FADE_MS  = 350;    // fade upward
+const TOTAL_MS = PUNCH_MS + HOLD_MS + FADE_MS;
+
+function easeOutBack(t: number): number {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
 
 export function spawnStrikeoutK(
   app: Application,
@@ -17,16 +24,26 @@ export function spawnStrikeoutK(
   parent?: Container,
 ): void {
   const layer: Container = parent ?? (app.stage as unknown as Container);
+  const container = new Container();
+  container.x = x;
+  container.y = y;
+  layer.addChild(container);
+
+  // Background flash circle (red ring)
+  const ring = new Graphics();
+  ring.circle(0, 0, 25);
+  ring.stroke({ color: 0xcc3333, width: 3, alpha: 0.6 });
+  ring.alpha = 0;
+  container.addChild(ring);
 
   const label = new Text({
-    // Backwards K for looking (called third strike)
-    text: looking ? 'ꓘ' : 'K',
+    text: looking ? 'Ꝁ' : 'K',
     style: {
       fontFamily: 'Oswald, Impact, sans-serif',
-      fontSize: 48,
+      fontSize: 52,
       fontWeight: 'bold',
-      fill: 0xc44d4d,
-      stroke: { color: 0xffffff, width: 3 },
+      fill: 0xd4a843,
+      stroke: { color: 0x000000, width: 4 },
       dropShadow: {
         color: 0x000000,
         blur: 6,
@@ -37,11 +54,9 @@ export function spawnStrikeoutK(
   });
 
   label.anchor.set(0.5, 0.5);
-  label.x = x;
-  label.y = y;
-  label.scale.set(0.5);
+  label.scale.set(3);
   label.alpha = 0;
-  layer.addChild(label);
+  container.addChild(label);
 
   let life = 0;
 
@@ -49,22 +64,37 @@ export function spawnStrikeoutK(
     life += ticker.deltaMS;
     const t = Math.min(life / TOTAL_MS, 1);
 
-    if (life <= ZOOM_MS) {
-      // Zoom phase: scale from 0.5 to 1.5, fade in to opaque
-      const zt = life / ZOOM_MS;
-      label.scale.set(0.5 + 1.0 * zt);
-      label.alpha = Math.min(1, zt * 2); // fade in quickly
+    if (life <= PUNCH_MS) {
+      // Punch in phase: scale 3.0 → 1.0 with overshoot
+      const pt = life / PUNCH_MS;
+      const scale = 3 - 2 * easeOutBack(pt);
+      label.scale.set(Math.max(0.8, scale));
+      label.alpha = Math.min(1, pt * 3);
+
+      ring.alpha = pt * 0.6;
+      ring.scale.set(0.5 + pt * 1.5);
+    } else if (life <= PUNCH_MS + HOLD_MS) {
+      // Hold: subtle pulse
+      const ht = (life - PUNCH_MS) / HOLD_MS;
+      label.scale.set(1 + Math.sin(ht * Math.PI * 4) * 0.03);
+      label.alpha = 1;
+
+      ring.alpha = 0.6 * (1 - ht * 0.5);
+      ring.scale.set(2 + ht * 0.5);
     } else {
-      // Fade phase: hold scale at 1.5, fade out
-      const ft = (life - ZOOM_MS) / FADE_MS;
-      label.scale.set(1.5);
-      label.alpha = Math.max(0, 1 - ft);
+      // Fade: drift upward and fade out
+      const ft = (life - PUNCH_MS - HOLD_MS) / FADE_MS;
+      label.alpha = 1 - ft;
+      label.y = -ft * 30;
+      label.scale.set(1 - ft * 0.15);
+
+      ring.alpha = 0;
     }
 
     if (t >= 1) {
       Ticker.shared.remove(onTick);
-      if (label.parent) label.parent.removeChild(label);
-      label.destroy();
+      if (container.parent) container.parent.removeChild(container);
+      container.destroy({ children: true });
     }
   };
 

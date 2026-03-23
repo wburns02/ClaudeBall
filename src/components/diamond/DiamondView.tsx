@@ -51,7 +51,7 @@ export function DiamondView({
   width = 600,
   height = 500,
   className,
-  preferSprites = true,
+  preferSprites = false,
   animationSpeed = 1,
   fullScreen = false,
   stadium = 'default',

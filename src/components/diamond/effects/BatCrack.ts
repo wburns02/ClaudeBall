@@ -1,18 +1,23 @@
 // ── BatCrack.ts ───────────────────────────────────────────────────────────────
-// Comic-book-style star burst at bat-ball contact. 12 radiating lines + center
-// flash. Total duration ~250ms.
+// Ken Griffey Jr.-style bat crack impact effect.
+// Satisfying white-hot center flash + radiating gold/white spark diamonds +
+// expanding ring. Total duration ~350ms.
 
 import { Graphics, Ticker, Container } from 'pixi.js';
 import type { Application } from 'pixi.js';
 
-const LINE_COUNT   = 12;
-const LINE_LENGTH  = 15;   // px at full extension
-const EXTEND_MS    = 150;  // time to reach full length
-const FADE_MS      = 100;  // fade after full extension
-const TOTAL_MS     = EXTEND_MS + FADE_MS;
+const SPARK_COUNT  = 16;
+const SPARK_SIZE   = 2.5;   // max spark diamond size
+const SPARK_REACH  = 28;    // max distance from center
+const EXTEND_MS    = 120;   // sparks fly out
+const HOLD_MS      = 60;    // hold at full
+const FADE_MS      = 170;   // fade away
+const TOTAL_MS     = EXTEND_MS + HOLD_MS + FADE_MS;
 
-const FLASH_RADIUS = 20;
-const FLASH_MS     = 80;
+const FLASH_RADIUS = 14;
+const RING_RADIUS  = 22;
+
+const GOLD = 0xd4a843;
 
 export function spawnBatCrack(
   app: Application,
@@ -21,72 +26,87 @@ export function spawnBatCrack(
   parent?: Container,
 ): void {
   const layer: Container = parent ?? (app.stage as unknown as Container);
-
-  // ── Center circle flash ──────────────────────────────────────────────────
-  const flash = new Graphics();
-  flash.circle(0, 0, FLASH_RADIUS);
-  flash.fill({ color: 0xffffff, alpha: 0.9 });
-  flash.x = x;
-  flash.y = y;
-  layer.addChild(flash);
-
-  let flashLife = 0;
-  const onFlash = (ticker: Ticker) => {
-    flashLife += ticker.deltaMS;
-    const t = Math.min(flashLife / FLASH_MS, 1);
-    flash.alpha = 0.9 * (1 - t);
-    if (t >= 1) {
-      Ticker.shared.remove(onFlash);
-      if (flash.parent) flash.parent.removeChild(flash);
-      flash.destroy();
-    }
-  };
-  Ticker.shared.add(onFlash);
-
-  // ── Radiating lines ──────────────────────────────────────────────────────
-  // Each line is a very thin Graphics drawn fresh each frame
   const container = new Container();
   container.x = x;
   container.y = y;
   layer.addChild(container);
 
-  const angles: number[] = [];
-  for (let i = 0; i < LINE_COUNT; i++) {
-    angles.push((i / LINE_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.2);
+  // ── Center flash (white-hot) ──────────────────────────────────────────
+  const flash = new Graphics();
+  flash.circle(0, 0, FLASH_RADIUS);
+  flash.fill({ color: 0xffffff, alpha: 0.95 });
+  container.addChild(flash);
+
+  // ── Gold ring burst ────────────────────────────────────────────────────
+  const ring = new Graphics();
+  ring.circle(0, 0, RING_RADIUS);
+  ring.stroke({ color: GOLD, width: 2.5, alpha: 0.8 });
+  container.addChild(ring);
+
+  // ── Spark diamonds ─────────────────────────────────────────────────────
+  interface SparkData { g: Graphics; angle: number; dist: number; size: number }
+  const sparks: SparkData[] = [];
+
+  for (let i = 0; i < SPARK_COUNT; i++) {
+    const angle = (i / SPARK_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.25;
+    const isGold = i % 3 === 0;
+    const size = SPARK_SIZE * (0.6 + Math.random() * 0.4);
+    const dist = SPARK_REACH * (0.7 + Math.random() * 0.3);
+
+    const g = new Graphics();
+    // Diamond shape — 16-bit pixel feel
+    g.beginPath();
+    g.moveTo(0, -size);
+    g.lineTo(size * 0.7, 0);
+    g.lineTo(0, size);
+    g.lineTo(-size * 0.7, 0);
+    g.closePath();
+    g.fill({ color: isGold ? GOLD : 0xffffff });
+    container.addChild(g);
+
+    sparks.push({ g, angle, dist, size });
   }
 
-  let lineLife = 0;
+  let elapsed = 0;
 
-  const onLines = (ticker: Ticker) => {
-    lineLife += ticker.deltaMS;
-    const t = Math.min(lineLife / TOTAL_MS, 1);
+  const onTick = (ticker: Ticker) => {
+    elapsed += ticker.deltaMS;
+    const t = Math.min(elapsed / TOTAL_MS, 1);
 
-    // Extend phase [0, EXTEND_MS], then fade phase [EXTEND_MS, TOTAL_MS]
-    const extT = Math.min(lineLife / EXTEND_MS, 1);
-    const fadeT = Math.max(0, (lineLife - EXTEND_MS) / FADE_MS);
-    const len = LINE_LENGTH * extT;
+    // Extension phase: sparks fly outward
+    const extT = Math.min(elapsed / EXTEND_MS, 1);
+    // Ease out cubic
+    const easeExt = 1 - Math.pow(1 - extT, 3);
+
+    // Fade phase
+    const fadeStart = EXTEND_MS + HOLD_MS;
+    const fadeT = Math.max(0, (elapsed - fadeStart) / FADE_MS);
     const alpha = Math.max(0, 1 - fadeT);
 
-    container.removeChildren();
+    // Flash: immediate then fade
+    flash.alpha = 0.95 * Math.max(0, 1 - elapsed / (EXTEND_MS * 0.8));
+    flash.scale.set(1 + easeExt * 0.5);
 
-    if (alpha > 0) {
-      for (const angle of angles) {
-        const line = new Graphics();
-        // Draw inner gap so lines start slightly away from center
-        const inner = len * 0.2;
-        line.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
-        line.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
-        line.stroke({ width: 1.5, color: 0xffffff, alpha });
-        container.addChild(line);
-      }
+    // Ring: expand and fade
+    ring.alpha = 0.8 * alpha;
+    ring.scale.set(1 + easeExt * 1.8);
+
+    // Sparks
+    for (const s of sparks) {
+      const d = s.dist * easeExt;
+      s.g.x = Math.cos(s.angle) * d;
+      s.g.y = Math.sin(s.angle) * d;
+      s.g.alpha = alpha;
+      s.g.scale.set(1 - fadeT * 0.4);
+      s.g.rotation += 0.08;
     }
 
     if (t >= 1) {
-      Ticker.shared.remove(onLines);
+      Ticker.shared.remove(onTick);
       if (container.parent) container.parent.removeChild(container);
       container.destroy({ children: true });
     }
   };
 
-  Ticker.shared.add(onLines);
+  Ticker.shared.add(onTick);
 }

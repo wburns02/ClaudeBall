@@ -1,12 +1,13 @@
 // ── DustCloud.ts ──────────────────────────────────────────────────────────────
-// Particle-based dust cloud effect. Light = fielder shuffle, medium = ground
-// ball, heavy = headfirst slide / collision.
+// Griffey Jr.-style dirt dust cloud effect. Chunky, visible dirt particles that
+// billow and dissipate. Light = fielder shuffle, medium = ground ball scoop,
+// heavy = headfirst slide.
 
 import { Graphics, Ticker, Container } from 'pixi.js';
 import type { Application } from 'pixi.js';
 
-// Dirt palette
-const DUST_COLORS = [0xc4a670, 0xa08850, 0x8b6914] as const;
+// Rich dirt palette — warm browns and tans
+const DUST_COLORS = [0xc4a670, 0xa08850, 0x8b6914, 0xd4b880, 0xb09060] as const;
 
 interface DustParticle {
   g: Graphics;
@@ -14,14 +15,15 @@ interface DustParticle {
   vy: number;
   life: number;
   lifetime: number;
+  maxSize: number;
 }
 
 export type DustIntensity = 'light' | 'medium' | 'heavy';
 
 const CONFIG: Record<DustIntensity, { count: number; sizeMax: number; lifetime: [number, number]; speed: [number, number] }> = {
-  light:  { count: 8,  sizeMax: 3,  lifetime: [400, 600], speed: [20, 40] },
-  medium: { count: 15, sizeMax: 5,  lifetime: [500, 700], speed: [25, 55] },
-  heavy:  { count: 25, sizeMax: 6,  lifetime: [600, 800], speed: [30, 60] },
+  light:  { count: 10, sizeMax: 4,  lifetime: [350, 550],  speed: [20, 45] },
+  medium: { count: 18, sizeMax: 6,  lifetime: [450, 700],  speed: [25, 60] },
+  heavy:  { count: 28, sizeMax: 8,  lifetime: [600, 900],  speed: [30, 70] },
 };
 
 export function spawnDustCloud(
@@ -33,24 +35,29 @@ export function spawnDustCloud(
 ): void {
   const layer: Container = parent ?? (app.stage as unknown as Container);
   const cfg = CONFIG[intensity];
+  const container = new Container();
+  layer.addChild(container);
 
   const particles: DustParticle[] = [];
 
   for (let i = 0; i < cfg.count; i++) {
     const g = new Graphics();
-    const size = 1.5 + Math.random() * (cfg.sizeMax - 1.5);
+    const maxSize = 2 + Math.random() * (cfg.sizeMax - 2);
     const color = DUST_COLORS[Math.floor(Math.random() * DUST_COLORS.length)]!;
-    g.circle(0, 0, size);
-    g.fill({ color, alpha: 0.85 });
-    g.x = x + (Math.random() - 0.5) * 8;
-    g.y = y + (Math.random() - 0.5) * 4;
-    layer.addChild(g);
 
-    const angle = Math.random() * Math.PI * 2;
-    const px = (cfg.speed[0] + Math.random() * (cfg.speed[1] - cfg.speed[0])) / 1000; // px per ms
-    // Slight upward bias so dust rises
+    // Start small, will grow
+    g.circle(0, 0, maxSize);
+    g.fill({ color, alpha: 0.8 });
+    g.x = x + (Math.random() - 0.5) * 10;
+    g.y = y + (Math.random() - 0.5) * 5;
+    g.scale.set(0.2);
+    container.addChild(g);
+
+    const angle = (Math.random() - 0.5) * Math.PI;
+    const px = (cfg.speed[0] + Math.random() * (cfg.speed[1] - cfg.speed[0])) / 1000;
+    // Strong upward bias so dust billows up
     const vx = Math.cos(angle) * px;
-    const vy = Math.sin(angle) * px - 0.035;
+    const vy = -Math.abs(Math.sin(angle)) * px - 0.04;
 
     const ltMin = cfg.lifetime[0];
     const ltMax = cfg.lifetime[1];
@@ -60,6 +67,7 @@ export function spawnDustCloud(
       vy,
       life: 0,
       lifetime: ltMin + Math.random() * (ltMax - ltMin),
+      maxSize,
     });
   }
 
@@ -76,12 +84,23 @@ export function spawnDustCloud(
       }
       alive++;
       const tl = p.life / p.lifetime;
+
       p.g.x += p.vx * dt;
       p.g.y += p.vy * dt;
-      p.g.alpha = Math.max(0, 1 - tl * tl); // quadratic fade
+
+      // Grow then shrink
+      if (tl < 0.3) {
+        p.g.scale.set(0.2 + (tl / 0.3) * 0.8);
+        p.g.alpha = 0.8;
+      } else {
+        p.g.scale.set(1 + (tl - 0.3) * 0.6);
+        p.g.alpha = 0.8 * (1 - (tl - 0.3) / 0.7);
+      }
     }
     if (alive === 0) {
       Ticker.shared.remove(onTick);
+      if (container.parent) container.parent.removeChild(container);
+      container.destroy({ children: true });
     }
   };
 

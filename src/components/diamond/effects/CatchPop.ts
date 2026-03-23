@@ -1,16 +1,16 @@
 // ── CatchPop.ts ───────────────────────────────────────────────────────────────
-// Small "pop" effect when ball hits the glove: 6 white dots explode outward
-// + expanding ring outline. Total duration ~200ms.
+// Griffey Jr.-style glove pop effect. Satisfying "thwack" visual —
+// bright white flash + expanding ring + small sparks. Total duration ~280ms.
 
 import { Graphics, Ticker, Container } from 'pixi.js';
 import type { Application } from 'pixi.js';
 
-const DOT_COUNT  = 6;
-const TRAVEL_PX  = 8;   // how far dots travel
-const DOT_MS     = 200;
-const RING_FROM  = 5;
-const RING_TO    = 20;
-const RING_MS    = 200;
+const SPARK_COUNT  = 8;
+const SPARK_REACH  = 14;
+const FLASH_SIZE   = 8;
+const RING_FROM    = 4;
+const RING_TO      = 22;
+const TOTAL_MS     = 280;
 
 export function spawnCatchPop(
   app: Application,
@@ -19,59 +19,65 @@ export function spawnCatchPop(
   parent?: Container,
 ): void {
   const layer: Container = parent ?? (app.stage as unknown as Container);
+  const container = new Container();
+  container.x = x;
+  container.y = y;
+  layer.addChild(container);
 
-  // ── Expanding ring ────────────────────────────────────────────────────────
+  // Center flash
+  const flash = new Graphics();
+  flash.circle(0, 0, FLASH_SIZE);
+  flash.fill({ color: 0xffffff, alpha: 0.9 });
+  container.addChild(flash);
+
+  // Expanding ring
   const ring = new Graphics();
-  ring.x = x;
-  ring.y = y;
-  layer.addChild(ring);
+  ring.circle(0, 0, RING_FROM);
+  ring.stroke({ width: 1.5, color: 0xffffff, alpha: 0.7 });
+  container.addChild(ring);
 
-  let ringLife = 0;
-  const onRing = (ticker: Ticker) => {
-    ringLife += ticker.deltaMS;
-    const t = Math.min(ringLife / RING_MS, 1);
-    const radius = RING_FROM + (RING_TO - RING_FROM) * t;
-    ring.clear();
-    ring.circle(0, 0, radius);
-    ring.stroke({ width: 1.2, color: 0xffffff, alpha: Math.max(0, 1 - t) });
-    if (t >= 1) {
-      Ticker.shared.remove(onRing);
-      if (ring.parent) ring.parent.removeChild(ring);
-      ring.destroy();
-    }
-  };
-  Ticker.shared.add(onRing);
-
-  // ── Dot particles ─────────────────────────────────────────────────────────
-  interface DotP { g: Graphics; angle: number }
-  const dots: DotP[] = [];
-  for (let i = 0; i < DOT_COUNT; i++) {
+  // Spark dots
+  interface SparkInfo { g: Graphics; angle: number }
+  const sparks: SparkInfo[] = [];
+  for (let i = 0; i < SPARK_COUNT; i++) {
     const g = new Graphics();
-    g.circle(0, 0, 1.5);
+    const size = 1 + Math.random() * 1.5;
+    g.circle(0, 0, size);
     g.fill({ color: 0xffffff });
-    g.x = x;
-    g.y = y;
-    layer.addChild(g);
-    dots.push({ g, angle: (i / DOT_COUNT) * Math.PI * 2 });
+    container.addChild(g);
+    sparks.push({ g, angle: (i / SPARK_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.3 });
   }
 
-  let dotLife = 0;
-  const onDots = (ticker: Ticker) => {
-    dotLife += ticker.deltaMS;
-    const t = Math.min(dotLife / DOT_MS, 1);
-    const ease = 1 - Math.pow(1 - t, 2); // ease-out quad
-    for (const d of dots) {
-      d.g.x = x + Math.cos(d.angle) * TRAVEL_PX * ease;
-      d.g.y = y + Math.sin(d.angle) * TRAVEL_PX * ease;
-      d.g.alpha = Math.max(0, 1 - t);
+  let elapsed = 0;
+  const onTick = (ticker: Ticker) => {
+    elapsed += ticker.deltaMS;
+    const t = Math.min(elapsed / TOTAL_MS, 1);
+    const easeOut = 1 - Math.pow(1 - t, 3);
+
+    // Flash: instant bright, then fade
+    flash.alpha = 0.9 * (1 - t);
+    flash.scale.set(1 + easeOut * 0.5);
+
+    // Ring: expand and fade
+    ring.clear();
+    const radius = RING_FROM + (RING_TO - RING_FROM) * easeOut;
+    ring.circle(0, 0, radius);
+    ring.stroke({ width: 1.5 - t * 0.5, color: 0xffffff, alpha: Math.max(0, 0.7 * (1 - t)) });
+
+    // Sparks fly outward
+    for (const s of sparks) {
+      const dist = SPARK_REACH * easeOut;
+      s.g.x = Math.cos(s.angle) * dist;
+      s.g.y = Math.sin(s.angle) * dist;
+      s.g.alpha = 1 - t * t;
     }
+
     if (t >= 1) {
-      Ticker.shared.remove(onDots);
-      for (const d of dots) {
-        if (d.g.parent) d.g.parent.removeChild(d.g);
-        d.g.destroy();
-      }
+      Ticker.shared.remove(onTick);
+      if (container.parent) container.parent.removeChild(container);
+      container.destroy({ children: true });
     }
   };
-  Ticker.shared.add(onDots);
+
+  Ticker.shared.add(onTick);
 }

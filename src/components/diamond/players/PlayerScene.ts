@@ -1,6 +1,6 @@
 // ── PlayerScene.ts ────────────────────────────────────────────────────────
 // Manages all player figures on the diamond: fielders, batter, catcher,
-// umpire, and base runners.
+// umpire, and base runners. Griffey Jr. Winning Run-quality positioning.
 
 import type { Application } from 'pixi.js';
 import { Container } from 'pixi.js';
@@ -36,17 +36,27 @@ const FIELDER_DEFAULTS: Record<string, { x: number; y: number }> = {
   RF:  { x: 450, y: 158 },
 };
 
-// Scale factors for depth perspective
+// ── Perspective scale factors ──────────────────────────────────────────────
+// Griffey Jr.-style: players near camera are large and detailed,
+// outfielders are noticeably smaller. Total figure height ~50px at scale 1.0.
+//
+//   Batter/Catcher (closest): 1.0  → ~50px (prominent, detailed)
+//   Pitcher (mound):          0.80 → ~40px
+//   Corner infielders:        0.70 → ~35px
+//   Middle infielders:        0.62 → ~31px
+//   Outfielders:              0.48 → ~24px
+//   CF (furthest):            0.42 → ~21px
+
 const FIELDER_SCALES: Record<string, number> = {
-  P:   0.95,
-  C:   1.0,
-  '1B': 0.95,
-  '2B': 0.88,
-  SS:  0.88,
-  '3B': 0.95,
-  LF:  0.78,
-  CF:  0.75,
-  RF:  0.78,
+  P:   0.80,
+  C:   0.90,
+  '1B': 0.70,
+  '2B': 0.62,
+  SS:  0.62,
+  '3B': 0.70,
+  LF:  0.48,
+  CF:  0.42,
+  RF:  0.48,
 };
 
 // ── Team color defaults ────────────────────────────────────────────────────
@@ -82,7 +92,7 @@ export class PlayerScene {
     this.awayAlt = DEFAULT_AWAY_ALT;
   }
 
-  // ── Setup ──────────────────────────────────────────────────────────
+  // ── Setup ──────────────────────────────────────────────────────
 
   createScene(
     _app: Application,
@@ -125,7 +135,7 @@ export class PlayerScene {
       const coord = FIELDER_DEFAULTS[pos];
       if (!coord) continue;
 
-      const scale = FIELDER_SCALES[pos] ?? 0.9;
+      const scale = FIELDER_SCALES[pos] ?? 0.65;
       const fig = new PlayerFigure(this.homeColor, this.homeAlt, false);
       fig.setPosition(coord.x, coord.y);
       fig.setScale(scale);
@@ -212,10 +222,19 @@ export class PlayerScene {
     };
 
     const coord = baseCoords[base] ?? { x: HOME_X, y: HOME_Y };
+
+    // Runner scale based on depth (like fielder scaling)
+    const runnerScales: Record<number, number> = {
+      0: 0.95,  // home plate — close to camera
+      1: 0.70,  // first base
+      2: 0.60,  // second base — furthest
+      3: 0.70,  // third base
+    };
+
     const runner = new PlayerFigure(this.awayColor, this.awayAlt, false);
     runner.setPosition(coord.x, coord.y);
     runner.setPose('ready');
-    runner.setScale(0.95);
+    runner.setScale(runnerScales[base] ?? 0.70);
 
     this.runners.set(base, runner);
     this.layer.addChild(runner.getContainer());
