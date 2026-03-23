@@ -125,6 +125,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Leaders', path: '/franchise/leaders', icon: 'leaders' },
       { label: 'WAR Dashboard', path: '/franchise/war', icon: 'analytics' },
       { label: 'Compare Players', path: '/franchise/compare', icon: 'compare' },
+      { label: 'Compare Teams', path: '/franchise/team-compare', icon: 'teamStats' },
       { label: 'Records', path: '/franchise/records', icon: 'records' },
       {
         label: 'Team Stats',
