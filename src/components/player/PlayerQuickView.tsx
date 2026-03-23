@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerModal } from '@/stores/playerModalStore.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { useStatsStore } from '@/stores/statsStore.ts';
 import { useScoutingStore } from '@/stores/scoutingStore.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
+import { ProspectCard } from '@/components/player/ProspectCard.tsx';
+import type { Player } from '@/engine/types/player.ts';
 import { getPlayerName } from '@/engine/types/player.ts';
 import { battingAvg, onBasePct, slugging, era, whip, formatIP } from '@/engine/types/stats.ts';
 import { calcBattingAdvanced, calcPitchingAdvanced, deriveLeagueContext, DEFAULT_LEAGUE_CONTEXT, POSITION_ADJ } from '@/engine/stats/AdvancedStats.ts';
@@ -40,6 +42,30 @@ function GradeRow({ label, val }: { label: string; val: number }) {
       <span className={cn('text-xs font-mono font-bold w-5 text-right', gradeColor(val))}>{val}</span>
       <span className="text-[9px] font-mono text-cream-dim/30 w-7">{gradeLabel(val)}</span>
     </div>
+  );
+}
+
+function ScoutReportButton({ player, teamName, teamAbbr }: { player: Player; teamName: string; teamAbbr: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setShow(true)}
+        className="w-full py-2 rounded-lg bg-blue-400/10 border border-blue-400/30 text-blue-400 text-xs font-mono hover:bg-blue-400/20 transition-colors cursor-pointer"
+      >
+        Scouting Report Card
+      </button>
+      {show && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4" onClick={() => setShow(false)}>
+          <div onClick={e => e.stopPropagation()}>
+            <ProspectCard player={player} teamName={teamName} teamAbbr={teamAbbr} />
+            <button onClick={() => setShow(false)} className="w-full mt-2 py-2 rounded-lg bg-navy-lighter/30 border border-navy-lighter/60 text-cream-dim text-xs font-mono hover:bg-navy-lighter/50 transition-colors cursor-pointer">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -267,6 +293,7 @@ export function PlayerQuickView() {
             >
               View Full Stats & Career →
             </button>
+            <ScoutReportButton player={player} teamName={team ? `${team.city} ${team.name}` : ''} teamAbbr={team?.abbreviation ?? ''} />
             {isOwnPlayer && (
               <button
                 onClick={() => { navigate('/franchise/training'); closePlayer(); }}
