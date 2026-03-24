@@ -139,7 +139,9 @@ export class AtBatResolver {
     /** If true, batter will attempt a sacrifice bunt */
     isBuntMode: boolean = false,
     /** If true, pitcher will issue an intentional walk */
-    isIntentionalWalk: boolean = false
+    isIntentionalWalk: boolean = false,
+    /** Team chemistry modifier from dynasty ECS (-10 to +10). Applied in clutch situations. */
+    clutchModifier: number = 0
   ): AtBatResult {
     // ── Intentional Walk ──────────────────────────────────────────────────
     if (isIntentionalWalk) {
@@ -271,7 +273,18 @@ export class AtBatResolver {
       // Contact!
       events.push({ type: 'pitch', description: `${batterName} puts it in play`, balls, strikes, result: 'contact' });
 
-      const contact = ContactEngine.resolve(batter, pitcher, pitch.pitchType, ballpark, rng);
+      // Apply chemistry modifier in clutch situations (runners on base)
+      const isClutchSituation = currentBases.first || currentBases.second || currentBases.third;
+      let contactBatter = batter;
+      if (isClutchSituation && clutchModifier !== 0) {
+        // Temporarily boost/reduce effective morale to influence contact quality
+        contactBatter = {
+          ...batter,
+          state: { ...batter.state, morale: Math.max(0, Math.min(100, batter.state.morale + clutchModifier * 3)) },
+        };
+      }
+
+      const contact = ContactEngine.resolve(contactBatter, pitcher, pitch.pitchType, ballpark, rng);
       const fieldingResult = FieldingEngine.resolve(contact, fielders, currentBases, outs, rng);
 
       if (fieldingResult.isError) {

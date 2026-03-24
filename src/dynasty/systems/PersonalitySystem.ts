@@ -33,9 +33,9 @@ export class PersonalitySystem implements System {
   }
 
   private onTraded(event: DynastyEvent): void {
-    const playerId = event.data?.playerId as string;
-    if (!playerId) return;
-    const p = this.entities.getComponent<PersonalityComponent>(playerId, 'Personality');
+    const entityId = event.entityId ?? (event.data?.playerId as string);
+    if (!entityId) return;
+    const p = this.entities.getComponent<PersonalityComponent>(entityId, 'Personality');
     if (!p) return;
 
     const loyaltyFactor = (p.loyalty - 50) / 30;
@@ -44,9 +44,9 @@ export class PersonalitySystem implements System {
   }
 
   private onAwardWon(event: DynastyEvent): void {
-    const playerId = event.data?.playerId as string;
-    if (!playerId) return;
-    const p = this.entities.getComponent<PersonalityComponent>(playerId, 'Personality');
+    const entityId = event.entityId ?? (event.data?.playerId as string);
+    if (!entityId) return;
+    const p = this.entities.getComponent<PersonalityComponent>(entityId, 'Personality');
     if (!p) return;
 
     p.ego = clampTrait(p.ego + 1 + Math.round(p.ego / 80));
