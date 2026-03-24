@@ -11,10 +11,11 @@ export class PersonalitySystem implements System {
   readonly name = 'PersonalitySystem';
   readonly modes: DynastyMode[] = ['classic', 'living'];
 
-  constructor(
-    private entities: EntityManager,
-    private _bus: EventBus,
-  ) {}
+  private entities: EntityManager;
+
+  constructor(entities: EntityManager, _bus: EventBus) {
+    this.entities = entities;
+  }
 
   tick(_dt: number): void {
     // Personality is mostly event-driven, not tick-driven.

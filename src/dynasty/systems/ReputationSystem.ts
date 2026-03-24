@@ -8,10 +8,11 @@ export class ReputationSystem implements System {
   readonly name = 'ReputationSystem';
   readonly modes: DynastyMode[] = ['classic', 'living'];
 
-  constructor(
-    private entities: EntityManager,
-    private _bus: EventBus,
-  ) {}
+  private entities: EntityManager;
+
+  constructor(entities: EntityManager, _bus: EventBus) {
+    this.entities = entities;
+  }
 
   tick(_dt: number): void {
     // Future: slow decay toward 0 for extreme values

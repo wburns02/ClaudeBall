@@ -9,10 +9,11 @@ export class RelationshipSystem implements System {
   readonly name = 'RelationshipSystem';
   readonly modes: DynastyMode[] = ['classic', 'living'];
 
-  constructor(
-    private entities: EntityManager,
-    private _bus: EventBus,
-  ) {}
+  private entities: EntityManager;
+
+  constructor(entities: EntityManager, _bus: EventBus) {
+    this.entities = entities;
+  }
 
   tick(_dt: number): void {
     // Relationships are primarily event-driven.
