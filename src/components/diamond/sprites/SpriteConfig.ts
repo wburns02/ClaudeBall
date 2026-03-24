@@ -45,8 +45,9 @@ export const SPRITE_SHEETS: Record<string, SpriteSheetConfig> = {
   runnerV2:          { url: '/sprites/runner-v2.png',            cols: 2, rows: 4 },
   catcherUmpireV2:   { url: '/sprites/catcher-umpire-v2.png',    cols: 4, rows: 2 },
 
-  // ── V3 sprites: PIL-generated with native alpha transparency ───────────
+  // ── V3/V4 sprites ──────────────────────────────────────────────────────
   pitcherV3:         { url: '/sprites/pitcher-v3.png',          cols: 4, rows: 3, hasAlpha: true },
+  batterV4:          { url: '/sprites/batter-v4.png',           cols: 4, rows: 4, hasAlpha: true },
   batterV3:          { url: '/sprites/batter-v3.png',           cols: 4, rows: 3, hasAlpha: true },
   fielderV3:         { url: '/sprites/fielder-v3.png',          cols: 4, rows: 3, hasAlpha: true },
   runnerV3:          { url: '/sprites/runner-v3.png',           cols: 2, rows: 4, hasAlpha: true },

@@ -77,7 +77,7 @@ const FIELDER_SCALES: Record<string, number> = {
   RF:   0.14,
 };
 
-const BATTER_SCALE  = 0.35;  // batter — largest: ~75px
+const BATTER_SCALE  = 0.27;  // batter v4: 292px frames * 0.27 ≈ 79px
 const UMPIRE_SCALE  = 0.30;  // umpire behind plate: ~65px
 const RUNNER_SCALE  = 0.19;  // base runners: ~42px
 
@@ -176,7 +176,6 @@ export class SpritePlayerScene {
   }
 
   private async _loadAllSheets(): Promise<void> {
-    // Load V2 pixel-art sprites (green-screen removal handled by SpriteSheetLoader)
     const [
       batterFrames,
       pitcherFrames,
@@ -184,11 +183,11 @@ export class SpritePlayerScene {
       runnerFrames,
       catcherUmpireFrames,
     ] = await Promise.all([
-      loadSheet(SPRITE_SHEETS.batterV2),
-      loadSheet(SPRITE_SHEETS.pitcherV2),
-      loadSheet(SPRITE_SHEETS.fielderV2),
-      loadSheet(SPRITE_SHEETS.runnerV2),
-      loadSheet(SPRITE_SHEETS.catcherUmpireV2),
+      loadSheet(SPRITE_SHEETS.batterV4),   // v4: Grok-generated, high quality
+      loadSheet(SPRITE_SHEETS.pitcherV3),  // v3: PIL-generated
+      loadSheet(SPRITE_SHEETS.fielderV3),
+      loadSheet(SPRITE_SHEETS.runnerV3),
+      loadSheet(SPRITE_SHEETS.catcherUmpireV3),
     ]);
 
     this.batterFrames        = batterFrames;
