@@ -15,39 +15,69 @@ const POSITION_WEIGHT: Record<string, number> = {
   P: 1.08,
 };
 
-// Age curve: peak ~27, discount young (unproven) and old (declining)
+/**
+ * Age-based trade value curve. Young players with upside are PREMIUM assets.
+ * Peak value at 25-29. Young players valued for potential, old players discounted.
+ */
 function ageFactor(age: number): number {
-  if (age <= 22) return 0.75;
-  if (age <= 24) return 0.85;
-  if (age <= 26) return 0.92;
-  if (age <= 29) return 1.00;
-  if (age <= 31) return 0.95;
-  if (age <= 33) return 0.85;
-  if (age <= 35) return 0.72;
-  return 0.55;
+  if (age <= 21) return 0.90;  // Raw but huge upside, very valuable in trades
+  if (age <= 23) return 0.95;  // Still developing, premium trade chip
+  if (age <= 25) return 1.00;  // Entering prime, max value
+  if (age <= 29) return 1.00;  // Prime years
+  if (age <= 31) return 0.92;  // Still productive
+  if (age <= 33) return 0.80;  // Declining but useful
+  if (age <= 35) return 0.65;  // Veteran, limited trade value
+  if (age <= 37) return 0.48;  // End of career
+  return 0.35;                  // Hanging on
+}
+
+/**
+ * Years of team control bonus — younger players on cheap deals are worth more.
+ * A 24-year-old has ~6 years of affordable control. A 32-year-old free agent has 0.
+ */
+function controlBonus(age: number): number {
+  if (age <= 23) return 12;  // Pre-arb years = huge surplus value
+  if (age <= 25) return 8;   // Arb-eligible but still cheap
+  if (age <= 27) return 4;   // Early free agency
+  if (age <= 29) return 2;   // Mid-career
+  return 0;                   // No control premium
 }
 
 function avgRatings(player: Player): number {
   if (player.position === 'P') {
     const p = player.pitching;
-    return (p.stuff + p.movement + p.control + p.stamina) / 4;
+    // Weight stuff/control more heavily, add velocity bonus for hard throwers
+    const base = (p.stuff * 0.30 + p.movement * 0.20 + p.control * 0.30 + p.stamina * 0.10);
+    const velBonus = p.velocity >= 95 ? 5 : p.velocity >= 92 ? 2 : 0;
+    const repBonus = Math.min(3, (p.repertoire?.length ?? 2) - 2); // Bonus for 3+ pitches
+    return base + velBonus + repBonus;
   }
   const b = player.batting;
-  return (b.contact_L + b.contact_R + b.power_L + b.power_R + b.eye + b.avoid_k + b.gap_power + b.speed) / 8;
+  // Weight contact and power more heavily, include clutch
+  return (
+    (b.contact_L + b.contact_R) / 2 * 0.25 +
+    (b.power_L + b.power_R) / 2 * 0.25 +
+    b.eye * 0.15 +
+    b.speed * 0.10 +
+    b.avoid_k * 0.10 +
+    b.gap_power * 0.10 +
+    b.clutch * 0.05
+  );
 }
 
 /**
- * Returns trade value 0-100 based on ratings, age, and position.
+ * Returns trade value 0-100+ based on ratings, age, position, and control.
+ * Young stars can exceed 100 (indicating premium trade chips).
  */
 export function evaluatePlayer(player: Player): number {
   const rating = avgRatings(player);
   const posWeight = POSITION_WEIGHT[player.position] ?? 1.0;
   const age = ageFactor(player.age);
+  const control = controlBonus(player.age);
   const mental = (player.mental.work_ethic + player.mental.durability + player.mental.consistency) / 3;
-  // Mental bonus: up to +5 points
   const mentalBonus = ((mental - 50) / 50) * 5;
-  const raw = rating * posWeight * age + mentalBonus;
-  return Math.max(0, Math.min(100, raw));
+  const raw = rating * posWeight * age + mentalBonus + control;
+  return Math.max(0, Math.min(120, raw)); // Allow up to 120 for elite young players
 }
 
 export interface TradePackage {
@@ -108,8 +138,8 @@ export function generateTradeOffer(
 
   const targetValue = evaluatePlayer(target);
 
-  // AI offers players to match value, biased slightly in AI's favor
-  const targetOfferValue = targetValue * 0.85; // AI tries to underpay by ~15%
+  // AI offers players close to fair value, slight bias in AI's favor
+  const targetOfferValue = targetValue * 0.92; // AI tries to underpay by ~8%
 
   const candidates = aiTeam.roster.players
     .map(p => ({ p, v: evaluatePlayer(p) }))
@@ -153,7 +183,8 @@ export function wouldAccept(
   // fairness = receivingValue - offeringValue = (AI gives value) - (AI gets value)
   // positive = AI is giving more than it gets = bad for AI
   // negative = AI is getting more than it gives = good for AI
-  // AI accepts if it's getting roughly fair value or better (tolerance: up to +8 means AI gives slightly more)
+  // AI accepts if trade is roughly fair (tolerance: ±5 OVR points)
+  // Positive fairness = AI giving more than getting
   const fairness = evaluateTrade(offering, receiving, allTeams);
-  return fairness <= 8;
+  return fairness <= 5 && fairness >= -25; // Won't accept lopsided deals in either direction
 }

@@ -14,7 +14,9 @@ import {
   calcBattingAdvanced, calcPitchingAdvanced, deriveLeagueContext, DEFAULT_LEAGUE_CONTEXT,
   fmtAvg, fmtStat, POSITION_ADJ,
 } from '@/engine/stats/AdvancedStats.ts';
+import type { Player } from '@/engine/types/player.ts';
 import { evaluatePlayer } from '@/engine/gm/TradeEngine.ts';
+import { projectBatter, projectPitcher } from '@/engine/stats/StatProjections.ts';
 import { cn } from '@/lib/cn.ts';
 import type { ReactElement } from 'react';
 
@@ -297,6 +299,56 @@ function StatBox({ label, value, highlight = false }: { label: string; value: st
   );
 }
 
+function StatProjectionPanel({ player, seasonGames = 162 }: { player: Player; seasonGames?: number }): ReactElement {
+  const isPitcher = player.position === 'P';
+
+  if (isPitcher) {
+    const proj = projectPitcher(player, seasonGames);
+    return (
+      <div>
+        <p className="font-mono text-[10px] text-cream-dim/40 uppercase tracking-widest mb-2">
+          {seasonGames}-Game Season Projection
+        </p>
+        <div className="grid grid-cols-5 gap-1.5">
+          <StatBox label="ERA" value={proj.era} highlight={parseFloat(proj.era) < 3.5} />
+          <StatBox label="W" value={String(proj.w)} />
+          <StatBox label="IP" value={proj.ip} />
+          <StatBox label="SO" value={String(proj.so)} highlight={proj.so >= 180} />
+          <StatBox label="WHIP" value={proj.whip} highlight={parseFloat(proj.whip) < 1.15} />
+        </div>
+        <div className="grid grid-cols-4 gap-1.5 mt-1.5">
+          <StatBox label="BB" value={String(proj.bb)} />
+          <StatBox label="H" value={String(proj.h)} />
+          <StatBox label="HR" value={String(proj.hr)} />
+          <StatBox label="SV" value={String(proj.sv)} highlight={proj.sv >= 20} />
+        </div>
+      </div>
+    );
+  }
+
+  const proj = projectBatter(player, seasonGames);
+  return (
+    <div>
+      <p className="font-mono text-[10px] text-cream-dim/40 uppercase tracking-widest mb-2">
+        {seasonGames}-Game Season Projection
+      </p>
+      <div className="grid grid-cols-4 gap-1.5">
+        <StatBox label="AVG" value={proj.avg} highlight={parseFloat(proj.avg) >= 0.300} />
+        <StatBox label="OBP" value={proj.obp} highlight={parseFloat(proj.obp) >= 0.370} />
+        <StatBox label="SLG" value={proj.slg} highlight={parseFloat(proj.slg) >= 0.500} />
+        <StatBox label="OPS" value={proj.ops} highlight={parseFloat(proj.ops) >= 0.850} />
+      </div>
+      <div className="grid grid-cols-5 gap-1.5 mt-1.5">
+        <StatBox label="HR" value={String(proj.hr)} highlight={proj.hr >= 30} />
+        <StatBox label="RBI" value={String(proj.rbi)} />
+        <StatBox label="SB" value={String(proj.sb)} highlight={proj.sb >= 20} />
+        <StatBox label="SO" value={String(proj.so)} />
+        <StatBox label="BB" value={String(proj.bb)} />
+      </div>
+    </div>
+  );
+}
+
 export function PlayerStatsPage() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
@@ -347,7 +399,7 @@ export function PlayerStatsPage() {
   const { getReport, scoutPlayer } = useScoutingStore();
   const {
     userTeamId, sendDownPlayer, releasePlayerToWaivers,
-    placeOnIL, activateFromIL, ilRoster, getPlayerContract, signExtension,
+    placeOnIL, activateFromIL, ilRoster, getPlayerContract, signExtension, season,
   } = useFranchiseStore();
 
   // Quick Actions state
@@ -681,6 +733,10 @@ export function PlayerStatsPage() {
                   workEthic={player.mental.work_ethic}
                 />
               </Panel>
+              {/* Stat Projections — ratings-based full season projection */}
+              <Panel title="Stat Projections">
+                <StatProjectionPanel player={player} seasonGames={season?.schedule?.length ? Math.round(season.schedule.length / 15) : 162} />
+              </Panel>
               {scoutReport && (
                 <Panel title="Scouting Report">
                   <div className="flex items-center justify-between mb-3">
@@ -996,6 +1052,11 @@ export function PlayerStatsPage() {
                 currentOvr={ovr ?? Math.round(evaluatePlayer(player))}
                 workEthic={player.mental.work_ethic}
               />
+            </Panel>
+
+            {/* Stat Projections — ratings-based full season projection */}
+            <Panel title="Stat Projections">
+              <StatProjectionPanel player={player} seasonGames={season?.schedule?.length ? Math.round(season.schedule.length / 15) : 162} />
             </Panel>
 
             {/* Scouting Report — 20-80 grades */}

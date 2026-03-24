@@ -153,15 +153,10 @@ export function generatePitcherLine(
     }
   }
 
-  const rotLen = team.rotation?.length ?? 0;
-  const rotIdx = rotLen > 0 ? ((team.rotationIndex ?? 0) % rotLen) : 0;
-  const starterId = (rotLen > 0 ? team.rotation![rotIdx] : null) ?? team.pitcherId;
+  // Use the current pitcher (already set by SeasonEngine.prepareStarterForGame)
+  // Do NOT advance rotationIndex here — SeasonEngine handles rotation advancement
+  const starterId = team.pitcherId;
   const starter = team.roster.players.find(p => p.id === starterId);
-
-  // Advance rotation so next game uses the next starter
-  if (rotLen > 0) {
-    team.rotationIndex = (rotIdx + 1) % rotLen;
-  }
 
   if (!starter) return [];
 

@@ -42,7 +42,7 @@ function PlayerChip({
       <button onClick={onClick} className="flex-1 min-w-0 text-left cursor-pointer">
         <p className="font-body text-xs text-cream truncate">{getPlayerName(player)}</p>
         <p className="font-mono text-[9px] text-cream-dim/50">
-          {player.position} · {ovr} OVR · {war >= 0 ? '+' : ''}{war.toFixed(1)} WAR
+          {player.position} · Age {player.age} · {ovr} OVR · {war >= 0 ? '+' : ''}{war.toFixed(1)} WAR
           {salary && ` · ${salary}`}
         </p>
       </button>

@@ -35,10 +35,14 @@ function TeamSelector({
   onStart,
   awayName,
   homeName,
+  awaySP,
+  homeSP,
 }: {
   onStart: (userTeam: 'home' | 'away') => void;
   awayName?: string;
   homeName?: string;
+  awaySP?: string;
+  homeSP?: string;
 }) {
   return (
     <div
@@ -90,7 +94,8 @@ function TeamSelector({
         >
           <div className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-2">Visiting</div>
           <div className="font-display text-3xl text-gold uppercase tracking-wide">{awayName ?? 'Away Team'}</div>
-          <div className="font-mono text-xs text-cream-dim mt-3">Bats first (top innings)</div>
+          {awaySP && <div className="font-mono text-xs text-cream-dim/70 mt-2" style={{ borderTop: '1px solid rgba(212,168,67,0.15)', paddingTop: 8 }}>SP: {awaySP}</div>}
+          <div className="font-mono text-xs text-cream-dim mt-2">Bats first (top innings)</div>
         </button>
 
         {/* Home card */}
@@ -116,7 +121,8 @@ function TeamSelector({
         >
           <div className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-2">Home Field</div>
           <div className="font-display text-3xl text-gold uppercase tracking-wide">{homeName ?? 'Home Team'}</div>
-          <div className="font-mono text-xs text-cream-dim mt-3">Bats last (bottom innings)</div>
+          {homeSP && <div className="font-mono text-xs text-cream-dim/70 mt-2" style={{ borderTop: '1px solid rgba(212,168,67,0.15)', paddingTop: 8 }}>SP: {homeSP}</div>}
+          <div className="font-mono text-xs text-cream-dim mt-2">Bats last (bottom innings)</div>
         </button>
       </div>
 
@@ -689,6 +695,8 @@ export function LiveGamePage() {
         onStart={initEngine}
         awayName={locationState?.awayTeam ? `${locationState.awayTeam.city} ${locationState.awayTeam.name}` : undefined}
         homeName={locationState?.homeTeam ? `${locationState.homeTeam.city} ${locationState.homeTeam.name}` : undefined}
+        awaySP={locationState?.awayTeam ? (() => { const sp = locationState.awayTeam!.roster.players.find(p => p.id === locationState.awayTeam!.pitcherId); return sp ? `${sp.firstName} ${sp.lastName}` : undefined; })() : undefined}
+        homeSP={locationState?.homeTeam ? (() => { const sp = locationState.homeTeam!.roster.players.find(p => p.id === locationState.homeTeam!.pitcherId); return sp ? `${sp.firstName} ${sp.lastName}` : undefined; })() : undefined}
       />
     );
   }

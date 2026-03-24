@@ -434,8 +434,9 @@ export function FranchiseDashboard() {
     if (userGame) {
       const awayTeam = engine?.getTeam(userGame.awayId) ?? null;
       const homeTeam = engine?.getTeam(userGame.homeId) ?? null;
+      const isHome = userGame.homeId === userTeamId;
       navigate(`/game/live?gameId=${userGame.id}`, {
-        state: { awayTeam, homeTeam },
+        state: { awayTeam, homeTeam, userTeam: isHome ? 'home' : 'away' },
       });
     }
   };
