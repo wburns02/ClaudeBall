@@ -40,7 +40,7 @@ export class ReputationSystem implements System {
   }
 
   private onAwardWon(event: DynastyEvent): void {
-    const entityId = event.data?.playerId as string;
+    const entityId = event.entityId ?? (event.data?.playerId as string);
     if (!entityId) return;
 
     const rep = this.entities.getComponent<ReputationComponent>(entityId, 'Reputation');

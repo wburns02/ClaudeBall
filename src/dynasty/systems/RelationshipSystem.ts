@@ -28,12 +28,12 @@ export class RelationshipSystem implements System {
   }
 
   private onTraded(event: DynastyEvent): void {
-    const playerId = event.data?.playerId as string;
+    const entityId = event.entityId ?? (event.data?.playerId as string);
     const gmId = event.data?.gmEntityId as string | undefined;
-    if (!playerId) return;
+    if (!entityId) return;
 
-    const playerRel = this.entities.getComponent<RelationshipsComponent>(playerId, 'Relationships');
-    const playerPers = this.entities.getComponent<PersonalityComponent>(playerId, 'Personality');
+    const playerRel = this.entities.getComponent<RelationshipsComponent>(entityId, 'Relationships');
+    const playerPers = this.entities.getComponent<PersonalityComponent>(entityId, 'Personality');
     if (!playerRel || !playerPers) return;
 
     if (gmId) {
