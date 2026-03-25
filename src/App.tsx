@@ -97,6 +97,12 @@ const HallOfRecordsPage = lazy(() => import('@/pages/HallOfRecordsPage.tsx').the
 const AchievementsPage = lazy(() => import('@/pages/AchievementsPage.tsx').then(m => ({ default: m.AchievementsPage })));
 const TeamComparisonPage = lazy(() => import('@/pages/TeamComparisonPage.tsx').then(m => ({ default: m.TeamComparisonPage })));
 const SimProjectionPage = lazy(() => import('@/pages/SimProjectionPage.tsx').then(m => ({ default: m.SimProjectionPage })));
+
+// Dynasty Mode pages
+const DynastySetupPage = lazy(() => import('@/pages/dynasty/DynastySetupPage.tsx').then(m => ({ default: m.DynastySetupPage })));
+const DynastyInboxPage = lazy(() => import('@/pages/dynasty/DynastyInboxPage.tsx').then(m => ({ default: m.DynastyInboxPage })));
+const DynastyConversationPage = lazy(() => import('@/pages/dynasty/DynastyConversationPage.tsx').then(m => ({ default: m.DynastyConversationPage })));
+const DynastyLifeEventsPage = lazy(() => import('@/pages/dynasty/DynastyLifeEventsPage.tsx').then(m => ({ default: m.DynastyLifeEventsPage })));
 const FranchiseOverviewPage = lazy(() => import('@/pages/FranchiseOverviewPage.tsx').then(m => ({ default: m.FranchiseOverviewPage })));
 
 // Preload coaching & trade-deadline chunks so they don't flash "LOADING..."
@@ -167,6 +173,12 @@ function AppRoutes() {
           <Route path="/career/contract" element={<CareerLayout><CareerContractPage /></CareerLayout>} />
           <Route path="/career/hof" element={<CareerLayout><CareerHofPage /></CareerLayout>} />
           <Route path="/career/game" element={<CareerLayout><CareerGamePage /></CareerLayout>} />
+          {/* ── Dynasty Mode routes ──────────────────────────────────── */}
+          <Route path="/dynasty/new" element={<MainLayout><DynastySetupPage /></MainLayout>} />
+          <Route path="/dynasty/inbox" element={<FranchiseLayout><DynastyInboxPage /></FranchiseLayout>} />
+          <Route path="/dynasty/conversation" element={<MainLayout><DynastyConversationPage /></MainLayout>} />
+          <Route path="/dynasty/life-events" element={<FranchiseLayout><DynastyLifeEventsPage /></FranchiseLayout>} />
+
           <Route path="/historical" element={<MainLayout><HistoricalPage /></MainLayout>} />
           <Route path="/historical/draft" element={<MainLayout><FantasyDraftPage /></MainLayout>} />
           <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
