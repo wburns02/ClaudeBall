@@ -1,0 +1,58 @@
+[
+  {
+    "id": "press-postgame-win-001",
+    "situation": "press_conference",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["happy", "confident"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Congratulations on the win. Walk us through the key moments tonight.", "next": ["credit_team", "credit_pitching", "deflect"] },
+      { "id": "credit_team", "speaker": "player", "text": "It was a total team effort. Everyone contributed from top to bottom in the lineup.", "effects": { "clubhouseRep": 3, "mediaRep": 2 } },
+      { "id": "credit_pitching", "speaker": "player", "text": "Our pitching staff was phenomenal tonight. They set the tone early and never let up.", "effects": { "clubhouseRep": 2, "mediaRep": 2 } },
+      { "id": "deflect", "speaker": "player", "text": "It's one game. We're focused on the next one. No time to celebrate.", "effects": { "mediaRep": -1, "clubhouseRep": 1 } }
+    ],
+    "outcomes": { "done": { "description": "Press conference completed." } }
+  },
+  {
+    "id": "press-postgame-loss-001",
+    "situation": "press_conference",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["frustrated", "neutral"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Tough loss tonight. What went wrong out there?", "next": ["own_it", "blame_execution", "no_comment"] },
+      { "id": "own_it", "speaker": "player", "text": "That's on me. I need to make better decisions with the lineup and bullpen management.", "effects": { "clubhouseRep": 2, "mediaRep": 3 } },
+      { "id": "blame_execution", "speaker": "player", "text": "We had chances and didn't execute. The talent is there, we just need to be sharper.", "effects": { "mediaRep": 1 } },
+      { "id": "no_comment", "speaker": "player", "text": "I'm not going to get into specifics right now. We'll review the tape and move forward.", "effects": { "mediaRep": -3 } }
+    ],
+    "outcomes": { "done": { "description": "Press conference completed." } }
+  },
+  {
+    "id": "press-trade-reaction-001",
+    "situation": "press_conference",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["neutral", "confident"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Can you comment on today's trade? The fans are reacting strongly on social media.", "next": ["defend", "spin_positive", "honest"] },
+      { "id": "defend", "speaker": "player", "text": "Every move we make is about building a championship-caliber roster. This trade makes us better long-term.", "effects": { "mediaRep": 2, "fanRep": -2 } },
+      { "id": "spin_positive", "speaker": "player", "text": "We acquired some exciting young talent. I'd encourage fans to trust the process and watch these guys develop.", "effects": { "mediaRep": 3, "fanRep": 1 } },
+      { "id": "honest", "speaker": "player", "text": "I know this one hurts. He was a fan favorite. But we needed to address other areas, and this was the best path forward.", "effects": { "mediaRep": 5, "fanRep": -1, "clubhouseRep": 2 } }
+    ],
+    "outcomes": { "done": { "description": "Trade press conference completed." } }
+  },
+  {
+    "id": "media-interview-controversy-001",
+    "situation": "media_interview",
+    "archetypes": { "npc": ["aggressive"], "player": ["any"] },
+    "emotionalState": ["angry", "frustrated"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "There are reports of clubhouse tension. Sources say multiple players are unhappy with playing time. Your response?", "next": ["deny", "acknowledge", "redirect"] },
+      { "id": "deny", "speaker": "player", "text": "I don't know where you're getting that. Our clubhouse is solid. Next question.", "effects": { "mediaRep": -5 } },
+      { "id": "acknowledge", "speaker": "player", "text": "Any competitive team has guys who want to play more. That's healthy. We address it internally.", "effects": { "mediaRep": 3, "clubhouseRep": 2 } },
+      { "id": "redirect", "speaker": "player", "text": "I'd rather talk about how we're playing on the field. We've won 8 of our last 10.", "effects": { "mediaRep": 1 } }
+    ],
+    "outcomes": { "done": { "description": "Handled media controversy." } }
+  }
+]

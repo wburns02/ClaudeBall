@@ -1,0 +1,60 @@
+[
+  {
+    "id": "owner-meeting-frustrated-001",
+    "situation": "owner_meeting",
+    "archetypes": { "npc": ["high_ego"], "player": ["any"] },
+    "emotionalState": ["frustrated", "angry"],
+    "stakes": "career_defining",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Close the door, {{playerName}}. We need to talk about where this franchise is headed. I'm not seeing the results I expected.", "next": ["confident", "cautious", "apologetic"] },
+      { "id": "confident", "speaker": "player", "text": "I understand the frustration, Mr. {{npcName}}. But I have a clear plan for this offseason that will turn things around.", "effects": { "affinity": 3, "respect": 5 }, "next": ["owner_skeptical"] },
+      { "id": "cautious", "speaker": "player", "text": "What specifically are you unhappy with? I want to make sure we're aligned on expectations.", "effects": { "affinity": 1 }, "next": ["owner_demands"] },
+      { "id": "apologetic", "speaker": "player", "text": "You're right to be disappointed. I take full responsibility for this season.", "effects": { "affinity": -2, "respect": -3 }, "next": ["owner_softens"] },
+      { "id": "owner_skeptical", "speaker": "npc", "text": "I've heard that before. What makes this offseason different? Give me specifics.", "next": ["pitch_plan", "ask_budget"] },
+      { "id": "owner_demands", "speaker": "npc", "text": "I want a playoff team. Period. I don't care if it's through trades, free agents, or the draft. Just make it happen.", "next": ["pitch_plan"] },
+      { "id": "owner_softens", "speaker": "npc", "text": "...At least you own it. Not many people in your chair would say that. I'm giving you one more year. Make it count." },
+      { "id": "pitch_plan", "speaker": "player", "text": "Here's what I'm thinking: target two impact bats in free agency and trade from our pitching depth. We can be contenders by the All-Star break.", "effects": { "respect": 4 } },
+      { "id": "ask_budget", "speaker": "player", "text": "I need a bigger budget to make this work. Can you approve an additional $20M in payroll?", "effects": { "affinity": -1 }, "next": ["owner_budget_yes", "owner_budget_no"] },
+      { "id": "owner_budget_yes", "speaker": "npc", "text": "Fine. But this is the last time I open the checkbook without results. Don't waste it.", "effects": { "affinity": 2 } },
+      { "id": "owner_budget_no", "speaker": "npc", "text": "The budget is what it is. You need to be more creative with what you have." }
+    ],
+    "outcomes": {
+      "confidence_gained": { "event": "OwnerMeeting", "affinityDelta": 5, "description": "Owner is cautiously optimistic." },
+      "on_thin_ice": { "event": "OwnerMeeting", "affinityDelta": -10, "description": "Owner is running out of patience." },
+      "budget_increased": { "event": "FinancialEvent", "affinityDelta": 0, "description": "Budget increased by owner." }
+    }
+  },
+  {
+    "id": "owner-meeting-happy-001",
+    "situation": "owner_meeting",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["happy", "confident"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Sit down, {{playerName}}. I just wanted to say — hell of a job this year. The fans are excited, the numbers are up, and we're winning.", "next": ["humble", "celebrate"] },
+      { "id": "humble", "speaker": "player", "text": "Thank you, sir. The players deserve the credit. I just put them in a position to succeed.", "effects": { "affinity": 5, "respect": 3 }, "next": ["owner_bonus"] },
+      { "id": "celebrate", "speaker": "player", "text": "It feels good! This team has something special. I think we can make a real run at it.", "effects": { "affinity": 3 }, "next": ["owner_bonus"] },
+      { "id": "owner_bonus", "speaker": "npc", "text": "I'm extending your contract and bumping your budget. Keep doing what you're doing.", "effects": { "affinity": 10 } }
+    ],
+    "outcomes": {
+      "praised": { "event": "OwnerMeeting", "affinityDelta": 15, "description": "Owner is thrilled with your performance." }
+    }
+  },
+  {
+    "id": "owner-firing-001",
+    "situation": "fired",
+    "archetypes": { "npc": ["high_ego"], "player": ["any"] },
+    "emotionalState": ["frustrated"],
+    "stakes": "career_defining",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "I'll make this quick, {{playerName}}. We've decided to go in a different direction. Today is your last day.", "next": ["accept", "argue", "ask_why"] },
+      { "id": "accept", "speaker": "player", "text": "I understand. I wish things had worked out differently. I gave this organization everything I had.", "effects": { "respect": 5 } },
+      { "id": "argue", "speaker": "player", "text": "This is a mistake. The roster I built is about to turn the corner. You're throwing away three years of development.", "effects": { "respect": -3, "affinity": -5 } },
+      { "id": "ask_why", "speaker": "player", "text": "Can you tell me what specifically led to this decision?", "effects": { "respect": 2 }, "next": ["owner_explains"] },
+      { "id": "owner_explains", "speaker": "npc", "text": "The record speaks for itself. We haven't made the playoffs in three years. The fanbase is losing patience, and frankly, so am I." }
+    ],
+    "outcomes": {
+      "fired_gracefully": { "event": "GMFired", "affinityDelta": -20, "description": "You've been relieved of your duties." }
+    }
+  }
+]

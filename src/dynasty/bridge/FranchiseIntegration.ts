@@ -14,6 +14,8 @@ let bridge: DynastyBridge | null = null;
 export function initDynastyBridge(teams: Team[], mode: 'classic' | 'living' = 'classic'): DynastyBridge {
   bridge = DynastyBridge.create(mode);
   bridge.initializeFromTeams(teams, 'user-gm');
+  // Load conversation templates in background (non-blocking)
+  bridge.loadConversationTemplates().catch(() => {});
   return bridge;
 }
 

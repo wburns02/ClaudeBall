@@ -1,0 +1,40 @@
+[
+  {
+    "id": "agent-checkin-001",
+    "situation": "agent_checkin",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["neutral", "happy"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Hey {{playerName}}, just checking in. Season's going well. I've got a couple things to run by you.", "next": ["whats_up", "busy"] },
+      { "id": "whats_up", "speaker": "player", "text": "Sure, what do you have?", "next": ["endorsement_offer", "contract_update"] },
+      { "id": "busy", "speaker": "player", "text": "Can it wait? I'm focused on the series this week.", "effects": { "affinity": -1 } },
+      { "id": "endorsement_offer", "speaker": "npc", "text": "Got an endorsement inquiry from a local car dealership. $50K for a few commercials. Not huge money, but good exposure.", "next": ["accept_endorsement", "pass_endorsement"] },
+      { "id": "contract_update", "speaker": "npc", "text": "I've been getting some calls from other teams about your availability. Nothing serious — just sniffing around. Thought you should know.", "next": ["stay_put", "explore_options"] },
+      { "id": "accept_endorsement", "speaker": "player", "text": "Sure, set it up. Every bit helps.", "effects": { "fanRep": 2 } },
+      { "id": "pass_endorsement", "speaker": "player", "text": "Pass. I don't want the distraction right now." },
+      { "id": "stay_put", "speaker": "player", "text": "I'm happy here. Tell them I'm not available.", "effects": { "affinity": 3 } },
+      { "id": "explore_options", "speaker": "player", "text": "Keep those lines open. You never know what might develop.", "effects": { "affinity": -2 } }
+    ],
+    "outcomes": { "done": { "description": "Agent check-in complete." } }
+  },
+  {
+    "id": "agent-hardball-001",
+    "situation": "agent_checkin",
+    "archetypes": { "npc": ["aggressive", "high_ego"], "player": ["any"] },
+    "emotionalState": ["confident", "aggressive"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "We need to talk about my client's situation. He's outperforming his contract by a mile. This needs to be addressed.", "next": ["acknowledge", "push_back"] },
+      { "id": "acknowledge", "speaker": "player", "text": "He's been great this year. What are you proposing?", "effects": { "affinity": 2 }, "next": ["agent_demands"] },
+      { "id": "push_back", "speaker": "player", "text": "He signed a contract. We'll talk when it's closer to expiring.", "effects": { "affinity": -5, "respect": 3 } },
+      { "id": "agent_demands", "speaker": "npc", "text": "A restructured deal. More money now, or a no-trade clause. Something to show good faith.", "next": ["consider_restructure", "decline"] },
+      { "id": "consider_restructure", "speaker": "player", "text": "I'll look into it. No promises, but I hear you.", "effects": { "affinity": 3 } },
+      { "id": "decline", "speaker": "player", "text": "Contracts are contracts. He'll get paid when the time comes.", "effects": { "affinity": -8, "respect": 5 } }
+    ],
+    "outcomes": {
+      "appeased": { "affinityDelta": 5, "description": "Agent's concerns addressed." },
+      "tension": { "affinityDelta": -10, "description": "Agent relationship strained." }
+    }
+  }
+]

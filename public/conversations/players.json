@@ -1,0 +1,54 @@
+[
+  {
+    "id": "player-playing-time-001",
+    "situation": "clubhouse_confrontation",
+    "archetypes": { "npc": ["high_ego"], "player": ["any"] },
+    "emotionalState": ["angry", "frustrated"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Skip, I need to talk to you. I've been riding the bench for three weeks. What's going on?", "next": ["honest", "reassure", "tough_love"] },
+      { "id": "honest", "speaker": "player", "text": "I'll be straight with you — {{npcPlayerName}} has been outperforming you. I'm going with the hot hand.", "effects": { "affinity": -5, "respect": 5 } },
+      { "id": "reassure", "speaker": "player", "text": "Your time is coming. I've got plans for you in the lineup this week. Stay ready.", "effects": { "affinity": 3, "respect": -2 } },
+      { "id": "tough_love", "speaker": "player", "text": "You want to play? Earn it. Your numbers aren't where they need to be.", "effects": { "affinity": -8, "respect": 3 }, "next": ["player_storms_off", "player_accepts"] },
+      { "id": "player_storms_off", "speaker": "npc", "text": "Fine. But if I'm not in the lineup by Friday, my agent's going to have a conversation with you.", "effects": { "affinity": -5 } },
+      { "id": "player_accepts", "speaker": "npc", "text": "...Fair enough. I'll put in the work. But I need a chance to show what I can do." }
+    ],
+    "outcomes": {
+      "resolved": { "affinityDelta": -3, "description": "Playing time dispute addressed." },
+      "escalated": { "affinityDelta": -15, "description": "Playing time dispute escalated." }
+    }
+  },
+  {
+    "id": "player-mentor-001",
+    "situation": "mentor_moment",
+    "archetypes": { "npc": ["leader"], "player": ["any"] },
+    "emotionalState": ["happy", "neutral"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Hey kid, you got a minute? I've been watching you in the cage. I think I can help with your approach.", "next": ["accept_help", "polite_decline"] },
+      { "id": "accept_help", "speaker": "player", "text": "Absolutely. I've been wanting to pick your brain about hitting with two strikes.", "effects": { "affinity": 5 }, "next": ["mentor_teaches"] },
+      { "id": "polite_decline", "speaker": "player", "text": "Thanks, but I've been working with the hitting coach on something specific. Maybe next time.", "effects": { "affinity": -2 } },
+      { "id": "mentor_teaches", "speaker": "npc", "text": "Two-strike approach is all about shortening up. Choke up half an inch, widen your stance. Protect the plate. I'll show you what I mean.", "effects": { "affinity": 8, "respect": 3 } }
+    ],
+    "outcomes": {
+      "bond_formed": { "affinityDelta": 10, "description": "A mentoring relationship is forming." }
+    }
+  },
+  {
+    "id": "player-trade-reaction-001",
+    "situation": "clubhouse_confrontation",
+    "archetypes": { "npc": ["high_loyalty"], "player": ["any"] },
+    "emotionalState": ["angry", "frustrated"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "You traded {{npcPlayerName}}? He was my best friend on this team. How could you do that?", "next": ["explain_business", "empathize", "dismiss"] },
+      { "id": "explain_business", "speaker": "player", "text": "It's a business decision. The return we got makes this team better. I know it's hard.", "effects": { "affinity": -3, "respect": 2 } },
+      { "id": "empathize", "speaker": "player", "text": "I know this is tough. He meant a lot to this clubhouse. But I promise — what we got back will help us win.", "effects": { "affinity": 1, "respect": 3 } },
+      { "id": "dismiss", "speaker": "player", "text": "That's part of baseball. You'll make new friends.", "effects": { "affinity": -10, "respect": -5 } }
+    ],
+    "outcomes": {
+      "accepted": { "affinityDelta": -5, "description": "Player reluctantly accepts the trade." },
+      "resentful": { "affinityDelta": -20, "description": "Player harbors resentment." }
+    }
+  }
+]
