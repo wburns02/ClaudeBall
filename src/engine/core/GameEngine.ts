@@ -27,6 +27,9 @@ export class GameEngine {
   private pitcherStats: Map<string, { ip: number; h: number; r: number; er: number; bb: number; so: number; hr: number; pitchCount: number }>;
   /** Runs allowed by the current pitcher in the current inning (reset on pitching change or inning change) */
   private runsThisInning: { away: number; home: number };
+  /** Team chemistry modifier for clutch situations (set by dynasty bridge, -10 to +10) */
+  homeChemistry = 0;
+  awayChemistry = 0;
 
   constructor(config: GameConfig) {
     const seed = config.seed ?? Date.now();
@@ -324,12 +327,15 @@ export class GameEngine {
       batter.position === 'P' &&
       (inning.bases.second !== null || inning.bases.first !== null);
 
+    // Batting team chemistry: home team bats in bottom half, away in top
+    const battingChemistry = isTop ? this.awayChemistry : this.homeChemistry;
     const result = AtBatResolver.resolve(
       batter, pitcher, fielders,
       inning.bases, inning.outs,
       this.ballpark, this.rng,
       isBuntMode,
-      isIntentionalWalk
+      isIntentionalWalk,
+      battingChemistry
     );
 
     // Update game state
