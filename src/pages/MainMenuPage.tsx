@@ -85,9 +85,25 @@ export function MainMenuPage() {
               </Button>
             </div>
 
+            {/* Dynasty Mode — flagship feature, top of modes */}
+            <div className="pt-4">
+              <p className="text-cream-dim/40 text-[10px] font-mono tracking-widest uppercase">Dynasty</p>
+              <button
+                onClick={() => navigate('/dynasty/new')}
+                data-testid="dynasty-mode-btn"
+                className="w-72 mx-auto block rounded-lg border-2 border-gold/50 bg-gradient-to-r from-gold/15 to-amber-500/15 px-6 py-4 transition-all duration-200 hover:from-gold/25 hover:to-amber-500/25 hover:border-gold hover:scale-[1.02] active:scale-[0.98] cursor-pointer mt-2"
+              >
+                <p className="font-display text-gold text-lg tracking-wide uppercase">Dynasty Mode</p>
+                <p className="font-mono text-cream-dim text-xs mt-1">Classic GM or Full RPG Career</p>
+              </button>
+            </div>
+
             {/* Other modes */}
             <div className="space-y-2 pt-4">
-              <p className="text-cream-dim/40 text-[10px] font-mono tracking-widest uppercase">Modes</p>
+              <p className="text-cream-dim/40 text-[10px] font-mono tracking-widest uppercase">More Modes</p>
+              <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/franchise/new')}>
+                New Franchise
+              </Button>
               <Button
                 variant="secondary"
                 size="md"
@@ -105,17 +121,6 @@ export function MainMenuPage() {
                 data-testid="be-a-player-btn"
               >
                 Be A Player
-              </Button>
-              <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/franchise/new')}>
-                New Franchise
-              </Button>
-              <Button
-                size="md"
-                className="w-64 bg-gradient-to-r from-gold/60 to-amber-500/60 border-gold/50 hover:from-gold/80 hover:to-amber-500/80"
-                onClick={() => navigate('/dynasty/new')}
-                data-testid="dynasty-mode-btn"
-              >
-                Dynasty Mode
               </Button>
             </div>
 
