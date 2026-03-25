@@ -1,0 +1,60 @@
+[
+  {
+    "id": "contract-highego-agent-001",
+    "situation": "contract_negotiation",
+    "archetypes": { "npc": ["high_ego", "aggressive"], "player": ["any"] },
+    "emotionalState": ["confident", "aggressive"],
+    "stakes": "high",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Let's cut to it, {{playerName}}. My client put up {{statLine}} last year. We both know what that's worth on the open market.", "next": ["firm_offer", "acknowledge", "lowball"] },
+      { "id": "firm_offer", "speaker": "player", "text": "We value {{npcPlayerName}} highly. {{offerAmount}} over {{offerYears}} years reflects that.", "effects": { "affinity": 2, "respect": 3 }, "next": ["agent_considers"] },
+      { "id": "acknowledge", "speaker": "player", "text": "Those are impressive numbers. What's he looking for?", "effects": { "affinity": 1 }, "next": ["agent_demands"] },
+      { "id": "lowball", "speaker": "player", "text": "{{teamCity}} has budget constraints. We're thinking more in the range of—", "effects": { "affinity": -5, "respect": -2 }, "next": ["agent_angry"] },
+      { "id": "agent_considers", "speaker": "npc", "text": "That's... in the ballpark. But we were hoping for something closer to market value. Can you stretch the years?", "next": ["stretch_years", "hold_firm"] },
+      { "id": "agent_demands", "speaker": "npc", "text": "He wants top-5 money at his position. We're talking {{askingPrice}} minimum. Anything less and we test free agency.", "next": ["firm_offer", "walk_away"] },
+      { "id": "agent_angry", "speaker": "npc", "text": "With all due respect, that's insulting. My client has options. Don't waste our time.", "next": ["apologize_raise", "walk_away"] },
+      { "id": "stretch_years", "speaker": "player", "text": "We can add a year. {{offerAmount}} over {{offerYears}} years with a club option.", "effects": { "affinity": 3 } },
+      { "id": "hold_firm", "speaker": "player", "text": "That's our best offer. Take it or leave it.", "effects": { "respect": 5, "affinity": -2 } },
+      { "id": "walk_away", "speaker": "player", "text": "If that's where we are, we'll revisit this later. Good luck in free agency.", "effects": { "affinity": -8 } },
+      { "id": "apologize_raise", "speaker": "player", "text": "You're right, let me rework the numbers. How about we meet in the middle?", "effects": { "affinity": 1, "respect": -1 } }
+    ],
+    "outcomes": {
+      "deal_made": { "event": "ContractSigned", "affinityDelta": 10, "description": "Contract agreed in principle." },
+      "walked_away": { "event": "NegotiationFailed", "affinityDelta": -15, "description": "Negotiations broke down." }
+    }
+  },
+  {
+    "id": "contract-loyal-agent-001",
+    "situation": "contract_negotiation",
+    "archetypes": { "npc": ["high_loyalty"], "player": ["any"] },
+    "emotionalState": ["happy", "neutral"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "{{npcPlayerName}} loves playing in {{teamCity}}. He'd love to stay — but we need something fair.", "next": ["fair_offer", "hometown_discount"] },
+      { "id": "fair_offer", "speaker": "player", "text": "We appreciate his loyalty. {{offerAmount}} over {{offerYears}} years.", "effects": { "affinity": 5 } },
+      { "id": "hometown_discount", "speaker": "player", "text": "We know he wants to stay. How about a slight hometown discount? We'll make it up in no-trade clauses.", "effects": { "affinity": 2, "respect": 2 } }
+    ],
+    "outcomes": {
+      "deal_made": { "event": "ContractSigned", "affinityDelta": 15, "description": "Loyal player re-signs with a smile." }
+    }
+  },
+  {
+    "id": "contract-extension-001",
+    "situation": "contract_negotiation",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["neutral"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "My client has two years left, but we'd like to lock in an extension now. Stability matters to him.", "next": ["engage", "defer"] },
+      { "id": "engage", "speaker": "player", "text": "We'd love to keep him long-term. What are you thinking?", "effects": { "affinity": 3 }, "next": ["npc_proposal"] },
+      { "id": "defer", "speaker": "player", "text": "Let's revisit this closer to the deadline. We're still evaluating the roster.", "effects": { "affinity": -3 } },
+      { "id": "npc_proposal", "speaker": "npc", "text": "Four years, fair market value. He's earned it with his consistency.", "next": ["accept_terms", "counter"] },
+      { "id": "accept_terms", "speaker": "player", "text": "That works for us. Let's get the paperwork started.", "effects": { "affinity": 8 } },
+      { "id": "counter", "speaker": "player", "text": "Three years with a mutual option for the fourth. Protects both sides.", "effects": { "respect": 3 } }
+    ],
+    "outcomes": {
+      "extended": { "event": "ContractSigned", "affinityDelta": 10, "description": "Extension agreed." },
+      "tabled": { "affinityDelta": -5, "description": "Extension talks stalled." }
+    }
+  }
+]

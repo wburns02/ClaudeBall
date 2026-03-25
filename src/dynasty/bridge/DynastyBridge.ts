@@ -11,6 +11,8 @@ import { CoreSimBridge } from '../systems/CoreSimBridge.ts';
 import { ContractBridge } from '../systems/ContractBridge.ts';
 import { TradeBridge } from '../systems/TradeBridge.ts';
 import { SeasonBridge } from '../systems/SeasonBridge.ts';
+import { ConversationSystem } from '../conversations/ConversationSystem.ts';
+import { ConversationLibrary } from '../conversations/ConversationLibrary.ts';
 
 export class DynastyBridge {
   readonly bus: EventBus;
@@ -22,6 +24,8 @@ export class DynastyBridge {
   readonly contracts: ContractBridge;
   readonly trades: TradeBridge;
   readonly season: SeasonBridge;
+  readonly conversations: ConversationSystem;
+  readonly conversationLibrary: ConversationLibrary;
 
   private relationshipSystem: RelationshipSystem;
 
@@ -39,6 +43,8 @@ export class DynastyBridge {
     this.contracts = new ContractBridge(this.entities, this.bus);
     this.trades = new TradeBridge(this.entities, this.bus, this.factory);
     this.season = new SeasonBridge(this.entities, this.bus);
+    this.conversationLibrary = new ConversationLibrary();
+    this.conversations = new ConversationSystem(this.entities, this.bus, this.conversationLibrary);
 
     this.runner.addSystem(personalitySystem);
     this.runner.addSystem(this.relationshipSystem);
@@ -47,6 +53,23 @@ export class DynastyBridge {
     this.runner.addSystem(this.contracts);
     this.runner.addSystem(this.trades);
     this.runner.addSystem(this.season);
+    this.runner.addSystem(this.conversations);
+  }
+
+  /** Load conversation templates from JSON files (call after create) */
+  async loadConversationTemplates(): Promise<void> {
+    const categories = ['contracts', 'owner', 'media', 'trades', 'players', 'agents', 'awards'];
+    for (const cat of categories) {
+      try {
+        const response = await fetch(`/conversations/${cat}.json`);
+        if (response.ok) {
+          const templates = await response.json();
+          this.conversationLibrary.loadTemplates(templates);
+        }
+      } catch {
+        // Non-critical — library works without templates (empty)
+      }
+    }
   }
 
   static create(mode: DynastyMode): DynastyBridge {

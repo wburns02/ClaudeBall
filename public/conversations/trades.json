@@ -1,0 +1,45 @@
+[
+  {
+    "id": "trade-call-incoming-001",
+    "situation": "trade_call",
+    "archetypes": { "npc": ["aggressive"], "player": ["any"] },
+    "emotionalState": ["confident"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "{{playerName}}, I've been looking at your roster. I think there's a deal here that helps both of us.", "next": ["interested", "skeptical", "not_interested"] },
+      { "id": "interested", "speaker": "player", "text": "I'm listening. What do you have in mind?", "effects": { "affinity": 2 }, "next": ["npc_pitch"] },
+      { "id": "skeptical", "speaker": "player", "text": "Last time we talked, your asks were unreasonable. What's changed?", "effects": { "affinity": -1 }, "next": ["npc_pitch"] },
+      { "id": "not_interested", "speaker": "player", "text": "I'm happy with where our roster is right now. Thanks for calling though.", "effects": { "affinity": -3 } },
+      { "id": "npc_pitch", "speaker": "npc", "text": "I've got a young arm — electric stuff, just needs innings. I'm looking for a veteran bat. Someone who can anchor a lineup.", "next": ["counter", "ask_specifics"] },
+      { "id": "counter", "speaker": "player", "text": "Interesting. What about a package deal? I've got depth in the outfield I could move.", "effects": { "affinity": 3, "respect": 2 } },
+      { "id": "ask_specifics", "speaker": "player", "text": "Who specifically are you targeting on my roster?", "next": ["npc_reveals"] },
+      { "id": "npc_reveals", "speaker": "npc", "text": "Your starting catcher. He'd be a perfect fit for what we're building. What would it take?", "next": ["high_price", "consider"] },
+      { "id": "high_price", "speaker": "player", "text": "He's not available unless you're including that young arm AND a top prospect.", "effects": { "respect": 4 } },
+      { "id": "consider", "speaker": "player", "text": "That's an interesting proposition. Let me look at the numbers and get back to you.", "effects": { "affinity": 2 } }
+    ],
+    "outcomes": {
+      "deal_discussed": { "affinityDelta": 5, "description": "Productive trade discussion." },
+      "no_deal": { "affinityDelta": -3, "description": "Trade talks went nowhere." }
+    }
+  },
+  {
+    "id": "trade-call-deadline-001",
+    "situation": "trade_call",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["desperate", "anxious"],
+    "stakes": "high",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Deadline is in two hours. I need to make a move. Are you willing to deal or not?", "next": ["engage_urgently", "play_cool", "pass"] },
+      { "id": "engage_urgently", "speaker": "player", "text": "What's your best offer? No games, just numbers.", "effects": { "respect": 3 }, "next": ["npc_final_offer"] },
+      { "id": "play_cool", "speaker": "player", "text": "I've got other calls coming in. You're going to have to sweeten the deal.", "effects": { "respect": 2, "affinity": -2 }, "next": ["npc_final_offer"] },
+      { "id": "pass", "speaker": "player", "text": "I think we're set. Good luck the rest of the way." },
+      { "id": "npc_final_offer", "speaker": "npc", "text": "My top prospect plus a reliever for your #2 starter. Final offer. Clock is ticking.", "next": ["accept_deal", "reject_deal"] },
+      { "id": "accept_deal", "speaker": "player", "text": "Done. Send the paperwork.", "effects": { "affinity": 5 } },
+      { "id": "reject_deal", "speaker": "player", "text": "Not enough. He's staying put.", "effects": { "affinity": -5 } }
+    ],
+    "outcomes": {
+      "deadline_deal": { "event": "PlayerTraded", "affinityDelta": 5, "description": "Deadline deal completed." },
+      "no_deal": { "affinityDelta": -5, "description": "Deadline passed without a deal." }
+    }
+  }
+]

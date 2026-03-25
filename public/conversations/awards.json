@@ -1,0 +1,41 @@
+[
+  {
+    "id": "award-mvp-001",
+    "situation": "award_ceremony",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["happy"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Congratulations — you've been named the league's Most Valuable Player. An incredible season.", "next": ["humble", "celebrate"] },
+      { "id": "humble", "speaker": "player", "text": "Thank you. This belongs to my teammates and coaches as much as it does to me. I couldn't have done it without them.", "effects": { "clubhouseRep": 5, "mediaRep": 5, "fanRep": 3 } },
+      { "id": "celebrate", "speaker": "player", "text": "It feels amazing! All the hard work paid off. I'm going to enjoy this one.", "effects": { "fanRep": 5, "mediaRep": 3 } }
+    ],
+    "outcomes": { "celebrated": { "event": "AwardWon", "affinityDelta": 10, "description": "MVP award celebrated." } }
+  },
+  {
+    "id": "award-cy-young-001",
+    "situation": "award_ceremony",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["happy"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "The Cy Young Award goes to... congratulations on an outstanding pitching season.", "next": ["thank_catcher", "credit_self"] },
+      { "id": "thank_catcher", "speaker": "player", "text": "I need to thank my catcher first. He called an incredible game all year. This is shared.", "effects": { "clubhouseRep": 8, "mediaRep": 3 } },
+      { "id": "credit_self", "speaker": "player", "text": "I worked harder than ever this offseason. The results speak for themselves.", "effects": { "mediaRep": 2, "fanRep": 4 } }
+    ],
+    "outcomes": { "celebrated": { "event": "AwardWon", "affinityDelta": 10, "description": "Cy Young celebrated." } }
+  },
+  {
+    "id": "award-roy-001",
+    "situation": "award_ceremony",
+    "archetypes": { "npc": ["any"], "player": ["any"] },
+    "emotionalState": ["happy", "confident"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Rookie of the Year — what a debut season. How does it feel?", "next": ["grateful", "hungry"] },
+      { "id": "grateful", "speaker": "player", "text": "It's surreal. A year ago I was in the minors hoping for a shot. The veterans in that clubhouse made this possible.", "effects": { "clubhouseRep": 5, "mediaRep": 4, "fanRep": 5 } },
+      { "id": "hungry", "speaker": "player", "text": "This is just the beginning. I've got a lot more to prove. MVP is the next goal.", "effects": { "fanRep": 6, "mediaRep": 3 } }
+    ],
+    "outcomes": { "celebrated": { "event": "AwardWon", "affinityDelta": 8, "description": "ROY celebrated." } }
+  }
+]
