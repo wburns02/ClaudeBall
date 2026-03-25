@@ -92,6 +92,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: 'HOME',
     items: [
       { label: 'Dashboard', path: '/franchise', icon: 'home' },
+      { label: 'Overview', path: '/franchise/overview', icon: 'records' },
       { label: 'GM Inbox', path: '/franchise/inbox', icon: 'inbox' },
       { label: 'League News', path: '/franchise/news', icon: 'news' },
       { label: 'League Highlights', path: '/franchise/highlights', icon: 'allStar' },
@@ -174,6 +175,14 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Waivers', path: '/franchise/waivers', icon: 'waivers' },
       { label: 'Trade History', path: '/franchise/trade-history', icon: 'tradeHistory' },
       { label: 'Transactions', path: '/franchise/transactions', icon: 'transactions' },
+    ],
+  },
+  {
+    heading: 'DYNASTY',
+    items: [
+      { label: 'Hot Stove Inbox', path: '/dynasty/inbox', icon: 'inbox' },
+      { label: 'Conversations', path: '/dynasty/conversation', icon: 'inbox' },
+      { label: 'Life Events', path: '/dynasty/life-events', icon: 'morale' },
     ],
   },
   {

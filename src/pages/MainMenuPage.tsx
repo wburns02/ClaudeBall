@@ -109,6 +109,14 @@ export function MainMenuPage() {
               <Button variant="secondary" size="md" className="w-64" onClick={() => navigate('/franchise/new')}>
                 New Franchise
               </Button>
+              <Button
+                size="md"
+                className="w-64 bg-gradient-to-r from-gold/60 to-amber-500/60 border-gold/50 hover:from-gold/80 hover:to-amber-500/80"
+                onClick={() => navigate('/dynasty/new')}
+                data-testid="dynasty-mode-btn"
+              >
+                Dynasty Mode
+              </Button>
             </div>
 
             {/* System */}
