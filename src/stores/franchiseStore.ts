@@ -27,6 +27,11 @@ import type { FranchisePlayerSeasonRecord } from '@/stores/historyStore.ts';
 import { useMoraleStore } from '@/stores/moraleStore.ts';
 import { useInboxStore } from '@/stores/inboxStore.ts';
 import { useScoutingStore } from '@/stores/scoutingStore.ts';
+import {
+  initDynastyBridge, emitGameCompleted, emitPlayerTraded, emitContractSigned,
+  emitPlayerReleased, emitPlayerRetired, emitSeasonPhaseChanged, emitAwardWon,
+  emitPlayerInjured, tickDynasty, destroyDynastyBridge,
+} from '@/dynasty/bridge/FranchiseIntegration.ts';
 
 /** Injured List slot — tracks a player placed on the IL */
 export interface ILSlot {
@@ -276,6 +281,8 @@ export const useFranchiseStore = create<FranchiseState>()(
       },
     }));
     const engine = new SeasonEngine(initializedTeams, leagueStructure, userTeamId);
+    // Initialize dynasty ECS bridge (eager — all franchises get dynasty systems)
+    initDynastyBridge(initializedTeams);
     // Initialize team budgets: payroll + 15% headroom, floor $100M, cap $220M
     const teamBudgets: Record<string, number> = {};
     for (const team of initializedTeams) {
@@ -357,6 +364,25 @@ export const useFranchiseStore = create<FranchiseState>()(
           game.homeScore,
         );
       }
+      // Emit to dynasty ECS for each simmed game
+      for (const game of newlyPlayed) {
+        if (game.awayScore !== undefined && game.homeScore !== undefined) {
+          emitGameCompleted(game.awayId, game.homeId, game.awayScore, game.homeScore);
+        }
+      }
+    } catch { /* non-critical */ }
+
+    // Emit dynasty events for injuries and AI trades from this day
+    try {
+      for (const inj of events.injuries) {
+        emitPlayerInjured(inj.record.playerId, inj.record.teamId, inj.record.severity === 'season-ending' ? 'career_ending' : 'minor');
+      }
+      for (const trade of events.aiTrades) {
+        // AI trades record player names, not IDs — emit with team IDs for dynasty tracking
+        for (const name of trade.playersToBuyer) emitPlayerTraded(name, trade.sellerTeamId, trade.buyerTeamId);
+        for (const name of trade.playersToSeller) emitPlayerTraded(name, trade.buyerTeamId, trade.sellerTeamId);
+      }
+      tickDynasty();
     } catch { /* non-critical */ }
 
     // Run weekly prospect development every 7 days
@@ -516,7 +542,12 @@ export const useFranchiseStore = create<FranchiseState>()(
   recordGameResult: (gameId, awayScore, homeScore, awayInnings, homeInnings) => {
     const { engine } = get();
     if (!engine) return;
+    // Find game to get team IDs
+    const game = engine.getState().schedule.find(g => g.id === gameId);
     engine.recordUserGameResult(gameId, awayScore, homeScore, awayInnings, homeInnings);
+    // Emit to dynasty ECS
+    if (game) emitGameCompleted(game.awayId, game.homeId, awayScore, homeScore);
+    tickDynasty();
     set({ season: { ...engine.getState() } });
   },
 
@@ -589,7 +620,22 @@ export const useFranchiseStore = create<FranchiseState>()(
     }
 
     engine.startOffseason(trainingAssignments);
-    const state = engine.getState();
+    emitSeasonPhaseChanged('regular_season', 'offseason');
+    // Emit awards to dynasty ECS
+    const offseasonState = engine.getState();
+    if (offseasonState.offseasonAwards) {
+      for (const award of offseasonState.offseasonAwards) {
+        emitAwardWon(award.playerId, award.type, award.league);
+      }
+    }
+    // Emit retirements
+    if (offseasonState.offseasonRetirements) {
+      for (const ret of offseasonState.offseasonRetirements) {
+        emitPlayerRetired(ret.playerId, ret.teamId, ret.age);
+      }
+    }
+    tickDynasty();
+    const state = offseasonState;
     set({
       season: { ...state },
       // Update teams to reflect development changes applied by offseason engine
@@ -785,6 +831,8 @@ export const useFranchiseStore = create<FranchiseState>()(
 
     // 3. Advance the season engine
     engine.advanceToNextYear();
+    emitSeasonPhaseChanged('offseason', 'preseason');
+    tickDynasty();
     const newYear = engine.getState().year;
 
     // 4. Reset per-season stores for the new year
@@ -857,6 +905,7 @@ export const useFranchiseStore = create<FranchiseState>()(
     for (const agent of freeAgentPool.getAll()) newPool.add(agent);
     const newTeams = engine.getAllTeams().map(t => ({ ...t, roster: { ...t.roster, players: [...t.roster.players] } }));
     set({ freeAgentPool: newPool, teams: newTeams });
+    emitContractSigned(playerId, userTeamId, years, salaryPerYear);
     return { success: true };
   },
 
@@ -1141,6 +1190,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       newPool.add({ player: p, askingSalary, yearsDesired: Math.min(3, Math.max(1, Math.round((100 - p.age) / 15))) });
       set({ freeAgentPool: newPool });
     }
+    emitPlayerReleased(playerId, teamId);
   },
 
   movePlayer: (playerId, fromTeamId, toTeamId) => {
@@ -1186,6 +1236,7 @@ export const useFranchiseStore = create<FranchiseState>()(
       // Transfer the player's contract to the new team so payroll stays accurate
       engine.contractEngine.transferContract(movedPlayer.id, toTeamId);
     }
+    emitPlayerTraded(playerId, fromTeamId, toTeamId);
   },
 
   updateTeam: (teamId, updates) => {
