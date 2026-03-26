@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { BattingStats, PitchingStats } from '@/engine/types/stats.ts';
+import { idbStorage } from '@/stores/idbStorage.ts';
 import { createEmptyBattingStats, createEmptyPitchingStats } from '@/engine/types/stats.ts';
 import type { BoxScorePlayer, BoxScorePitcher } from '@/engine/types/game.ts';
 
@@ -375,40 +376,14 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
     }),
     {
       name: 'claudeball-stats',
-      storage: {
-        getItem: (name: string) => {
-          try { const val = localStorage.getItem(name); return val ? JSON.parse(val) : null; } catch { return null; }
-        },
-        setItem: (name: string, value: unknown) => {
-          try { localStorage.setItem(name, JSON.stringify(value)); } catch {
-            console.warn('localStorage quota exceeded for stats — trimming game logs');
-            // Emergency trim: clear all game logs to fit
-            try {
-              const data = value as { state?: { playerStats?: Record<string, { gameLog?: unknown[] }> } };
-              if (data?.state?.playerStats) {
-                for (const ps of Object.values(data.state.playerStats)) {
-                  if (ps.gameLog) ps.gameLog = ps.gameLog.slice(-5); // Keep only last 5 games
-                }
-              }
-              localStorage.setItem(name, JSON.stringify(data));
-            } catch { /* give up silently */ }
-          }
-        },
-        removeItem: (name: string) => { try { localStorage.removeItem(name); } catch {} },
-      },
-      partialize: (state) => {
-        // Trim game logs to last 19 games per player to control storage size
-        const trimmedStats: Record<string, unknown> = {};
-        for (const [id, ps] of Object.entries(state.playerStats)) {
-          trimmedStats[id] = { ...ps, gameLog: (ps as { gameLog?: unknown[] }).gameLog?.slice(-19) ?? [] };
-        }
-        return {
-          playerStats: trimmedStats,
-          currentSeason: state.currentSeason,
-          records: state.records,
-          leagueTotals: state.leagueTotals,
-        };
-      },
+      // IndexedDB storage — no 5MB limit, full stats preserved
+      storage: idbStorage as any,
+      partialize: (state) => ({
+        playerStats: state.playerStats,
+        currentSeason: state.currentSeason,
+        records: state.records,
+        leagueTotals: state.leagueTotals,
+      }),
     }
   )
 );

@@ -27,6 +27,7 @@ import type { FranchisePlayerSeasonRecord } from '@/stores/historyStore.ts';
 import { useMoraleStore } from '@/stores/moraleStore.ts';
 import { useInboxStore } from '@/stores/inboxStore.ts';
 import { useScoutingStore } from '@/stores/scoutingStore.ts';
+import { idbStorage } from '@/stores/idbStorage.ts';
 import {
   initDynastyBridge, emitGameCompleted, emitPlayerTraded, emitContractSigned,
   emitPlayerReleased, emitPlayerRetired, emitSeasonPhaseChanged, emitAwardWon,
@@ -1291,19 +1292,8 @@ export const useFranchiseStore = create<FranchiseState>()(
     }),
     {
       name: 'claudeball-franchise',
-      // Custom storage that silently handles quota errors instead of crashing
-      storage: {
-        getItem: (name: string) => {
-          try { const val = localStorage.getItem(name); return val ? JSON.parse(val) : null; } catch { return null; }
-        },
-        setItem: (name: string, value: unknown) => {
-          try { localStorage.setItem(name, JSON.stringify(value)); } catch {
-            // QuotaExceededError — silently fail, game continues (just won't persist)
-            console.warn('localStorage quota exceeded — save data too large. Game continues but state may not persist on reload.');
-          }
-        },
-        removeItem: (name: string) => { try { localStorage.removeItem(name); } catch {} },
-      },
+      // IndexedDB storage — no 5MB limit, effectively unlimited
+      storage: idbStorage as any,
       // Only persist serializable fields — exclude engine (class instance) and lastDayEvents
       partialize: (state) => ({
         userTeamId: state.userTeamId,
@@ -1316,13 +1306,12 @@ export const useFranchiseStore = create<FranchiseState>()(
         currentDraftPick: state.currentDraftPick,
         draftComplete: state.draftComplete,
         freeAgentPool: state.freeAgentPool,
-        // Only keep last 50 entries of each log to prevent localStorage quota overflow
-        injuryLog: state.injuryLog.slice(-50),
-        tradeLog: state.tradeLog.slice(-20),
-        userTradeLog: state.userTradeLog.slice(-20),
-        waiverLog: state.waiverLog.slice(-20),
-        callupLog: state.callupLog.slice(-20),
-        prospectDevelopmentLog: state.prospectDevelopmentLog.slice(-30),
+        injuryLog: state.injuryLog,
+        tradeLog: state.tradeLog,
+        userTradeLog: state.userTradeLog,
+        waiverLog: state.waiverLog,
+        callupLog: state.callupLog,
+        prospectDevelopmentLog: state.prospectDevelopmentLog,
         ilRoster: state.ilRoster,
         tradeProposals: state.tradeProposals,
         trainingAssignments: state.trainingAssignments,
@@ -1336,11 +1325,7 @@ export const useFranchiseStore = create<FranchiseState>()(
               year: state.season.year,
               currentDay: state.season.currentDay,
               totalDays: state.season.totalDays,
-              // Trim schedule: keep unplayed games + last 20 played (saves ~80% space)
-              schedule: [
-                ...state.season.schedule.filter(g => g.played).slice(-20),
-                ...state.season.schedule.filter(g => !g.played),
-              ],
+              schedule: state.season.schedule,
               standingsRecords: state.season.standings.getAllRecords(),
               userTeamId: state.season.userTeamId,
               phase: state.season.phase,
