@@ -1022,7 +1022,7 @@ export function FranchiseDashboard() {
                 <p className="font-mono text-[10px] text-cream-dim/60 uppercase tracking-wider mb-2 flex items-center gap-2">
                   Events
                   {myInjuries.length > 0 && (
-                    <span className="text-red-400">· {myInjuries.length} injury{myInjuries.length !== 1 ? 'ies' : 'y'}</span>
+                    <span className="text-red-400">· {myInjuries.length} injur{myInjuries.length !== 1 ? 'ies' : 'y'}</span>
                   )}
                   {lastDayEvents.aiTrades.length > 0 && (
                     <span className="text-blue-400">· {lastDayEvents.aiTrades.length} trade{lastDayEvents.aiTrades.length !== 1 ? 's' : ''}</span>
