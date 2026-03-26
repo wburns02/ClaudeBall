@@ -161,16 +161,18 @@ export function PlayoffsPage() {
   }
 
   const bracket = season.playoffBracket;
-  const champion = bracket?.getChampion();
+  // After localStorage rehydration, bracket may be a plain object without class methods.
+  // Use optional chaining with typeof checks to handle both cases.
+  const champion = typeof bracket?.getChampion === 'function' ? bracket.getChampion() : null;
   const championTeam = champion ? engine.getTeam(champion) : null;
-  const isComplete = bracket?.isComplete() ?? false;
+  const isComplete = typeof bracket?.isComplete === 'function' ? bracket.isComplete() : false;
 
   // Achievement hooks
   useEffect(() => {
     if (season.phase === 'postseason') import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('playoffs'));
     if (isComplete && champion === userTeamId) import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('world-series'));
   }, [season.phase, isComplete, champion, userTeamId]);
-  const currentRound = bracket?.getCurrentRound();
+  const currentRound = typeof bracket?.getCurrentRound === 'function' ? bracket.getCurrentRound() : null;
 
   // Derive actual league names from qualifiers (avoid hardcoding 'AL'/'NL')
   const leagueNames = season.playoffQualifiers
@@ -200,7 +202,11 @@ export function PlayoffsPage() {
     );
   }
 
-  const { wildcard, division, championship, worldseries } = bracket.getBracket();
+  // getBracket() may not exist after rehydration — use fallback
+  const bracketData = typeof bracket.getBracket === 'function'
+    ? bracket.getBracket()
+    : { wildcard: [], division: [], championship: [], worldseries: [] };
+  const { wildcard, division, championship, worldseries } = bracketData;
 
   const roundLabels: Record<SeriesMatchup['round'], string> = {
     wildcard: 'Wild Card Round',
