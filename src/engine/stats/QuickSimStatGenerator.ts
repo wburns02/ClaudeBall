@@ -25,10 +25,16 @@ export function generateBatterLines(
 ): BoxScorePlayer[] {
   const lines: BoxScorePlayer[] = [];
 
-  const lineupPlayers = team.lineup
+  let lineupPlayers = team.lineup
     .map(spot => team.roster.players.find(p => p.id === spot.playerId))
     .filter(p => p != null);
 
+  // Fallback: if lineup is empty or broken, use first 9 non-pitcher roster players
+  if (lineupPlayers.length === 0) {
+    lineupPlayers = team.roster.players
+      .filter(p => p.position !== 'P')
+      .slice(0, 9);
+  }
   if (lineupPlayers.length === 0) return [];
 
   // Estimated plate appearances per game: ~38 for the whole lineup (4.2/player)
