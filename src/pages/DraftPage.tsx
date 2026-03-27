@@ -522,8 +522,9 @@ export function DraftPage() {
     }
   }, [previewDraftClass, season, engine, isRegularSeason, generatePreviewDraft]);
 
-  // Pre-draft scouting view during regular season
-  if (isRegularSeason) {
+  // Pre-draft scouting view — guard variable only; rendering moved after all hooks
+  const _isRegularSeason = isRegularSeason;
+  if (false as boolean) { // DISABLED: early return caused React hooks order violation; see line ~694
     const daysLeft = (season?.totalDays ?? 183) - (season?.currentDay ?? 0);
     return (
       <div className="min-h-screen p-6 max-w-6xl mx-auto">
@@ -688,6 +689,27 @@ export function DraftPage() {
 
     return () => clearTimeout(timer);
   }, [autoPicking, currentDraftPick, draftComplete]);
+
+  // Scouting view for regular season (moved here from line 526 to avoid hooks order violation)
+  if (_isRegularSeason && !draftClass) {
+    const daysLeft = (season?.totalDays ?? 183) - (season?.currentDay ?? 0);
+    return (
+      <div className="min-h-screen p-6 max-w-6xl mx-auto">
+        <h1 className="font-display text-3xl text-gold tracking-wide uppercase mb-4">Draft Room</h1>
+        <p className="font-mono text-cream-dim text-sm">
+          {season?.year ? `${season.year + 1} Amateur Draft` : 'Amateur Draft'} — Pre-Draft Scouting
+        </p>
+        <p className="font-mono text-cream-dim/50 text-xs mt-1">
+          {daysLeft} days until the draft. Scout prospects and build your board.
+        </p>
+        {previewDraftClass && (
+          <div className="mt-4">
+            <p className="font-mono text-xs text-cream-dim/50">{previewDraftClass.prospects.length} prospects in this year's class</p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 max-w-6xl mx-auto" data-testid="draft-page">
