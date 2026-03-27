@@ -260,12 +260,13 @@ export function CoachingStaffPage() {
 
   if (!team || !season) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <p className="font-display text-gold text-xl">Coaching Staff</p>
-        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">
+      <div className="min-h-screen p-6 max-w-5xl mx-auto">
+        <h1 className="font-display text-3xl text-gold uppercase tracking-wide mb-4">Coaching Staff</h1>
+        <p className="font-mono text-cream-dim text-sm">
           Manage your coaching staff to boost player development, game strategy, and team morale.
         </p>
-        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
+        <p className="font-mono text-cream-dim/50 text-xs mt-2">Loading franchise data...</p>
+        <Button className="mt-4" onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }

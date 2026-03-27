@@ -71,9 +71,10 @@ async function crawlPage(page: Page, url: string, pageName: string): Promise<Cra
 
   // Check for blank page (React crash)
   const mainContent = await page.locator('main').textContent({ timeout: 5000 }).catch(() => '');
-  if (!mainContent || mainContent.trim().length < 10) {
-    // Check if it's just a loading state
-    const bodyText = await page.locator('body').textContent({ timeout: 3000 }).catch(() => '');
+  const bodyText = await page.locator('body').textContent({ timeout: 3000 }).catch(() => '');
+  // "Loading franchise data" is a legitimate loading state, not a blank page
+  const isLoadingState = bodyText.includes('Loading franchise data') || bodyText.includes('Loading...');
+  if (!isLoadingState && (!mainContent || mainContent.trim().length < 10)) {
     if (bodyText.includes('Loading')) {
       // Wait longer
       await page.waitForTimeout(3000);

@@ -56,6 +56,7 @@ export interface StoredTradeProposal {
 
 interface FranchiseState {
   // State
+  _hasHydrated: boolean;  // true after IndexedDB rehydration completes
   engine: SeasonEngine | null;
   season: SeasonState | null;
   userTeamId: string | null;
@@ -180,6 +181,7 @@ interface FranchiseState {
 export const useFranchiseStore = create<FranchiseState>()(
   persist(
     (set, get) => ({
+  _hasHydrated: false,
   engine: null,
   season: null,
   userTeamId: null,
@@ -1360,6 +1362,8 @@ export const useFranchiseStore = create<FranchiseState>()(
         // Null it out so the page's useEffect will call initFreeAgency() to generate a proper instance.
         // @ts-ignore
         state.freeAgentPool = null;
+        // @ts-ignore
+        state._hasHydrated = true;
       },
     },
   )

@@ -65,13 +65,13 @@ export function WarDashboardPage() {
 
   if (!engine || !userTeamId || !season) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="font-display text-gold text-xl">WAR Dashboard</p>
-        <p className="font-mono text-cream-dim text-sm text-center max-w-xs">
+      <div className="min-h-screen p-6 max-w-5xl mx-auto">
+        <h1 className="font-display text-3xl text-gold uppercase tracking-wide mb-4">WAR Dashboard</h1>
+        <p className="font-mono text-cream-dim text-sm">
           Wins Above Replacement — the single stat that measures total player value.
         </p>
-        <p className="font-mono text-cream-dim/60 text-xs">No franchise loaded.</p>
-        <Button onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
+        <p className="font-mono text-cream-dim/50 text-xs mt-2">Loading franchise data...</p>
+        <Button className="mt-4" onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
       </div>
     );
   }
