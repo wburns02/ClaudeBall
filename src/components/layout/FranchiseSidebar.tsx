@@ -183,6 +183,8 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Hot Stove Inbox', path: '/dynasty/inbox', icon: 'inbox' },
       { label: 'Conversations', path: '/dynasty/conversation', icon: 'inbox' },
       { label: 'Life Events', path: '/dynasty/life-events', icon: 'morale' },
+      { label: 'Career Transition', path: '/dynasty/career-transition', icon: 'goals' },
+      { label: 'Legacy & Prestige', path: '/dynasty/prestige', icon: 'awards' },
     ],
   },
   {

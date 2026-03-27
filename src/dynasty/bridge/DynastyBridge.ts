@@ -13,6 +13,10 @@ import { TradeBridge } from '../systems/TradeBridge.ts';
 import { SeasonBridge } from '../systems/SeasonBridge.ts';
 import { ConversationSystem } from '../conversations/ConversationSystem.ts';
 import { ConversationLibrary } from '../conversations/ConversationLibrary.ts';
+import { CareerProgressionSystem } from '../systems/CareerProgressionSystem.ts';
+import { LifeEventSystem } from '../systems/LifeEventSystem.ts';
+import { FinanceSystem } from '../systems/FinanceSystem.ts';
+import { PersonalFinanceSystem } from '../systems/PersonalFinanceSystem.ts';
 
 export class DynastyBridge {
   readonly bus: EventBus;
@@ -26,6 +30,8 @@ export class DynastyBridge {
   readonly season: SeasonBridge;
   readonly conversations: ConversationSystem;
   readonly conversationLibrary: ConversationLibrary;
+  readonly careerProgression: CareerProgressionSystem;
+  readonly lifeEvents: LifeEventSystem;
 
   private relationshipSystem: RelationshipSystem;
 
@@ -45,6 +51,10 @@ export class DynastyBridge {
     this.season = new SeasonBridge(this.entities, this.bus);
     this.conversationLibrary = new ConversationLibrary();
     this.conversations = new ConversationSystem(this.entities, this.bus, this.conversationLibrary);
+    this.careerProgression = new CareerProgressionSystem(this.entities, this.bus);
+    this.lifeEvents = new LifeEventSystem(this.entities, this.bus);
+    const financeSystem = new FinanceSystem(this.entities, this.bus);
+    const personalFinanceSystem = new PersonalFinanceSystem(this.entities, this.bus);
 
     this.runner.addSystem(personalitySystem);
     this.runner.addSystem(this.relationshipSystem);
@@ -54,6 +64,10 @@ export class DynastyBridge {
     this.runner.addSystem(this.trades);
     this.runner.addSystem(this.season);
     this.runner.addSystem(this.conversations);
+    this.runner.addSystem(this.careerProgression);
+    this.runner.addSystem(this.lifeEvents);
+    this.runner.addSystem(financeSystem);
+    this.runner.addSystem(personalFinanceSystem);
   }
 
   /** Load conversation templates from JSON files (call after create) */
