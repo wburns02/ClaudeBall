@@ -185,6 +185,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Life Events', path: '/dynasty/life-events', icon: 'morale' },
       { label: 'Career Transition', path: '/dynasty/career-transition', icon: 'goals' },
       { label: 'Legacy & Prestige', path: '/dynasty/prestige', icon: 'awards' },
+      { label: "Owner's Suite", path: '/dynasty/owner', icon: 'records' },
     ],
   },
   {
