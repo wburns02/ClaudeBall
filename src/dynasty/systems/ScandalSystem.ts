@@ -18,11 +18,58 @@ export interface ActiveScandal {
   coveredUp: boolean;
 }
 
+export interface ChainReward {
+  description: string;
+  financialGain: number;   // thousands added to bank account
+  relationshipGain?: string; // entity description of new connection
+  specialAccess?: string;    // unique opportunity unlocked
+}
+
 export interface NuclearChainState {
   entityId: EntityId;
   step: number;  // 0-4 (5 steps total)
   active: boolean;
+  rewardsCollected: ChainReward[];
 }
+
+// ── Randomized reward pools per chain step ──
+// Each step picks randomly so no two chains feel the same
+
+const STEP_1_REWARDS: ChainReward[] = [
+  { description: 'Met a tech billionaire who wants to invest in your brand', financialGain: 500, relationshipGain: 'Tech billionaire investor' },
+  { description: 'Landed a private endorsement deal with a luxury watch company', financialGain: 750, specialAccess: 'VIP endorsement network' },
+  { description: 'Connected with a team owner who hinted at selling within 2 years', financialGain: 200, relationshipGain: 'Aging team owner (potential seller)' },
+  { description: 'Got invited to an exclusive real estate syndicate — guaranteed 20% returns', financialGain: 400, specialAccess: 'Private real estate deals' },
+  { description: 'A Hollywood producer wants to make a documentary about your career', financialGain: 600, specialAccess: 'Media production deal' },
+  { description: 'Met a senator who "takes care of his friends" in the sports world', financialGain: 0, relationshipGain: 'Political connection (senator)' },
+];
+
+const STEP_2_REWARDS: ChainReward[] = [
+  { description: 'Offered a stake in a Caribbean resort development — projected 3x return', financialGain: 2000, specialAccess: 'Offshore investment portfolio' },
+  { description: 'Your new contact fast-tracked your application for a casino license', financialGain: 1500, specialAccess: 'Casino ownership opportunity' },
+  { description: 'Got early access to a tech IPO — your shares doubled overnight', financialGain: 3000 },
+  { description: 'Introduced to a "fixer" who can make any legal problem disappear', financialGain: 0, specialAccess: 'Legal immunity contact', relationshipGain: 'The Fixer' },
+  { description: 'Private equity fund offered you a limited partner slot — minimum buy-in waived', financialGain: 2500, specialAccess: 'PE fund access' },
+  { description: 'A foreign government wants you as a "sports ambassador" — all expenses paid', financialGain: 1000, relationshipGain: 'Foreign government liaison' },
+];
+
+const STEP_3_REWARDS: ChainReward[] = [
+  { description: '$5M "consulting fee" deposited into an offshore account. No paperwork.', financialGain: 5000 },
+  { description: 'Guaranteed first-right-of-refusal on the next team sale. In writing.', financialGain: 0, specialAccess: 'Team purchase guarantee' },
+  { description: 'A construction magnate offers to build you a stadium — at cost. $200M savings.', financialGain: 3000, specialAccess: 'Stadium deal at cost' },
+  { description: 'Your "friends" will make sure the league expansion committee picks your city', financialGain: 0, specialAccess: 'Expansion team guarantee' },
+  { description: 'Wire transfer of $4M for "advisory services" you never performed', financialGain: 4000 },
+  { description: 'Access to a private intelligence network — know every trade before it happens', financialGain: 2000, specialAccess: 'League insider information' },
+];
+
+const STEP_4_REWARDS: ChainReward[] = [
+  { description: '$10M wired to your account. No questions asked. Ever.', financialGain: 10000 },
+  { description: 'Deed to a $15M mansion in the Cayman Islands. "A gift between friends."', financialGain: 15000, specialAccess: 'Offshore property' },
+  { description: 'Controlling interest in a media company — you own the narrative now', financialGain: 8000, specialAccess: 'Media empire' },
+  { description: '$12M in untraceable cryptocurrency. "For your loyalty."', financialGain: 12000 },
+  { description: 'Political favors that guarantee your stadium deal gets approved. Plus $7M cash.', financialGain: 7000, specialAccess: 'Political protection' },
+  { description: 'A Swiss bank account with $20M. The password is hand-delivered.', financialGain: 20000 },
+];
 
 const MINOR_SCANDALS = [
   { type: 'bar_fight', desc: 'got into a bar fight', suspension: 5 },
@@ -158,18 +205,30 @@ export class ScandalSystem implements System {
 
   startNuclearChain(entityId: EntityId): NuclearChainState | null {
     if (!this.canStartNuclearChain(entityId)) return null;
-    const state: NuclearChainState = { entityId, step: 0, active: true };
+    const state: NuclearChainState = { entityId, step: 0, active: true, rewardsCollected: [] };
     this.nuclearChains.set(entityId, state);
     return state;
   }
 
-  /** Advance the nuclear chain — choice: true = proceed, false = walk away */
-  advanceNuclearChain(entityId: EntityId, proceed: boolean): { chainBroken: boolean; step: number } {
+  /** Get the reward for the current chain step (shown to player before they decide) */
+  getChainStepReward(entityId: EntityId): ChainReward | null {
+    const chain = this.nuclearChains.get(entityId);
+    if (!chain || !chain.active) return null;
+
+    const pools = [STEP_1_REWARDS, STEP_2_REWARDS, STEP_3_REWARDS, STEP_4_REWARDS];
+    const pool = pools[chain.step];
+    if (!pool) return null;
+
+    return pool[Math.floor(this.rng() * pool.length)];
+  }
+
+  /** Advance the nuclear chain — choice: true = proceed (collect reward), false = walk away */
+  advanceNuclearChain(entityId: EntityId, proceed: boolean): { chainBroken: boolean; step: number; reward?: ChainReward } {
     const chain = this.nuclearChains.get(entityId);
     if (!chain || !chain.active) return { chainBroken: true, step: -1 };
 
     if (!proceed) {
-      // Chain broken — integrity boost
+      // Chain broken — integrity boost, keep rewards already collected
       chain.active = false;
       const p = this.entities.getComponent<PersonalityComponent>(entityId, 'Personality');
       if (p) {
@@ -181,19 +240,34 @@ export class ScandalSystem implements System {
       return { chainBroken: true, step: chain.step };
     }
 
+    // Collect reward for this step
+    const pools = [STEP_1_REWARDS, STEP_2_REWARDS, STEP_3_REWARDS, STEP_4_REWARDS];
+    const pool = pools[chain.step];
+    const reward = pool ? pool[Math.floor(this.rng() * pool.length)] : undefined;
+
+    if (reward) {
+      chain.rewardsCollected.push(reward);
+      // Apply financial gain to entity
+      const pf = this.entities.getComponent<import('../components/PersonalFinances.ts').PersonalFinancesComponent>(entityId, 'PersonalFinances');
+      if (pf) {
+        pf.bankAccount += reward.financialGain;
+        pf.netWorth += reward.financialGain;
+      }
+    }
+
     chain.step++;
 
-    // Step 5 = point of no return
+    // Step 5 = point of no return — all rewards get seized in the fallout
     if (chain.step >= 4) {
       chain.active = false;
       this.triggerNuclearFallout(entityId);
-      return { chainBroken: false, step: 4 };
+      return { chainBroken: false, step: 4, reward };
     }
 
-    return { chainBroken: false, step: chain.step };
+    return { chainBroken: false, step: chain.step, reward };
   }
 
-  /** Nuclear fallout — lifetime ban, prestige reset, all relationships destroyed */
+  /** Nuclear fallout — lifetime ban, prestige reset, all relationships destroyed, assets seized */
   private triggerNuclearFallout(entityId: EntityId): void {
     // Destroy reputation
     const rep = this.entities.getComponent<ReputationComponent>(entityId, 'Reputation');
@@ -201,6 +275,18 @@ export class ScandalSystem implements System {
       adjustReputation(rep, 'clubhouse', -200); // Clamps to -100
       adjustReputation(rep, 'media', -200);
       adjustReputation(rep, 'fan', -200);
+    }
+
+    // Seize ill-gotten gains — claw back chain rewards
+    const chain = this.nuclearChains.get(entityId);
+    const pf = this.entities.getComponent<import('../components/PersonalFinances.ts').PersonalFinancesComponent>(entityId, 'PersonalFinances');
+    if (pf && chain) {
+      const seized = chain.rewardsCollected.reduce((sum, r) => sum + r.financialGain, 0);
+      pf.bankAccount -= seized;
+      pf.netWorth -= seized;
+      // Additional legal fees + fines
+      pf.bankAccount -= 5000; // $5M in legal fees
+      pf.netWorth -= 5000;
     }
 
     // Emit nuclear scandal
