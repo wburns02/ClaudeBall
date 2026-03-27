@@ -1,0 +1,159 @@
+[
+  {
+    "id": "chain-step1-party-001",
+    "situation": "generic",
+    "archetypes": { "npc": ["high_charisma"], "player": ["any"] },
+    "emotionalState": ["confident"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "{{playerName}}! Glad you could make it. Come on in — the view from the penthouse is incredible. Let me introduce you to some people who've been dying to meet you.", "next": ["interested", "cautious", "leave"] },
+      { "id": "interested", "speaker": "player", "text": "Lead the way. I'm always open to meeting new people.", "effects": { "affinity": 5 }, "next": ["npc_intro"] },
+      { "id": "cautious", "speaker": "player", "text": "Sure, but I'm not staying long. Early flight tomorrow.", "effects": { "affinity": 2 }, "next": ["npc_intro"] },
+      { "id": "leave", "speaker": "player", "text": "Actually, I think I'm going to head out. Long day.", "effects": { "affinity": -3 } },
+      { "id": "npc_intro", "speaker": "npc", "text": "This is the guy I was telling you about — one of the sharpest minds in baseball. {{playerName}}, meet a few friends of mine. They run things in this town.", "next": ["shake_hands", "nod_politely"] },
+      { "id": "shake_hands", "speaker": "player", "text": "Pleasure to meet you all. What line of work are you in?", "effects": { "affinity": 3 }, "next": ["npc_pitch"] },
+      { "id": "nod_politely", "speaker": "player", "text": "Nice to meet you.", "effects": { "affinity": 1 }, "next": ["npc_pitch"] },
+      { "id": "npc_pitch", "speaker": "npc", "text": "We've got an opportunity that might interest someone with your profile. Nothing crazy — just some smart money moving to smart people. Can I send you the details next week?" }
+    ],
+    "outcomes": {
+      "engaged": { "affinityDelta": 5, "description": "You made powerful new connections. Whether that's good or bad remains to be seen." },
+      "left_early": { "affinityDelta": -5, "description": "You left before things got interesting. Probably for the best." }
+    }
+  },
+  {
+    "id": "chain-step1-party-002",
+    "situation": "generic",
+    "archetypes": { "npc": ["high_ego"], "player": ["any"] },
+    "emotionalState": ["confident"],
+    "stakes": "routine",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "There he is! The man of the hour. Everyone here knows your name, {{playerName}}. Come — there's someone at the bar who wants to talk business.", "next": ["go_bar", "stay_put", "decline"] },
+      { "id": "go_bar", "speaker": "player", "text": "Business? At a party? Must be serious. Let's hear it.", "effects": { "affinity": 5 }, "next": ["bar_talk"] },
+      { "id": "stay_put", "speaker": "player", "text": "I'm good right here. If they want to talk, they can come to me.", "effects": { "respect": 3 }, "next": ["bar_talk"] },
+      { "id": "decline", "speaker": "player", "text": "I'm here for the party, not business. Maybe another time." },
+      { "id": "bar_talk", "speaker": "npc", "text": "Look — I don't do small talk. I have a deal that'll make you more money in one year than your last three contracts combined. Interested, or should I find someone else?" }
+    ],
+    "outcomes": {
+      "hooked": { "affinityDelta": 5, "description": "The pitch was intriguing. You exchanged numbers." },
+      "passed": { "affinityDelta": -3, "description": "You kept your distance. Smart." }
+    }
+  },
+  {
+    "id": "chain-step2-meeting-001",
+    "situation": "generic",
+    "archetypes": { "npc": ["aggressive"], "player": ["any"] },
+    "emotionalState": ["confident", "neutral"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Thanks for coming, {{playerName}}. I know this place looks... discreet. That's the point. What I'm about to show you isn't available to the public.", "next": ["listen", "skeptical", "walk_out"] },
+      { "id": "listen", "speaker": "player", "text": "I'm listening.", "effects": { "affinity": 3 }, "next": ["npc_details"] },
+      { "id": "skeptical", "speaker": "player", "text": "Why the secrecy? This feels like something I should have my lawyer present for.", "effects": { "respect": 2 }, "next": ["npc_reassure"] },
+      { "id": "walk_out", "speaker": "player", "text": "Yeah, this isn't for me. I don't do back rooms.", "effects": { "affinity": -5 } },
+      { "id": "npc_details", "speaker": "npc", "text": "We're building something offshore. Completely legal — just... tax efficient. Your investment doubles in 18 months. I've already got three senators in. You'd be the sports guy.", "next": ["invest", "need_time"] },
+      { "id": "npc_reassure", "speaker": "npc", "text": "No lawyers needed. This isn't a contract — it's an invitation. The kind of people in this room don't need lawyers. They ARE the lawyers. And the judges.", "next": ["invest", "need_time"] },
+      { "id": "invest", "speaker": "player", "text": "What's the minimum buy-in?", "effects": { "affinity": 5 } },
+      { "id": "need_time", "speaker": "player", "text": "Let me think about it. I'll call you.", "effects": { "affinity": 1 } }
+    ],
+    "outcomes": {
+      "invested": { "affinityDelta": 8, "description": "You wired the money. The returns started flowing immediately." },
+      "delayed": { "affinityDelta": 0, "description": "You didn't commit. But you didn't say no either." }
+    }
+  },
+  {
+    "id": "chain-step2-meeting-002",
+    "situation": "generic",
+    "archetypes": { "npc": ["high_charisma"], "player": ["any"] },
+    "emotionalState": ["happy", "confident"],
+    "stakes": "moderate",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "{{playerName}}, I want you to meet someone special. He doesn't usually do this — but he saw what you built in baseball and he respects it. He wants to help you build something bigger.", "next": ["meet_him", "what_bigger", "pass"] },
+      { "id": "meet_him", "speaker": "player", "text": "I'm flattered. Set it up.", "effects": { "affinity": 5 }, "next": ["the_offer"] },
+      { "id": "what_bigger", "speaker": "player", "text": "Bigger than what? I'm doing pretty well.", "effects": { "respect": 2 }, "next": ["the_offer"] },
+      { "id": "pass", "speaker": "player", "text": "I appreciate it, but I've got enough on my plate." },
+      { "id": "the_offer", "speaker": "npc", "text": "He's got an IPO coming. Pre-market access. The kind of thing that turns millionaires into billionaires. All he needs is a public face he can trust. That's you." }
+    ],
+    "outcomes": {
+      "took_meeting": { "affinityDelta": 8, "description": "The meeting happened. The money started moving." },
+      "declined": { "affinityDelta": -3, "description": "You walked away from a lot of money. Or a lot of trouble." }
+    }
+  },
+  {
+    "id": "chain-step3-offer-001",
+    "situation": "generic",
+    "archetypes": { "npc": ["aggressive", "high_ego"], "player": ["any"] },
+    "emotionalState": ["confident"],
+    "stakes": "career_defining",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Here's the situation, {{playerName}}. We need someone clean — someone the public trusts. You sign a consulting agreement, we wire $5 million to your account. You never have to do anything.", "next": ["ask_catch", "accept", "refuse"] },
+      { "id": "ask_catch", "speaker": "player", "text": "What's the catch? Nobody pays $5 million for nothing.", "effects": { "respect": 3 }, "next": ["npc_honest"] },
+      { "id": "accept", "speaker": "player", "text": "$5 million? Where do I sign?", "effects": { "affinity": 5 }, "next": ["npc_deal"] },
+      { "id": "refuse", "speaker": "player", "text": "This doesn't feel right. I'm out.", "effects": { "affinity": -10, "respect": 5 } },
+      { "id": "npc_honest", "speaker": "npc", "text": "The catch is discretion. You don't ask where the money comes from. You don't talk about this meeting. Ever. In return, you get generational wealth. And if you ever want to own a team — I can make that happen.", "next": ["tempted", "hard_no"] },
+      { "id": "npc_deal", "speaker": "npc", "text": "Smart man. The wire goes out tonight. Welcome to the inner circle." },
+      { "id": "tempted", "speaker": "player", "text": "...Tell me more about the team.", "effects": { "affinity": 8 } },
+      { "id": "hard_no", "speaker": "player", "text": "I've heard enough. Don't contact me again.", "effects": { "affinity": -15, "respect": 10 } }
+    ],
+    "outcomes": {
+      "signed": { "affinityDelta": 10, "description": "You signed. The money appeared overnight. You told yourself it was consulting." },
+      "refused": { "affinityDelta": -15, "description": "You left the table. Your agent was right — something was wrong." }
+    }
+  },
+  {
+    "id": "chain-step3-offer-002",
+    "situation": "generic",
+    "archetypes": { "npc": ["high_charisma"], "player": ["any"] },
+    "emotionalState": ["confident", "neutral"],
+    "stakes": "career_defining",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Your agent called me. Said you should walk away. I respect that — he's doing his job. But {{playerName}}, what I'm offering you isn't something agents understand. This is legacy money. Dynasty money.", "next": ["listen_anyway", "agent_right", "hang_up"] },
+      { "id": "listen_anyway", "speaker": "player", "text": "My agent doesn't make my decisions. I'm listening.", "effects": { "affinity": 5 }, "next": ["final_pitch"] },
+      { "id": "agent_right", "speaker": "player", "text": "Maybe he's right. This whole thing has felt off from the start.", "effects": { "respect": 3 }, "next": ["npc_pressure"] },
+      { "id": "hang_up", "speaker": "player", "text": "He IS right. Lose my number." },
+      { "id": "final_pitch", "speaker": "npc", "text": "I'm putting $5 million in escrow with your name on it. You don't even have to do anything. Just... don't say no. Not yet." },
+      { "id": "npc_pressure", "speaker": "npc", "text": "Off? Or just unfamiliar? You've never played at this level, {{playerName}}. The rules are different up here. Better. Trust me." }
+    ],
+    "outcomes": {
+      "stayed_in": { "affinityDelta": 10, "description": "Against your better judgment, you stayed in. The money was too real to ignore." },
+      "got_out": { "affinityDelta": -10, "description": "You hung up. Blocked the number. Couldn't sleep for a week." }
+    }
+  },
+  {
+    "id": "chain-step4-trip-001",
+    "situation": "generic",
+    "archetypes": { "npc": ["high_ego", "aggressive"], "player": ["any"] },
+    "emotionalState": ["confident"],
+    "stakes": "career_defining",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "Private jet leaves at midnight. No phones. No cameras. No names. Just the most powerful people you'll ever meet — and more money than you've ever seen. Last chance to back out, {{playerName}}.", "next": ["board", "hesitate", "refuse_final"] },
+      { "id": "board", "speaker": "player", "text": "I'm in. Let's go.", "effects": { "affinity": 10 } },
+      { "id": "hesitate", "speaker": "player", "text": "Where exactly are we going?", "effects": { "respect": 1 }, "next": ["npc_vague"] },
+      { "id": "refuse_final", "speaker": "player", "text": "No. I don't care what it costs me. I'm done.", "effects": { "affinity": -20, "respect": 15 } },
+      { "id": "npc_vague", "speaker": "npc", "text": "Somewhere the rules don't apply. Somewhere you can be whoever you want to be. No judgments. No consequences. That's the whole point.", "next": ["board_anyway", "final_no"] },
+      { "id": "board_anyway", "speaker": "player", "text": "...Fine. But if anything feels wrong, I'm leaving.", "effects": { "affinity": 5 } },
+      { "id": "final_no", "speaker": "player", "text": "That's exactly what scares me. I'm out. For good.", "effects": { "affinity": -20, "respect": 20 } }
+    ],
+    "outcomes": {
+      "boarded": { "affinityDelta": 15, "description": "You boarded the jet. The door closed. No turning back." },
+      "walked_away": { "affinityDelta": -20, "description": "You walked away from the airport. Your hands were shaking. But you were free." }
+    }
+  },
+  {
+    "id": "chain-step4-trip-002",
+    "situation": "generic",
+    "archetypes": { "npc": ["high_charisma"], "player": ["any"] },
+    "emotionalState": ["neutral"],
+    "stakes": "career_defining",
+    "nodes": [
+      { "id": "open", "speaker": "npc", "text": "{{playerName}}. Before you decide — think about what you've already done. The money, the deals, the meetings. You're already part of this. The only question is whether you get the full benefit... or just the full risk.", "next": ["realize", "deny", "accept_fate"] },
+      { "id": "realize", "speaker": "player", "text": "Are you threatening me?", "effects": { "respect": 5 }, "next": ["npc_calm"] },
+      { "id": "deny", "speaker": "player", "text": "I haven't done anything wrong. I invested in some deals. That's it.", "effects": { "affinity": 2 }, "next": ["npc_truth"] },
+      { "id": "accept_fate", "speaker": "player", "text": "You're right. I'm already in too deep. What's one more step?", "effects": { "affinity": 10 } },
+      { "id": "npc_calm", "speaker": "npc", "text": "Threatening? No. I'm protecting you. Come on the trip, and you're protected forever. Stay home, and... well, I can't help you from here." },
+      { "id": "npc_truth", "speaker": "npc", "text": "That's what they all say. Until the investigators start pulling threads. The trip isn't just about money, {{playerName}}. It's about making sure everyone stays loyal. Including you." }
+    ],
+    "outcomes": {
+      "went": { "affinityDelta": 15, "description": "You went. You saw things you can never unsee. There's no going back." },
+      "refused": { "affinityDelta": -15, "description": "You refused. Now you wait. And wonder if they'll come for you anyway." }
+    }
+  }
+]
