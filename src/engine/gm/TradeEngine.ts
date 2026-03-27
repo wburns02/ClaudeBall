@@ -183,8 +183,25 @@ export function wouldAccept(
   // fairness = receivingValue - offeringValue = (AI gives value) - (AI gets value)
   // positive = AI is giving more than it gets = bad for AI
   // negative = AI is getting more than it gives = good for AI
-  // AI accepts if trade is roughly fair (tolerance: ±5 OVR points)
-  // Positive fairness = AI giving more than getting
   const fairness = evaluateTrade(offering, receiving, allTeams);
-  return fairness <= 5 && fairness >= -25; // Won't accept lopsided deals in either direction
+
+  // Basic fairness check: AI won't give away much more than it gets
+  if (fairness > 5) return false;  // AI giving too much
+  if (fairness < -10) return false; // Deal is too lopsided in AI's favor (suspicious)
+
+  // Star protection: AI won't trade its best player for a bundle of scrubs
+  // Find the highest-value player being given up by AI
+  const findPlayer = (pid: string): import('../types/player.ts').Player | undefined => {
+    for (const t of allTeams) { const p = t.roster.players.find(pl => pl.id === pid); if (p) return p; }
+    return undefined;
+  };
+  const aiGivingValues = receiving.playerIds.map(id => { const p = findPlayer(id); return p ? evaluatePlayer(p) : 0; });
+  const userGivingValues = offering.playerIds.map(id => { const p = findPlayer(id); return p ? evaluatePlayer(p) : 0; });
+  const aiBestPlayer = Math.max(...aiGivingValues, 0);
+  const userBestPlayer = Math.max(...userGivingValues, 0);
+
+  // AI won't trade a star (70+ OVR) unless getting back at least one player within 15 OVR
+  if (aiBestPlayer >= 70 && userBestPlayer < aiBestPlayer - 15) return false;
+
+  return true;
 }

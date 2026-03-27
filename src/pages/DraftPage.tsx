@@ -590,7 +590,9 @@ export function DraftPage() {
     );
   }
 
-  if (!season || !engine || !draftClass) {
+  // Guard: moved to after all hooks to prevent hooks order violation
+  const _draftNotReady = !season || !engine || !draftClass;
+  if (false as boolean) { // DISABLED — see line ~696
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
         <Panel>
@@ -600,22 +602,22 @@ export function DraftPage() {
     );
   }
 
-  const totalPicks = draftClass.picks.length;
-  const teamsCount = draftPickOrder.length;
-  const currentPickEntry = draftClass.picks[currentDraftPick];
+  const totalPicks = draftClass?.picks?.length ?? 0;
+  const teamsCount = draftPickOrder?.length ?? 1;
+  const currentPickEntry = draftClass?.picks?.[currentDraftPick];
   const currentPickTeamId = currentPickEntry?.teamId ?? '';
   const isUserTurn = currentPickTeamId === userTeamId && !draftComplete;
 
   const currentRound = draftComplete ? '—' : `${Math.floor(currentDraftPick / teamsCount) + 1}`;
   const currentPickNum = draftComplete ? '—' : `${(currentDraftPick % teamsCount) + 1}`;
 
-  const draftedIds = new Set(draftClass.picks.filter(p => p.prospectId).map(p => p.prospectId!));
-  const available = draftClass.prospects
+  const draftedIds = new Set((draftClass?.picks ?? []).filter(p => p.prospectId).map(p => p.prospectId!));
+  const available = (draftClass?.prospects ?? [])
     .filter(p => !draftedIds.has(p.id))
     .filter(p => posFilter === 'ALL' || p.position === posFilter)
     .sort((a, b) => b.potentialRating - a.potentialRating);
 
-  const recentPicks = draftClass.picks
+  const recentPicks = (draftClass?.picks ?? [])
     .filter(p => p.prospectId)
     .slice(-8)
     .reverse();
@@ -623,12 +625,12 @@ export function DraftPage() {
   const positions = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 
   const teamName = (id: string) => {
-    const t = engine.getTeam(id);
+    const t = engine?.getTeam(id);
     return t?.abbreviation ?? id.slice(0, 3).toUpperCase();
   };
 
   const handleDraft = () => {
-    if (!selectedProspect || !isUserTurn) return;
+    if (!selectedProspect || !isUserTurn || !draftClass) return;
     const drafted = selectedProspect;
     const pickEntry = draftClass.picks[currentDraftPick];
     const round = Math.floor(currentDraftPick / teamsCount) + 1;
@@ -707,6 +709,17 @@ export function DraftPage() {
             <p className="font-mono text-xs text-cream-dim/50">{previewDraftClass.prospects.length} prospects in this year's class</p>
           </div>
         )}
+      </div>
+    );
+  }
+
+  // Loading guard — draft data not ready yet (moved from line 593 to after all hooks)
+  if (_draftNotReady) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <Panel>
+          <p className="text-cream-dim font-mono">Loading draft room...</p>
+        </Panel>
       </div>
     );
   }
