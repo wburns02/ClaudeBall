@@ -103,6 +103,8 @@ const DynastySetupPage = lazy(() => import('@/pages/dynasty/DynastySetupPage.tsx
 const DynastyInboxPage = lazy(() => import('@/pages/dynasty/DynastyInboxPage.tsx').then(m => ({ default: m.DynastyInboxPage })));
 const DynastyConversationPage = lazy(() => import('@/pages/dynasty/DynastyConversationPage.tsx').then(m => ({ default: m.DynastyConversationPage })));
 const DynastyLifeEventsPage = lazy(() => import('@/pages/dynasty/DynastyLifeEventsPage.tsx').then(m => ({ default: m.DynastyLifeEventsPage })));
+const DynastyCareerTransitionPage = lazy(() => import('@/pages/dynasty/DynastyCareerTransitionPage.tsx').then(m => ({ default: m.DynastyCareerTransitionPage })));
+const DynastyPrestigePage = lazy(() => import('@/pages/dynasty/DynastyPrestigePage.tsx').then(m => ({ default: m.DynastyPrestigePage })));
 const FranchiseOverviewPage = lazy(() => import('@/pages/FranchiseOverviewPage.tsx').then(m => ({ default: m.FranchiseOverviewPage })));
 
 // Preload coaching & trade-deadline chunks so they don't flash "LOADING..."
@@ -178,6 +180,8 @@ function AppRoutes() {
           <Route path="/dynasty/inbox" element={<FranchiseLayout><DynastyInboxPage /></FranchiseLayout>} />
           <Route path="/dynasty/conversation" element={<MainLayout><DynastyConversationPage /></MainLayout>} />
           <Route path="/dynasty/life-events" element={<FranchiseLayout><DynastyLifeEventsPage /></FranchiseLayout>} />
+          <Route path="/dynasty/career-transition" element={<FranchiseLayout><DynastyCareerTransitionPage /></FranchiseLayout>} />
+          <Route path="/dynasty/prestige" element={<FranchiseLayout><DynastyPrestigePage /></FranchiseLayout>} />
 
           <Route path="/historical" element={<MainLayout><HistoricalPage /></MainLayout>} />
           <Route path="/historical/draft" element={<MainLayout><FantasyDraftPage /></MainLayout>} />
