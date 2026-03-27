@@ -1144,13 +1144,37 @@ export const useFranchiseStore = create<FranchiseState>()(
     const { teams } = get();
     const newTeams = teams.map(team => {
       if (team.id !== teamId) return team;
-      return { ...team, roster: { ...team.roster, players: [...team.roster.players, player] } };
+      const updatedRoster = [...team.roster.players, player];
+      let updatedRotation = team.rotation ?? [];
+      let updatedLineup = [...team.lineup];
+
+      // Auto-add pitchers to rotation if there's a slot
+      if (player.position === 'P' && updatedRotation.length < 5) {
+        updatedRotation = [...updatedRotation, player.id];
+      }
+
+      // Auto-add position players to lineup if there's a slot (9 batters)
+      if (player.position !== 'P' && updatedLineup.length < 9) {
+        updatedLineup.push({ playerId: player.id, position: player.position as any });
+      }
+
+      return {
+        ...team,
+        roster: { ...team.roster, players: updatedRoster },
+        rotation: updatedRotation,
+        lineup: updatedLineup,
+      };
     });
     set({ teams: newTeams });
     const { engine } = get();
     if (engine) {
       const engineTeam = engine.getTeam(teamId);
-      if (engineTeam) engineTeam.roster.players = newTeams.find(t => t.id === teamId)!.roster.players;
+      if (engineTeam) {
+        const updated = newTeams.find(t => t.id === teamId)!;
+        engineTeam.roster.players = updated.roster.players;
+        if (updated.rotation) engineTeam.rotation = updated.rotation;
+        engineTeam.lineup = updated.lineup;
+      }
     }
   },
 
