@@ -219,6 +219,7 @@ const FRANCHISE_ROUTES = [
   { path: '/dynasty/life-events', name: 'Life Events' },
   { path: '/dynasty/career-transition', name: 'Career Transition' },
   { path: '/dynasty/prestige', name: 'Legacy & Prestige' },
+  { path: '/dynasty/owner', name: "Owner's Suite" },
 ];
 
 test('Smart Crawler: Multi-stage franchise page audit', async ({ page }) => {
@@ -281,21 +282,33 @@ test('Smart Crawler: Multi-stage franchise page audit', async ({ page }) => {
   // === STAGE 4: Offseason ===
   console.log('\n=== STAGE 4: Offseason ===');
   await simDays(page, 90); // Finish season
-  // Try to get to offseason
+  // Navigate through playoffs to reach offseason
   await page.goto(`${BASE}/franchise`);
   await page.waitForTimeout(2000);
   try {
     await page.locator('main button:has-text("Go to Playoffs")').first().click({ timeout: 3000 });
     await page.waitForTimeout(2000);
-    try { await page.locator('main button:has-text("Sim Wild")').first().click({ timeout: 3000 }); } catch {}
-    await page.waitForTimeout(2000);
+    // Sim all playoff rounds
+    for (const round of ['Sim Wild', 'Sim Division', 'Sim Championship', 'Sim World']) {
+      try {
+        await page.locator(`main button:has-text("${round}")`).first().click({ timeout: 3000 });
+        await page.waitForTimeout(2000);
+      } catch {}
+    }
   } catch {}
+  // Back to dashboard and into offseason
   await page.goto(`${BASE}/franchise`);
   await page.waitForTimeout(2000);
   try {
-    await page.locator('main button:has-text("Offseason Hub")').first().click({ timeout: 3000 });
-    await page.waitForTimeout(1500);
-  } catch {}
+    await page.locator('main button:has-text("Offseason Hub")').first().click({ timeout: 5000 });
+    await page.waitForTimeout(2000);
+  } catch {
+    // If Offseason Hub not visible, try starting offseason directly
+    try {
+      await page.locator('main button:has-text("Start Offseason")').first().click({ timeout: 3000 });
+      await page.waitForTimeout(2000);
+    } catch {}
+  }
 
   const offseasonRoutes = [
     { path: '/franchise/offseason', name: 'Offseason' },
@@ -305,6 +318,7 @@ test('Smart Crawler: Multi-stage franchise page audit', async ({ page }) => {
     { path: '/dynasty/life-events', name: 'Life Events' },
     { path: '/dynasty/career-transition', name: 'Career Transition' },
     { path: '/dynasty/prestige', name: 'Legacy & Prestige' },
+    { path: '/dynasty/owner', name: "Owner's Suite" },
   ];
   for (const route of offseasonRoutes) {
     const result = await crawlPage(page, `${BASE}${route.path}`, `[Offseason] ${route.name}`);
