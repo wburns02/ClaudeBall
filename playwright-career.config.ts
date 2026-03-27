@@ -19,5 +19,10 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: 'dynasty-career-sim.spec.ts',
     },
+    {
+      name: 'crawler',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: 'dynasty-crawler.spec.ts',
+    },
   ],
 });
