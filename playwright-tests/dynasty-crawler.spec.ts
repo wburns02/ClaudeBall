@@ -62,7 +62,8 @@ async function crawlPage(page: Page, url: string, pageName: string): Promise<Cra
 
   try {
     await page.goto(url, { timeout: 10000 });
-    await page.waitForTimeout(2000);
+    // Wait for lazy-load + IDB rehydration — needs more time than 2s
+    await page.waitForTimeout(4000);
   } catch {
     issues.push('Page failed to load');
     page.off('console', errorHandler);
@@ -70,19 +71,19 @@ async function crawlPage(page: Page, url: string, pageName: string): Promise<Cra
   }
 
   // Check for blank page (React crash)
-  const mainContent = await page.locator('main').textContent({ timeout: 5000 }).catch(() => '');
-  const bodyText = await page.locator('body').textContent({ timeout: 3000 }).catch(() => '');
-  // "Loading franchise data" is a legitimate loading state, not a blank page
-  const isLoadingState = bodyText.includes('Loading franchise data') || bodyText.includes('Loading...');
-  if (!isLoadingState && (!mainContent || mainContent.trim().length < 10)) {
-    if (bodyText.includes('Loading')) {
-      // Wait longer
-      await page.waitForTimeout(3000);
-      const retryContent = await page.locator('main').textContent({ timeout: 3000 }).catch(() => '');
-      if (!retryContent || retryContent.trim().length < 10) {
-        issues.push('Page appears blank (possible React crash)');
-      }
-    } else if (!bodyText || bodyText.trim().length < 20) {
+  const bodyText = await page.locator('body').textContent({ timeout: 5000 }).catch(() => '');
+  const mainContent = await page.locator('main').textContent({ timeout: 3000 }).catch(() => '');
+  const allText = (mainContent ?? '') + (bodyText ?? '');
+
+  // Loading states are legitimate — not blank pages
+  const hasContent = allText.trim().length > 50; // Sidebar alone has 50+ chars
+  const isLoading = allText.includes('Loading');
+
+  if (!hasContent && !isLoading) {
+    // Retry with longer wait for async IDB rehydration
+    await page.waitForTimeout(4000);
+    const retryBody = await page.locator('body').textContent({ timeout: 3000 }).catch(() => '');
+    if (!retryBody || retryBody.trim().length < 50) {
       issues.push('Page is completely blank');
     }
   }
@@ -161,7 +162,7 @@ async function simDays(page: Page, days: number) {
   }
 }
 
-// All franchise routes to crawl
+// All franchise routes to crawl — derived from actual App.tsx routes
 const FRANCHISE_ROUTES = [
   { path: '/franchise', name: 'Dashboard' },
   { path: '/franchise/overview', name: 'Overview' },
@@ -170,12 +171,13 @@ const FRANCHISE_ROUTES = [
   { path: '/franchise/depth-chart', name: 'Depth Chart' },
   { path: '/franchise/development', name: 'Development Hub' },
   { path: '/franchise/projections', name: 'Projections' },
+  { path: '/franchise/sim-projection', name: 'Sim Projection' },
   { path: '/franchise/training', name: 'Training Center' },
-  { path: '/franchise/coaching', name: 'Coaching Staff' },
-  { path: '/franchise/lineup', name: 'Lineup Editor' },
+  { path: '/franchise/coaching-staff', name: 'Coaching Staff' },
+  { path: '/franchise/lineup-editor', name: 'Lineup Editor' },
   { path: '/franchise/power-rankings', name: 'Power Rankings' },
-  { path: '/franchise/leaders', name: 'League Leaders' },
-  { path: '/franchise/war-dashboard', name: 'WAR Dashboard' },
+  { path: '/franchise/league-leaders', name: 'League Leaders' },
+  { path: '/franchise/war', name: 'WAR Dashboard' },
   { path: '/franchise/team-stats', name: 'Team Stats' },
   { path: '/franchise/records', name: 'Records' },
   { path: '/franchise/war-room', name: 'GM War Room' },
@@ -184,26 +186,33 @@ const FRANCHISE_ROUTES = [
   { path: '/franchise/payroll', name: 'Payroll' },
   { path: '/franchise/trades', name: 'Trades' },
   { path: '/franchise/trade-machine', name: 'Trade Machine' },
+  { path: '/franchise/trade-deadline', name: 'Trade Deadline' },
   { path: '/franchise/free-agency', name: 'Free Agency' },
+  { path: '/franchise/draft', name: 'Draft' },
+  { path: '/franchise/roster-manager', name: 'Roster Manager' },
   { path: '/franchise/schedule', name: 'Schedule' },
   { path: '/franchise/game-log', name: 'Game Log' },
   { path: '/franchise/scoreboard', name: 'Scoreboard' },
+  { path: '/franchise/all-star', name: 'All-Star Game' },
   { path: '/franchise/goals', name: "Owner's Office" },
   { path: '/franchise/report-card', name: 'Report Card' },
   { path: '/franchise/morale', name: 'Team Morale' },
   { path: '/franchise/hot-cold', name: 'Hot & Cold' },
   { path: '/franchise/awards', name: 'Awards' },
+  { path: '/franchise/trade-proposals', name: 'Trade Proposals' },
   { path: '/franchise/injuries', name: 'Injuries' },
   { path: '/franchise/minors', name: 'Minors' },
-  { path: '/franchise/trade-proposals', name: 'Trade Proposals' },
+  { path: '/franchise/waivers', name: 'Waivers' },
   { path: '/franchise/trade-history', name: 'Trade History' },
   { path: '/franchise/transactions', name: 'Transactions' },
   { path: '/franchise/news', name: 'League News' },
   { path: '/franchise/highlights', name: 'League Highlights' },
   { path: '/franchise/season-story', name: 'Season Story' },
-  { path: '/franchise/season-timeline', name: 'Season Timeline' },
-  { path: '/franchise/history', name: 'Franchise History' },
+  { path: '/franchise/timeline', name: 'Season Timeline' },
+  { path: '/franchise/season-review', name: 'Season Review' },
+  { path: '/franchise/franchise-history', name: 'Franchise History' },
   { path: '/franchise/hall-of-records', name: 'Hall of Records' },
+  { path: '/franchise/player-history', name: 'Player Career Stats' },
   // Dynasty-specific
   { path: '/dynasty/inbox', name: 'Hot Stove Inbox' },
   { path: '/dynasty/conversation', name: 'Conversations' },
