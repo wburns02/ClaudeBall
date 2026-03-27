@@ -13,6 +13,7 @@ export interface PersonalityComponent extends Component {
   aggression: number;
   coachability: number;
   integrity: number;
+  wildcard: number;    // 20-80, hidden volatility — drives scandal generation
 }
 
 /** Map from existing MentalRatings (0-100) to Personality (20-80). */
@@ -39,6 +40,8 @@ export function personalityFromMental(mental: MentalRatings, rng: () => number):
     aggression: randomTrait(rng),
     coachability: randomTrait(rng),
     integrity: randomTrait(rng),
+    // Wildcard: inverse of composure + randomness. Low composure = high volatility.
+    wildcard: Math.max(20, Math.min(80, Math.round(100 - ratingTo2080(mental.composure) + (randomTrait(rng) - 50) * 0.3))),
   };
 }
 
@@ -56,5 +59,6 @@ export function randomPersonality(rng: () => number): PersonalityComponent {
     aggression: randomTrait(rng),
     coachability: randomTrait(rng),
     integrity: randomTrait(rng),
+    wildcard: randomTrait(rng),
   };
 }

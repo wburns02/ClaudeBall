@@ -135,6 +135,21 @@ export interface CareerTransitionEvent extends DynastyEvent {
   data: { entityId: EntityId; fromRole: string; toRole: string };
 }
 
+export interface ScandalOccurredEvent extends DynastyEvent {
+  type: 'ScandalOccurred';
+  data: { entityId: EntityId; tier: 'minor' | 'moderate' | 'severe' | 'nuclear'; scandalType: string; description: string; suspension: number };
+}
+
+export interface TeamForSaleEvent extends DynastyEvent {
+  type: 'TeamForSale';
+  data: { teamId: string; reason: string; askingPrice: number };
+}
+
+export interface TeamPurchasedEvent extends DynastyEvent {
+  type: 'TeamPurchased';
+  data: { buyerId: EntityId; teamId: string; price: number };
+}
+
 /** Union of all event types for type-safe handlers */
 export type DynastyEventMap = {
   GameCompleted: GameCompletedEvent;
@@ -158,4 +173,7 @@ export type DynastyEventMap = {
   FinancialEvent: FinancialEvent;
   LifeEvent: LifeEventDynastyEvent;
   CareerTransition: CareerTransitionEvent;
+  ScandalOccurred: ScandalOccurredEvent;
+  TeamForSale: TeamForSaleEvent;
+  TeamPurchased: TeamPurchasedEvent;
 };
