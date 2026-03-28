@@ -588,6 +588,153 @@ Each decision at each stage has different consequences:
 19. PED temptation scales with career stage and personal circumstances
 20. The same injury at different wealth levels has completely different recovery paths
 
+---
+
+## 14. The Politics System
+
+Merit isn't always enough. The real world has gatekeepers, favorites, and bullshit.
+
+### How Politics Manifest
+
+**Youth baseball (12-18):**
+- Travel ball coach plays favorites — the kid whose dad is an assistant coach gets more reps
+- All-star team selection: politics over performance. The coach's buddy's kid makes the team over you.
+- Showcase invitations sometimes go to connected families, not the best players
+- Decision: accept it quietly (composure +, but simmering resentment) or call it out (media attention, burned bridges, respect from some, enemies from others)
+
+**College:**
+- Recruiting: some coaches recruit based on relationships with HS coaches, not just talent
+- Playing time: transfer portal politics, freshman vs. senior dynamics
+- Summer league assignments: connected players get Cape Cod, you get Northwoods
+
+**Minor leagues:**
+- Organizational favorites: first-round picks get more chances than late-rounders
+- You're better than the guy above you on the depth chart, but he cost $3M to sign
+- Manager's relationship with you determines playing time (coach personality matters)
+- The "prospect vs. suspect" label: once you're labeled "organizational depth," it's nearly impossible to shed
+
+**MLB:**
+- All-Star voting: popularity contest. Big market players get votes over small market guys with better stats.
+- Award voting: media bias toward certain cities, narratives, and players they like
+- Front office politics: GM has "his guys" — players he drafted/traded for get longer leashes
+- CBA politics: union rep decisions, labor disputes
+
+**National team / international:**
+- Selection based on club affiliation, not merit
+- Coaches pick players they know from their own programs
+- Financial barriers to tryout camps (travel, housing, time off work)
+- Decision: burn money you don't have for a CHANCE at selection, or accept that the system is rigged
+
+### The Bullshit Moment
+
+An event that captures the feeling of being objectively better but passed over:
+
+> **TRYOUT RESULTS**
+> You performed in the top 5% of all players at the Western Regional Trial.
+> Sprint time: 2nd fastest. Hitting: 3rd overall. Fielding: top rated.
+>
+> **You were not selected.**
+>
+> The 4 players selected were all from the Denver program.
+> The head coach is a former Denver coach.
+>
+> Choice:
+> - Accept it and move on (composure +5, resentment building)
+> - Confront the coach publicly ("This is bullshit") — media covers it, reputation +10 with fans, -30 with establishment
+> - Channel it into fuel (work ethic +5, motivation event triggers)
+> - Give up on this path (depression risk, but opens different door)
+
+### Connections System
+
+Every NPC has a **connections web**. Coaches hire people they know. GMs draft players their scouts recommend. Scouts recommend players from programs they have relationships with.
+
+You can BUILD connections:
+- Attend camps run by specific coaches
+- Build relationships with scouts who visit your games
+- Network at showcases and events
+- Your family's connections open doors (baseball family archetype advantage)
+
+Or you can LACK connections:
+- Small town, no travel ball = no scout relationships
+- Immigrant family with no baseball network in the US
+- Transferred schools = lost all local connections
+
+The politics system means TALENT ALONE isn't always enough. You need talent + timing + connections + a little luck. Just like real life.
+
+---
+
+## 15. The Identity Crisis System
+
+When sports end — whether by choice, injury, or age — your character doesn't just lose stats. They lose who they ARE.
+
+### The Void
+
+When a player retires or is forced out:
+
+**Phase 1: The Void (0-6 months)**
+- UI literally changes: colors desaturate, fewer events pop up
+- No Big Game Moments. No crowd noise. No adrenaline.
+- Daily choices become mundane: "What do you do today?" → Watch TV / Go to the gym / Stare at your phone / Call an old teammate
+- Morale drops weekly. Composure tested.
+- Family notices: "You're different since you stopped playing."
+
+**Phase 2: The Search (6-18 months)**
+- Random discovery events start appearing based on personality:
+  - High Baseball IQ: "A local high school asked if you'd help coach..."
+  - High Charisma: "A TV station asked if you'd do color commentary..."
+  - High Work Ethic: "You've been going to the gym religiously. A trainer asks if you want to get certified..."
+  - High Aggression: "You picked up boxing/MMA. It scratches the competitive itch."
+  - Low everything: "You've been drinking more. Your wife is worried."
+
+**Phase 3: The New Identity (18+ months)**
+- If you find something: mood recovers, new career path opens, UI brightens
+- If you DON'T find something: depression deepens, substance abuse risk, relationship strain, potential divorce event
+- The game doesn't force a happy ending. Some players never find their second act.
+
+### The Second Sport Discovery
+
+Like finding rugby after football — the game should allow discovering a new competitive outlet:
+
+- Coaching youth baseball → feels meaningful, uses your knowledge
+- Beer league softball → scratches the itch, low stakes, fun with friends
+- Competitive fishing/golf/boxing → new challenge, different identity
+- Business venture → channel competitive energy into building something
+- Broadcasting → stay connected to the game without playing
+
+Each option has its own mini-progression. Coaching leads to the front office pipeline. Broadcasting leads to media career. Business leads to the owner path.
+
+### The Comeback Decision
+
+At ANY point during the identity crisis, if your body is recovered enough:
+
+> "You've been throwing in the backyard. Your arm feels... good. Better than it should."
+>
+> Choice:
+> - Pursue a comeback (enters the comeback arc: international → indie → minors → MLB)
+> - It's just nostalgia. Stay retired. (Safe, but the dream dies)
+> - Play semi-pro/beer league (casual competitive outlet, no pressure)
+
+The comeback path is THE most dramatic storyline in the game. The narrative journal writes:
+
+> "For three years after the injury, Will Burns was lost. He coached little league on Saturdays and pretended to be okay. Then one morning in January, he threw 50 pitches in the backyard and realized his arm didn't hurt. For the first time in three years, he smiled."
+
+### The Ugly Ending
+
+Not every story has a happy ending. The game should allow:
+
+- Player who never finds a second act → spirals into depression, substance abuse
+- Player who can't stop chasing the comeback → embarrassing failed attempts, burns through savings
+- Player who refuses to accept reality → takes bad contracts, gets DFA'd repeatedly, media mocks him
+- Player whose body is done but mind won't accept it → the saddest story
+
+These aren't punishments. They're REAL. And the narrative journal captures them honestly:
+
+> "Will Burns spent four years trying to come back. Each time, the arm gave out a little sooner. At 43, sitting alone in an independent league clubhouse in Lancaster, Pennsylvania, he finally accepted what everyone else already knew. The game was over. This time for real."
+
+---
+
+## 16. Success Criteria (Final)
+
 1. Player can start at age 12 and play to owner (40+ year arc)
 2. Every stage is skippable (sim in seconds) or playable
 3. Big Game Moments feel impactful — the outcome matters
@@ -601,5 +748,17 @@ Each decision at each stage has different consequences:
 11. Financial decisions from childhood compound across the entire career
 12. The signing bonus moment makes the player emotional
 13. Childhood rivals and friends appear throughout the career
+14. The narrative journal produces a unique, readable biography
+15. Overtraining has real consequences (burnout, relationship decay, injury)
+16. Players who invest in their bodies can play into their late 40s
+17. Comeback arc works: injury → rehab → international ball → minors → MLB return
+18. Enhancement spectrum creates real moral dilemmas gated by money and desperation
+19. PED temptation scales with career stage and personal circumstances
+20. The same injury at different wealth levels has completely different recovery paths
+21. Politics system: being passed over despite merit triggers real emotional events
+22. Connections matter: talent alone isn't always enough
+23. Identity crisis after retirement is a real, felt experience — not just a menu
+24. The void phase visually changes the game (desaturated, quiet, empty)
+25. Not every story has a happy ending — the game allows ugly, honest conclusions
 14. The narrative journal produces a unique, readable biography
 15. Overtraining has real consequences (burnout, relationship decay, injury)
