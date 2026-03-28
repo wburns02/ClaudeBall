@@ -62,6 +62,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 interface AchievementState {
   unlocked: UnlockedAchievement[];
   recentUnlock: string | null; // ID of most recent unlock (for toast)
+  _hydrated: boolean;
 
   unlock: (id: string, season?: number) => boolean; // returns true if newly unlocked
   isUnlocked: (id: string) => boolean;
@@ -74,8 +75,11 @@ export const useAchievementStore = create<AchievementState>()(
     (set, get) => ({
       unlocked: [],
       recentUnlock: null,
+      _hydrated: false,
 
       unlock: (id, season) => {
+        // Wait for rehydration so we don't re-fire toasts for already-unlocked achievements
+        if (!get()._hydrated) return false;
         if (get().unlocked.some(u => u.id === id)) return false;
         const entry: UnlockedAchievement = { id, unlockedAt: new Date().toISOString(), season };
         set(s => ({ unlocked: [...s.unlocked, entry], recentUnlock: id }));
@@ -92,7 +96,13 @@ export const useAchievementStore = create<AchievementState>()(
         return { total, unlocked, pct: Math.round((unlocked / total) * 100) };
       },
     }),
-    { name: 'claudeball-achievements', partialize: s => ({ unlocked: s.unlocked }) }
+    {
+      name: 'claudeball-achievements',
+      partialize: s => ({ unlocked: s.unlocked }),
+      onRehydrateStorage: () => () => {
+        useAchievementStore.setState({ _hydrated: true });
+      },
+    }
   )
 );
 

@@ -46,8 +46,11 @@ export function generateHighlights(
 
   const played = schedule.filter(g => g.played && g.awayScore !== undefined && g.homeScore !== undefined);
 
-  // ── Per-game highlights (recent 7 days) ──
-  const recentGames = played.filter(g => g.date >= currentDay - 7 && g.date <= currentDay);
+  // ── Per-game highlights (recent 7 days with games) ──
+  // If currentDay is past the last played game, anchor the window to the last played date
+  const lastPlayedDay = played.length > 0 ? Math.max(...played.map(g => g.date)) : currentDay;
+  const windowEnd = Math.min(currentDay, lastPlayedDay);
+  const recentGames = played.filter(g => g.date >= windowEnd - 7 && g.date <= windowEnd);
 
   for (const g of recentGames) {
     const away = g.awayScore!;
@@ -137,44 +140,45 @@ export function generateHighlights(
 
   for (const [tid, games] of teamGames) {
     const sorted = games.sort((a, b) => a.date - b.date);
-    let streak = 0;
-    let streakType: 'W' | 'L' = 'W';
 
-    for (let i = sorted.length - 1; i >= 0; i--) {
-      const g = sorted[i];
+    // Track peak win/loss streaks across the entire season
+    let curWin = 0, curLoss = 0, bestWin = 0, bestLoss = 0;
+
+    for (const g of sorted) {
       const isHome = g.homeId === tid;
       const won = isHome ? (g.homeScore! > g.awayScore!) : (g.awayScore! > g.homeScore!);
-      if (i === sorted.length - 1) {
-        streakType = won ? 'W' : 'L';
-        streak = 1;
-      } else if ((won && streakType === 'W') || (!won && streakType === 'L')) {
-        streak++;
+      if (won) {
+        curWin++;
+        curLoss = 0;
+        if (curWin > bestWin) bestWin = curWin;
       } else {
-        break;
+        curLoss++;
+        curWin = 0;
+        if (curLoss > bestLoss) bestLoss = curLoss;
       }
     }
 
-    if (streakType === 'W' && streak >= 7) {
+    if (bestWin >= 7) {
       highlights.push({
         id: `wstreak-${tid}-${currentDay}`,
         type: 'win_streak',
         day: currentDay,
-        headline: `${abbr(tid)} on a ${streak}-game win streak!`,
-        detail: `${name(tid)} has won ${streak} straight and is rolling.`,
+        headline: `${abbr(tid)} had a ${bestWin}-game win streak!`,
+        detail: `${name(tid)} won ${bestWin} straight at their peak this season.`,
         teamIds: [tid],
-        importance: streak >= 10 ? 3 : 2,
+        importance: bestWin >= 10 ? 3 : 2,
       });
     }
 
-    if (streakType === 'L' && streak >= 7) {
+    if (bestLoss >= 7) {
       highlights.push({
         id: `lstreak-${tid}-${currentDay}`,
         type: 'lose_streak',
         day: currentDay,
-        headline: `${abbr(tid)} mired in ${streak}-game losing streak`,
-        detail: `${name(tid)} has dropped ${streak} in a row.`,
+        headline: `${abbr(tid)} endured a ${bestLoss}-game losing streak`,
+        detail: `${name(tid)} dropped ${bestLoss} in a row at their worst this season.`,
         teamIds: [tid],
-        importance: streak >= 10 ? 3 : 2,
+        importance: bestLoss >= 10 ? 3 : 2,
       });
     }
   }

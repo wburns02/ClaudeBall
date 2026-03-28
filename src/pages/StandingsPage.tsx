@@ -466,8 +466,10 @@ export function StandingsPage() {
                               'px-2 py-2 font-mono text-xs text-left',
                               isUser ? 'text-gold font-bold' : 'text-cream',
                             )}>
-                              {isUser ? '► ' : ''}{team?.city ?? ''} {team?.name ?? t.teamId}
-                              {eliminated && <span className="ml-1 text-[9px] text-red-400/60">ELIM</span>}
+                              <span className="whitespace-nowrap">
+                                {isUser ? '► ' : ''}{team?.city ?? ''} {team?.name ?? t.teamId}
+                                {eliminated && <span className="ml-1.5 text-[9px] text-red-400/60 font-normal border border-red-400/30 rounded px-1 py-0.5">ELIM</span>}
+                              </span>
                             </td>
                             <td className="px-2 py-2 font-mono text-xs text-right text-cream">{t.wins}</td>
                             <td className="px-2 py-2 font-mono text-xs text-right text-cream">{t.losses}</td>

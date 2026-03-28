@@ -488,8 +488,8 @@ export function RosterPage() {
 
       {/* Position Players */}
       <Panel title={`Position Players (${positionPlayers.length})`} className="mb-4">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-4 px-4">
+          <table className="w-full min-w-[700px]">
             <thead>{tableHead}</thead>
             <tbody>
               {positionPlayers.map(p => <PlayerRow key={p.id} p={p} />)}
@@ -500,8 +500,8 @@ export function RosterPage() {
 
       {/* Pitchers */}
       <Panel title={`Pitching Staff (${pitchers.length})`}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-4 px-4">
+          <table className="w-full min-w-[700px]">
             <thead>{tableHead}</thead>
             <tbody>
               {pitchers.map(p => <PlayerRow key={p.id} p={p} />)}
