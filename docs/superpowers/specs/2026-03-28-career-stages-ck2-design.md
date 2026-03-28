@@ -925,7 +925,161 @@ The narrative journal at age 52:
 
 ---
 
-## 19. Success Criteria (Final)
+## 19. Passing The Torch (CK2 Succession)
+
+The capstone feature. When your character's story ends — or whenever you choose — you can **become someone your character shaped.** The world continues. The legacy transfers. The story evolves.
+
+### How It Works
+
+At any point after your character reaches age 30+ (or after retirement/identity crisis), a new option appears:
+
+> **PASS THE TORCH**
+> "Your story doesn't have to end. But it can change perspective."
+> Choose someone whose life you've influenced to continue the story through their eyes.
+
+### Who You Can Become
+
+**Tier 1: Blood (your children)**
+- Your daughter who followed you into baseball
+- Your son who chose a different sport
+- Your nephew who you mentored from afar
+- Prerequisite: relationship affinity 50+ with the child, they must be age 14+
+- **Advantage:** Deepest connection. Your original character becomes a parent NPC who calls before big games, gives advice, shows up to watch. The family bond is the core storyline.
+
+**Tier 2: Protégés (players you developed)**
+- The prospect you discovered and mentored
+- The minor leaguer you coached in high school
+- The international kid whose family you convinced to choose baseball
+- Prerequisite: mentor relationship established, invested 3+ seasons of mentoring
+- **Advantage:** You shaped their skills. Their development reflects YOUR coaching choices. But they have their own personality — they might rebel against your methods.
+
+**Tier 3: Coaching Tree (coaches/staff you trained)**
+- Your assistant coach who learned your system
+- The scout you hired and trained
+- The GM you groomed as your successor
+- Prerequisite: professional relationship, worked together 2+ seasons
+- **Advantage:** They inherit your organizational philosophy. Start at a higher career stage (skip player career, start as coach/scout/GM).
+
+**Tier 4: The Stranger (wildcard)**
+- A random 12-year-old in your city who idolizes you
+- A kid from the Dominican who saw your highlight reel on YouTube
+- Someone with NO connection to you — fresh start in the same world
+- Prerequisite: none
+- **Advantage:** Completely different perspective. Your original character exists as a legend in the world — posters, references, records to chase.
+
+### The Transition
+
+When you pass the torch:
+
+1. **Choose your successor** from available candidates
+2. **Final chapter writes:** The narrative journal closes your character's story with a final entry.
+   > "Will Burns stepped away from the game at 54. Not because his body gave out or his mind wandered — but because he saw something in Maria's eyes that he recognized. The same fire. The same hunger. It was her turn now."
+
+3. **Perspective shifts:** You now control the successor. New character creation screen shows their current attributes, relationships, and stage.
+
+4. **Your original character becomes an NPC:**
+   - They call you. They text you. They show up to your games.
+   - Their personality drives their NPC behavior (tiger parent? supportive mentor? absent legend?)
+   - They age. They might get sick. They will eventually die. That's a life event for your new character.
+   - "Your father passed away at 78. The funeral was attended by 400 people. Former teammates, coaches, players he'd mentored, and the entire city of Austin."
+
+5. **The world remembers everything:**
+   - Records your original character set still exist
+   - NPCs reference your original character: "Your dad was the toughest player I ever saw."
+   - The franchise your original character built/owned continues
+   - Rivalries transform: your dad's rival might become YOUR mentor, or your enemy
+
+### Multiple Successions
+
+You can pass the torch MORE THAN ONCE. A three-generation dynasty:
+
+**Generation 1: Will Burns (2014-2054)**
+- Little League → MLB → Owner
+- 40-year career arc, bought the Thunderhawks
+- Passed the torch to his daughter Maria at age 54
+
+**Generation 2: Maria Burns (2040-2075)**
+- Grew up watching dad play, made varsity softball, switched to baseball
+- Drafted by a rival team — played AGAINST her dad's Thunderhawks
+- Won a World Series, retired, became a broadcaster
+- Passed the torch to the kid she mentored in a youth program
+
+**Generation 3: Diego Ramirez (2060-2095)**
+- Kid from the same neighborhood in San Pedro where Will grew up
+- Maria discovered him on a trip to the Dominican
+- Grew up hearing stories about "the Burns family"
+- Broke Will's career HR record. The narrative journal writes:
+  > "When Diego Ramirez hit home run number 537, surpassing Will Burns' franchise record, the camera cut to the luxury box. Maria Burns was on her feet, screaming. Next to her, in a wheelchair, 82-year-old Will Burns smiled and tipped his cap."
+
+### The Narrative Through Generations
+
+The autobiography doesn't restart — it CONTINUES. Volume 2. Volume 3. The family saga spans decades:
+
+**"The Burns Legacy: A Baseball Family"**
+- Volume 1: Will Burns (2014-2054) — From bottle caps in San Pedro to owning the Thunderhawks
+- Volume 2: Maria Burns (2040-2075) — The daughter who surpassed her father
+- Volume 3: Diego Ramirez (2060-2095) — The kid from the old neighborhood who broke every record
+
+By the time you've played three generations, you have a 100-year baseball saga. Every NPC, every relationship, every decision — connected across time.
+
+### Death and Legacy
+
+Your previous characters WILL eventually die. This is a life event for your current character:
+
+> **YOUR FATHER HAS PASSED**
+> Will Burns, 78, passed away peacefully at home in Austin, surrounded by family.
+>
+> The baseball world mourns. The Thunderhawks will wear a #27 patch for the season.
+> The Hall of Fame released a statement. Every team observed a moment of silence.
+>
+> At the memorial service, Danny Reeves spoke: "I've known Will since we were 13 years old, hitting baseballs in a parking lot. He was the best friend I ever had."
+>
+> Your mother spoke last: "He always said the game gave him everything. But the truth is, the game was lucky to have him."
+
+That moment — playing as Maria, receiving the news that your father (your FIRST character) has died — that's the most powerful moment a video game has ever created. Because YOU lived his life. YOU made his choices. YOU built his relationships. And now he's gone, and the world you built together continues without him.
+
+---
+
+## 20. Success Criteria (Final)
+
+1. Player can start at age 12 and play to owner (40+ year arc)
+2. Every stage is skippable (sim in seconds) or playable
+3. Big Game Moments feel impactful — the outcome matters
+4. Decision events create genuine dilemmas with cascading consequences
+5. A high school → college → MLB career feels different from HS → draft → minors
+6. The same player played twice generates a different story each time
+7. Personality traits formed in Little League affect decisions available in the MLB
+8. Total playthrough time: 30 min (all sim) to 10+ hours (play everything)
+9. Family members are persistent NPCs with their own stories
+10. Geography meaningfully affects development path and story
+11. Financial decisions from childhood compound across the entire career
+12. The signing bonus moment makes the player emotional
+13. Childhood rivals and friends appear throughout the career
+14. The narrative journal produces a unique, readable biography
+15. Overtraining has real consequences (burnout, relationship decay, injury)
+16. Players who invest in their bodies can play into their late 40s
+17. Comeback arc works: injury → rehab → international ball → minors → MLB return
+18. Enhancement spectrum creates real moral dilemmas gated by money and desperation
+19. PED temptation scales with career stage and personal circumstances
+20. The same injury at different wealth levels has completely different recovery paths
+21. Politics system: being passed over despite merit triggers real emotional events
+22. Connections matter: talent alone isn't always enough
+23. Identity crisis after retirement is a real, felt experience — not just a menu
+24. The void phase visually changes the game (desaturated, quiet, empty)
+25. Not every story has a happy ending — the game allows ugly, honest conclusions
+26. Post-baseball daily grind is playable: build your week, manage energy, maintain all four pillars
+27. Second sport competition has its own progression, NPCs, and Big Game Moments
+28. Relationships are the primary reason to keep playing past year 20
+29. The phone system makes NPCs feel alive — they text, call, and need you
+30. Your children can follow in your footsteps — generational payoff
+31. The mentor tree tracks everyone you've influenced across your career
+32. A 42-year-old outperforming college kids is a playable, celebratable moment
+33. Pass the torch: become your child, protégé, or coaching tree successor
+34. Original character becomes an NPC who calls, texts, watches your games
+35. Multiple successions create a multi-generational family saga
+36. Previous characters age and eventually die — the most powerful moment in gaming
+37. The narrative journal spans volumes across generations
+38. A 100-year baseball family dynasty is achievable through successive play
 
 1. Player can start at age 12 and play to owner (40+ year arc)
 2. Every stage is skippable (sim in seconds) or playable
