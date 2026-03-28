@@ -70,9 +70,13 @@ export function generateBatterLines(
     const bb = Math.round(pa * bbRate * (0.8 + rng.next() * 0.4));
     const ab = Math.max(0, pa - bb);
 
-    // Hits from contact rating
+    // Hits from contact rating — per-AB probability so players can go hitless
     const hitRate = clamp(0.15 + (contact / 100) * 0.20, 0.15, 0.35);
-    const h = Math.min(ab, Math.min(totalHitsLeft, Math.round(ab * hitRate * (0.7 + rng.next() * 0.6))));
+    let hitsThisBatter = 0;
+    for (let j = 0; j < ab; j++) {
+      if (rng.next() < hitRate) hitsThisBatter++;
+    }
+    const h = Math.min(ab, Math.min(totalHitsLeft, hitsThisBatter));
     totalHitsLeft = Math.max(0, totalHitsLeft - h);
 
     // HR from power — use probabilistic approach: each AB has hrRate chance of HR

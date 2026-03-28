@@ -140,12 +140,13 @@ export function computeFormSummary(
   const baDiff = recentBA - seasonBA;
   const formScore = Math.round(Math.max(-20, Math.min(20, baDiff * 333)));
 
-  // Streak detection: consecutive hitless ABS or multi-hit games
+  // Streak detection: consecutive hitless ABs or multi-hit games (capped at 30 games)
   let streakLabel = '—';
   let hitStreak = 0;
   let slumpAB = 0;
   let slumpH = 0;
-  for (const g of sorted.filter(isBatterEntry)) {
+  const batterGamesForStreak = sorted.filter(isBatterEntry).slice(0, 30);
+  for (const g of batterGamesForStreak) {
     if (g.h > 0 && slumpAB === 0) hitStreak++;
     else if (g.h === 0 && hitStreak === 0) { slumpAB += g.ab; slumpH += g.h; }
     else break;

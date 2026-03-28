@@ -64,20 +64,7 @@ export function WarDashboardPage() {
   const [playerType, setPlayerType] = useState<PlayerType>('all');
   const [posFilter, setPosFilter] = useState<string>('ALL');
 
-  if (!engine || !userTeamId || !season) {
-    return (
-      <div className="min-h-screen p-6 max-w-5xl mx-auto">
-        <h1 className="font-display text-3xl text-gold uppercase tracking-wide mb-4">WAR Dashboard</h1>
-        <p className="font-mono text-cream-dim text-sm">
-          Wins Above Replacement — the single stat that measures total player value.
-        </p>
-        <p className="font-mono text-cream-dim/50 text-xs mt-2">Loading franchise data...</p>
-        <Button className="mt-4" onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
-      </div>
-    );
-  }
-
-  // Compute league context
+  // Compute league context — must be before any conditional return (Rules of Hooks)
   const leagueCtx = useMemo(() => {
     const allStats = Object.values(playerStats);
     if (allStats.length === 0) return DEFAULT_LEAGUE_CONTEXT;
@@ -94,8 +81,9 @@ export function WarDashboardPage() {
     return deriveLeagueContext(totalAB, totalPA, totalH, totalDoubles, totalTriples, totalHR, totalBB, totalHBP, totalSF, totalSO, totalRuns, 0, totalER, totalIP);
   }, [playerStats]);
 
-  // Build WAR entries for all players
+  // Build WAR entries for all players — must be before any conditional return (Rules of Hooks)
   const warEntries = useMemo(() => {
+    if (!engine || !userTeamId) return [];
     const entries: WarEntry[] = [];
     for (const ps of Object.values(playerStats)) {
       const team = engine.getTeam(ps.teamId);
@@ -109,7 +97,6 @@ export function WarDashboardPage() {
         const innings = ps.pitching.ip / 3;
         keyStats = `${adv.era.toFixed(2)} ERA, ${ps.pitching.so} K, ${innings.toFixed(1)} IP`;
       } else if (!isPitcher && ps.batting.pa >= 10) {
-        const posAdj = POSITION_ADJ[ps.position] ?? 0;
         const adv = calcBattingAdvanced(ps.batting, leagueCtx, ps.position);
         war = adv.war;
         keyStats = `.${Math.round(adv.avg * 1000).toString().padStart(3, '0')} AVG, ${ps.batting.hr} HR, ${ps.batting.rbi} RBI`;
@@ -132,7 +119,7 @@ export function WarDashboardPage() {
     return entries.sort((a, b) => b.war - a.war);
   }, [playerStats, leagueCtx, engine, userTeamId]);
 
-  // Filtered entries
+  // Filtered entries — must be before any conditional return (Rules of Hooks)
   const filteredEntries = useMemo(() => {
     let entries = warEntries;
     if (playerType === 'batters') entries = entries.filter(e => !e.isPitcher);
@@ -143,8 +130,9 @@ export function WarDashboardPage() {
 
   const maxWar = Math.max(1, ...filteredEntries.map(e => e.war));
 
-  // Team WAR totals
+  // Team WAR totals — must be before any conditional return (Rules of Hooks)
   const teamWar = useMemo(() => {
+    if (!engine || !userTeamId) return [];
     const map = new Map<string, { teamId: string; abbr: string; name: string; totalWar: number; batWar: number; pitWar: number; isUser: boolean }>();
     for (const e of warEntries) {
       const team = engine.getTeam(e.teamId);
@@ -168,7 +156,7 @@ export function WarDashboardPage() {
 
   const maxTeamWar = Math.max(1, ...teamWar.map(t => t.totalWar));
 
-  // Position WAR leaders
+  // Position WAR leaders — must be before any conditional return (Rules of Hooks)
   const positionLeaders = useMemo(() => {
     const positions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'P'];
     return positions.map(pos => {
@@ -181,6 +169,19 @@ export function WarDashboardPage() {
   // User team WAR
   const userTeamWarData = teamWar.find(t => t.isUser);
   const userTeamRank = teamWar.findIndex(t => t.isUser) + 1;
+
+  if (!engine || !userTeamId || !season) {
+    return (
+      <div className="min-h-screen p-6 max-w-5xl mx-auto">
+        <h1 className="font-display text-3xl text-gold uppercase tracking-wide mb-4">WAR Dashboard</h1>
+        <p className="font-mono text-cream-dim text-sm">
+          Wins Above Replacement — the single stat that measures total player value.
+        </p>
+        <p className="font-mono text-cream-dim/50 text-xs mt-2">Loading franchise data...</p>
+        <Button className="mt-4" onClick={() => navigate('/franchise')}>Go to Dashboard</Button>
+      </div>
+    );
+  }
 
   const POSITIONS = ['ALL', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'P'];
 
