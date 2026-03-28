@@ -253,13 +253,216 @@ Each stage has a `simStage()` function:
 
 ---
 
-## 6. Success Criteria
+## 6. Time Management (Evolves With Age)
+
+The schedule system GROWS UP with the player:
+
+| Stage | Time System | Why |
+|-------|-----------|-----|
+| Little League (12-14) | **Key moments only** — events pop up every few weeks | You're a kid. Stuff just happens. |
+| High School (15-18) | **Seasonal blocks** — pick 2-3 focuses per season | Starting to make real choices. |
+| College/Minors (18-25) | **Weekly planner** — allocate time to activities | The professional grind. Every hour matters. |
+| MLB+ (25+) | **Seasonal blocks** — offseason planning + organic events | Established. Offseason is the decision point. |
+
+### Daily Decision Examples (all compound over years)
+
+| Choice | Impact |
+|--------|--------|
+| Extra wiffle ball reps | Contact +1, Work Ethic +1 |
+| Play video games | Eye +0.5 (hand-eye!), Work Ethic -1 |
+| Hang with friends | Charisma +1, Clubhouse Rep +1, no physical dev |
+| Study | Baseball IQ +1, education backup, no physical dev |
+| Weight room | Power +1, Injury Risk +0.5 |
+| Yoga/stretch | Potential +0.5, Injury Risk -1 |
+
+### Overtraining & Burnout (Triple Penalty)
+
+**Burnout meter:** Hidden fatigue builds when you always pick training.
+- Threshold hit → injury or development stall
+- Forces variety — can't just grind reps forever
+
+**Diminishing returns:** Same activity repeated gives less each time.
+- 1st session: +2. 2nd: +1.5. 3rd: +1. 4th: +0.5.
+- Variety is mathematically optimal
+
+**Relationship decay:** Overtraining = never spending time with people.
+- Family relationship drops if you skip family time for years
+- Friendships decay without maintenance
+- A lonely burned-out prodigy: 80 contact, 20 charisma, no friends
+- Can trigger depression event → spiral → early retirement
+
+---
+
+## 7. Family System
+
+### Generation Flow
+
+1. **Pick family archetype** (sets the tone):
+   - Baseball Family (dad played minors, brother in college ball)
+   - Blue Collar (hard-working, modest income, grounded values)
+   - Military (discipline, moves every 2 years, different schools/teams)
+   - Single Parent (financial pressure, deep emotional bond, chip on shoulder)
+   - Immigrant (language barriers, cultural pride, sending money home)
+   - Wealthy (all access, private coaches, but less hunger)
+   - Broken Home (divorce, custody battles, instability fuels drive)
+
+2. **Customize key members** — Dad and Mom generated from archetype with tweakable personality (supportive/tiger/absent), career, relationship with you.
+
+3. **Rest generates randomly** — Siblings, grandparents, extended family fill in. Each gets a **story hook**:
+   - Older brother who flamed out in AA (pressure to succeed where he failed)
+   - Little sister who idolizes you (motivation, her drawings on your locker)
+   - Grandpa who played in the Negro Leagues/Dominican Winter League (wisdom, legacy)
+   - Uncle who's a high school coach (connection, training access)
+   - Cousin who's in trouble (financial drain? or motivation?)
+
+### Family as NPCs
+
+Each family member has:
+- Name, age, personality traits
+- Relationship affinity with you (-100 to +100)
+- Story hook (one defining characteristic that generates events)
+- Career/life that progresses in parallel (siblings grow up, parents age)
+
+### Key Family Moments
+
+- Mom working double shifts to pay for travel ball → you feel the pressure
+- Dad and you play catch in the backyard → relationship + training
+- Parents argue about your future → divorce risk event
+- Signing bonus moment: hand your parents a check → emotional peak
+- Years later: buy your mom a house → prestige milestone
+
+---
+
+## 8. Geography System
+
+Where you grow up affects EVERYTHING:
+
+| Region | Baseball Culture | Development | Scouts | Weather | Special |
+|--------|-----------------|------------|--------|---------|---------|
+| Southern California | Elite travel ball, year-round | +development speed | High scout exposure | Year-round training | Expensive, competitive |
+| Texas | Football-first culture, HS baseball strong | Balanced | Good exposure | Hot summers | Two-sport pressure |
+| Florida | Baseball factories, showcases HQ | +development | Max scout exposure | Year-round | Showcase culture |
+| Dominican Republic | Informal training, buscones, academies | Raw tools develop fast | International scouts | Year-round | Poverty → hunger, broomstick training |
+| Japan | Structured, discipline-heavy | +control, +fundamentals | NPB scouts, later MLB | Seasonal | Culture of respect, slower path to MLB |
+| Puerto Rico | Proud baseball tradition | Balanced | Good exposure | Year-round | Bilingual advantage |
+| Northeast | Short seasons, tough conditions | Slower development | Lower exposure | 6-month season | +Mental toughness |
+| Midwest | Small-town baseball, less competition | Slower but steady | Low exposure | 6-month season | Under-the-radar, chip on shoulder |
+| Venezuela | Academy system, passionate culture | Raw tools | International scouts | Year-round | Economic instability events |
+
+**Gameplay impact:**
+- Warm weather: year-round training = +15% development speed
+- Cold weather: 6-month season = -10% development but +5 mental toughness
+- Big city: more scouts = earlier draft attention
+- Small town: less competition = inflated stats but less exposure
+- International: different path entirely (academies, international signing period, visa events)
+
+---
+
+## 9. Financial System (From Childhood)
+
+Money is real from day one.
+
+### Family Income Tiers
+
+| Tier | Annual Income | Baseball Access | Story Tone |
+|------|-------------|-----------------|-----------|
+| Poverty (<$25K) | Can't afford travel ball, used equipment, walks to practice | Scrappy underdog, community rallies around you |
+| Working Class ($25-60K) | Parents sacrifice for one travel team, basic gear | Grateful, pressure to justify family investment |
+| Middle Class ($60-120K) | Travel ball covered, decent gear, summer camps | Normal path, balanced |
+| Upper Middle ($120-250K) | Private coaches, elite travel teams, showcase circuit | All access, but "rich kid" stigma possible |
+| Wealthy ($250K+) | Everything. Best coaches, best facilities, best exposure | No excuses — pressure to deliver on investment |
+
+### Money Events by Stage
+
+**Little League:** "Travel ball costs $3,000 this summer. Your family can't afford it."
+- Choice: Skip it (miss development) / Mom picks up extra shifts (guilt + relationship) / Find a sponsor (community event)
+
+**High School:** "Showcase fee is $500. Your gear is falling apart."
+- Choice: Skip showcase (miss scout exposure) / Work a summer job (time away from training) / Coach finds scholarship
+
+**Draft Day:** "First round pick. $2.5M signing bonus."
+- What do you do with the money? Pay off parents' house / Invest wisely / Buy a car and go crazy / Split with family
+- This choice sets the tone for your ENTIRE financial career
+
+**The Check Moment:** AI-generated conversation. You call your mom:
+> "Mom... I made it. I'm going to take care of us. All of us."
+> She's crying. Your dad is quiet. Your little sister screams.
+
+This is the emotional peak of the game.
+
+---
+
+## 10. Persistent NPC World (CK2 Core)
+
+### Everyone Lives
+
+ALL NPCs continue existing throughout the entire game. They have their own careers, families, and stories running in parallel.
+
+**Your Little League team:**
+- Most quit baseball by high school
+- 2-3 play high school ball
+- 1 maybe plays college
+- 1 in 50 makes the minors
+- You might face your childhood friend in the World Series 20 years later
+
+**Tracking:**
+- Each NPC has: current age, current role (playing/coaching/retired/non-baseball), career stats, relationship with you
+- NPCs text you, call you, show up at events
+- "Hey, it's Danny Reeves. We played travel ball when we were 13. I'm coaching HS now. I've got a kid you need to see."
+
+**Rival arcs span decades:**
+- Age 12: kid beats you in Little League championship
+- Age 16: you face him in state semifinals — you win
+- Age 22: he's drafted by the same organization, different level
+- Age 28: he's a journeyman reliever — you face him in the playoffs
+- Age 35: he's retired, becomes a scout, recommends a prospect to you
+- Age 45: you hire him as a coach on your staff
+
+**The world remembers everything.**
+
+---
+
+## 11. Narrative Journal ("My Story")
+
+### Auto-Generated Biography
+
+As you play, the game writes your story in prose. A "My Story" page accumulates chapters:
+
+**Chapter 1: The Beginning**
+> "Will Burns grew up in San Pedro de Macorís, the youngest of three brothers. His grandfather Tomás played in the Dominican Winter League in the 1960s and taught Will to hit with a broomstick and a bottle cap before he could read..."
+
+**Chapter 5: The Decision**
+> "The scout from the Austin Thunderhawks sat in the bleachers at Estadio Tetelo Vargas. Will went 3-for-4 with a home run that cleared the palm trees beyond right field. That night, his mother's phone rang..."
+
+**Chapter 12: The Call**
+> "At 7:42 AM on a Tuesday in July, the phone rang in a cramped AAA apartment in Memphis. 'Pack your bags, kid. You're going to Austin.' Will Burns sat on the edge of his bed and cried."
+
+**Chapter 20: The Owner**
+> "Forty years after hitting bottle caps with a broomstick in San Pedro, Will Burns signed the papers that made him the owner of the Austin Thunderhawks. In the front row of the press conference sat his mother, his brother Danny, and his Little League coach, Mr. Reyes. All three were crying."
+
+### Features:
+- Auto-generated after each major milestone
+- Includes key decisions and their outcomes
+- References NPCs by name with relationship context
+- Shareable — export as text/PDF
+- Every playthrough generates a completely different story
+
+---
+
+## 12. Success Criteria (Updated)
 
 1. Player can start at age 12 and play to owner (40+ year arc)
 2. Every stage is skippable (sim in seconds) or playable
 3. Big Game Moments feel impactful — the outcome matters
 4. Decision events create genuine dilemmas with cascading consequences
-5. A high school → college → MLB career feels different from high school → draft → minors
+5. A high school → college → MLB career feels different from HS → draft → minors
 6. The same player played twice generates a different story each time
 7. Personality traits formed in Little League affect decisions available in the MLB
 8. Total playthrough time: 30 min (all sim) to 10+ hours (play everything)
+9. Family members are persistent NPCs with their own stories
+10. Geography meaningfully affects development path and story
+11. Financial decisions from childhood compound across the entire career
+12. The signing bonus moment makes the player emotional
+13. Childhood rivals and friends appear throughout the career
+14. The narrative journal produces a unique, readable biography
+15. Overtraining has real consequences (burnout, relationship decay, injury)
