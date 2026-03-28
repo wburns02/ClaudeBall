@@ -4,7 +4,7 @@ import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { cn } from '@/lib/cn.ts';
 import { createSettings, PRESETS, CHARACTER_ARCHETYPES } from '@/dynasty/DynastySettings.ts';
-import type { DynastyPreset, CharacterCreation, DynastySettings, PlayerBackground } from '@/dynasty/DynastySettings.ts';
+import type { DynastyPreset, CharacterCreation, DynastySettings, PlayerBackground, AttrBonus } from '@/dynasty/DynastySettings.ts';
 import type { DynastyMode } from '@/dynasty/ecs/types.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
@@ -34,6 +34,15 @@ const DEFAULT_ATTRS: PlayerAttributes = {
 const MAX_POINTS = 350;
 const PITCHER_MAX_POINTS = 320;
 
+// Background config: starting age, bonus attribute points
+const BACKGROUND_CONFIG: Record<PlayerBackground, { age: number; bonusPoints: number }> = {
+  high_school: { age: 18, bonusPoints: 10 },
+  college_star: { age: 22, bonusPoints: 0 },
+  late_round: { age: 23, bonusPoints: 0 },
+  undrafted: { age: 24, bonusPoints: 0 },
+  international: { age: 20, bonusPoints: 5 },
+};
+
 // Draft simulation based on background + attributes
 interface DraftResult {
   round: number;
@@ -51,13 +60,14 @@ function simulateDraft(background: PlayerBackground, attrs: PlayerAttributes, is
 
   let baseRound = 5;
   switch (background) {
+    case 'high_school': baseRound = 1; break;
     case 'college_star': baseRound = 1; break;
     case 'late_round': baseRound = 6; break;
     case 'undrafted': baseRound = 15; break; // UDFA tryout
     case 'international': baseRound = 0; break; // International signing
   }
 
-  // Better attributes → earlier pick
+  // Better attributes -> earlier pick
   const attrBonus = Math.floor((total - 250) / 30);
   const round = Math.max(1, Math.min(20, baseRound - attrBonus));
   const pick = Math.floor(Math.random() * 30) + 1;
@@ -67,6 +77,9 @@ function simulateDraft(background: PlayerBackground, attrs: PlayerAttributes, is
   const team = ALL_TEAMS[teamIdx];
 
   const descriptions: Record<PlayerBackground, string> = {
+    high_school: round <= 2
+      ? `With the ${pick}${pick === 1 ? 'st' : pick === 2 ? 'nd' : pick === 3 ? 'rd' : 'th'} pick in round ${round}, the ${team.city} ${team.name} select you straight out of high school! The youngest pick in the draft — the sky's the limit.`
+      : `The ${team.city} ${team.name} take a gamble on you in round ${round}, pick ${pick}. Straight from prom to the pros — raw talent with everything to prove.`,
     college_star: round === 1
       ? `With the ${pick}${pick === 1 ? 'st' : pick === 2 ? 'nd' : pick === 3 ? 'rd' : 'th'} pick in the first round, the ${team.city} ${team.name} select you!`
       : `The ${team.city} ${team.name} select you in round ${round}, pick ${pick}. Not the first round — you've got something to prove.`,
@@ -85,47 +98,95 @@ function simulateDraft(background: PlayerBackground, attrs: PlayerAttributes, is
   };
 }
 
-function AttributeSlider({ label, value, onChange, min = 20, max = 80, color = 'gold' }: {
-  label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; color?: string;
+// Helper: format a camelCase trait name for display
+function formatTraitName(trait: string): string {
+  return trait
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, s => s.toUpperCase())
+    .trim();
+}
+
+// +/- button attribute control
+function AttributeControl({ label, value, onChange, min = 20, max = 80, pointsRemaining, disabled }: {
+  label: string; value: number; onChange: (v: number) => void;
+  min?: number; max?: number; pointsRemaining: number; disabled?: boolean;
 }) {
   const grade = value >= 70 ? 'A' : value >= 60 ? 'B' : value >= 50 ? 'C' : value >= 40 ? 'D' : 'F';
   const gradeColor = value >= 70 ? 'text-gold' : value >= 60 ? 'text-green-light' : value >= 50 ? 'text-cream' : value >= 40 ? 'text-orange-400' : 'text-red-400';
+  const canDecrease = value > min && !disabled;
+  const canIncrease = value < max && pointsRemaining > 0 && !disabled;
+
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 py-1.5">
       <span className="font-mono text-xs text-cream-dim w-20 shrink-0 uppercase tracking-wider">{label}</span>
-      <div className="flex-1 relative">
-        <div className="h-2 rounded-full bg-navy-lighter overflow-hidden">
-          <div className="h-full rounded-full bg-gold/60 transition-all" style={{ width: `${((value - min) / (max - min)) * 100}%` }} />
-        </div>
-        <input
-          type="range" min={min} max={max} value={value}
-          onChange={e => onChange(Number(e.target.value))}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-      </div>
-      <span className="font-mono text-sm text-cream w-8 text-right">{value}</span>
+      <button
+        onClick={() => canDecrease && onChange(value - 1)}
+        disabled={!canDecrease}
+        className={cn(
+          'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
+          canDecrease
+            ? 'border-cream-dim/30 text-cream hover:bg-navy-lighter hover:border-gold/50 cursor-pointer'
+            : 'border-navy-lighter/30 text-cream-dim/20 cursor-not-allowed'
+        )}
+      >
+        -
+      </button>
+      <span className="font-mono text-lg text-cream w-10 text-center font-bold">{value}</span>
+      <button
+        onClick={() => canIncrease && onChange(value + 1)}
+        disabled={!canIncrease}
+        className={cn(
+          'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
+          canIncrease
+            ? 'border-cream-dim/30 text-cream hover:bg-navy-lighter hover:border-gold/50 cursor-pointer'
+            : 'border-navy-lighter/30 text-cream-dim/20 cursor-not-allowed'
+        )}
+      >
+        +
+      </button>
+      <span className="font-mono text-[10px] text-cream-dim/40 w-8 text-center">1 pt</span>
       <span className={cn('font-mono text-xs w-4 font-bold', gradeColor)}>{grade}</span>
     </div>
   );
 }
 
-function VelocitySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function VelocityControl({ value, onChange, pointsRemaining, disabled }: {
+  value: number; onChange: (v: number) => void; pointsRemaining: number; disabled?: boolean;
+}) {
   const label = value >= 97 ? 'Elite' : value >= 94 ? 'Plus' : value >= 91 ? 'Avg' : value >= 87 ? 'Below' : 'Soft';
   const color = value >= 97 ? 'text-gold' : value >= 94 ? 'text-green-light' : value >= 91 ? 'text-cream' : 'text-orange-400';
+  const canDecrease = value > 78 && !disabled;
+  const canIncrease = value < 102 && pointsRemaining > 0 && !disabled;
+
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 py-1.5">
       <span className="font-mono text-xs text-cream-dim w-20 shrink-0 uppercase tracking-wider">Velocity</span>
-      <div className="flex-1 relative">
-        <div className="h-2 rounded-full bg-navy-lighter overflow-hidden">
-          <div className="h-full rounded-full bg-red-400/60 transition-all" style={{ width: `${((value - 78) / (102 - 78)) * 100}%` }} />
-        </div>
-        <input
-          type="range" min={78} max={102} value={value}
-          onChange={e => onChange(Number(e.target.value))}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-      </div>
-      <span className="font-mono text-sm text-cream w-12 text-right">{value} mph</span>
+      <button
+        onClick={() => canDecrease && onChange(value - 1)}
+        disabled={!canDecrease}
+        className={cn(
+          'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
+          canDecrease
+            ? 'border-cream-dim/30 text-cream hover:bg-navy-lighter hover:border-gold/50 cursor-pointer'
+            : 'border-navy-lighter/30 text-cream-dim/20 cursor-not-allowed'
+        )}
+      >
+        -
+      </button>
+      <span className="font-mono text-lg text-cream w-14 text-center font-bold">{value} mph</span>
+      <button
+        onClick={() => canIncrease && onChange(value + 1)}
+        disabled={!canIncrease}
+        className={cn(
+          'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
+          canIncrease
+            ? 'border-cream-dim/30 text-cream hover:bg-navy-lighter hover:border-gold/50 cursor-pointer'
+            : 'border-navy-lighter/30 text-cream-dim/20 cursor-not-allowed'
+        )}
+      >
+        +
+      </button>
+      <span className="font-mono text-[10px] text-cream-dim/40 w-8 text-center">1 pt</span>
       <span className={cn('font-mono text-xs w-10 font-bold', color)}>{label}</span>
     </div>
   );
@@ -147,13 +208,46 @@ export function DynastySetupPage() {
   });
 
   const isPitcher = character.position === 'P';
+
+  // Compute combined attrBonus from selected archetypes
+  const combinedAttrBonus = useMemo(() => {
+    const bonus: AttrBonus = {};
+    for (const archId of character.archetypes) {
+      const arch = CHARACTER_ARCHETYPES.find(a => a.id === archId);
+      if (!arch) continue;
+      for (const [key, val] of Object.entries(arch.attrBonus)) {
+        const k = key as keyof AttrBonus;
+        bonus[k] = (bonus[k] || 0) + (val as number);
+      }
+    }
+    return bonus;
+  }, [character.archetypes]);
+
+  // Effective max for each attribute (base 80 + archetype bonus, clamped to 20-99)
+  const getEffectiveMax = (attr: keyof AttrBonus): number => {
+    const bonus = combinedAttrBonus[attr] || 0;
+    return Math.max(20, Math.min(99, 80 + bonus));
+  };
+
+  // Effective min stays at 20 always (bonus only raises ceiling)
+  const getEffectiveMin = (attr: keyof AttrBonus): number => {
+    const bonus = combinedAttrBonus[attr] || 0;
+    // Negative bonus lowers ceiling, not min
+    if (bonus < 0) return 20;
+    return 20;
+  };
+
+  const bgConfig = BACKGROUND_CONFIG[character.background];
+
   const totalPoints = useMemo(() => {
     if (isPitcher) return attrs.stuff + attrs.control + attrs.stamina + Math.round(attrs.velocity / 2) + attrs.fielding;
     return attrs.contact + attrs.power + attrs.speed + attrs.fielding + attrs.arm + attrs.eye;
   }, [attrs, isPitcher]);
-  const pointsMax = isPitcher ? PITCHER_MAX_POINTS : MAX_POINTS;
+  const pointsMax = (isPitcher ? PITCHER_MAX_POINTS : MAX_POINTS) + bgConfig.bonusPoints;
   const pointsRemaining = pointsMax - totalPoints;
   const isOverBudget = pointsRemaining < 0;
+
+  const overallRating = Math.round(totalPoints / (isPitcher ? 5 : 6));
 
   const handleModeSelect = (m: DynastyMode) => {
     setMode(m);
@@ -288,16 +382,23 @@ export function DynastySetupPage() {
           <Panel title="Background">
             <div className="grid grid-cols-2 gap-3">
               {([
-                { id: 'college_star', label: 'College Star', desc: 'Top prospect — expected 1st round pick' },
-                { id: 'late_round', label: 'Late-Round Pick', desc: 'Chip on your shoulder — rounds 3-10' },
-                { id: 'undrafted', label: 'Undrafted Free Agent', desc: 'Nobody drafted you — earn a tryout' },
-                { id: 'international', label: 'International Signee', desc: 'Global talent — signed out of intl pool' },
-              ] as { id: PlayerBackground; label: string; desc: string }[]).map(bg => (
+                { id: 'high_school' as PlayerBackground, label: 'High School Phenom', desc: 'Straight out of high school — raw but sky-high potential', age: 18, bonus: '+10 bonus pts' },
+                { id: 'college_star' as PlayerBackground, label: 'College Star', desc: 'Top prospect — expected 1st round pick', age: 22, bonus: '' },
+                { id: 'late_round' as PlayerBackground, label: 'Late-Round Pick', desc: 'Chip on your shoulder — rounds 3-10', age: 23, bonus: '' },
+                { id: 'undrafted' as PlayerBackground, label: 'Undrafted Free Agent', desc: 'Nobody drafted you — earn a tryout', age: 24, bonus: '' },
+                { id: 'international' as PlayerBackground, label: 'International Signee', desc: 'Global talent — signed out of intl pool', age: 20, bonus: '+5 bonus pts' },
+              ]).map(bg => (
                 <button key={bg.id} onClick={() => setCharacter(prev => ({ ...prev, background: bg.id }))}
                   className={cn('text-left rounded-lg border p-3 transition-all cursor-pointer',
                     character.background === bg.id ? 'border-gold bg-gold/10' : 'border-navy-lighter hover:border-gold/30')}>
                   <div className="font-mono text-sm text-cream">{bg.label}</div>
                   <div className="font-mono text-xs text-cream-dim/60 mt-0.5">{bg.desc}</div>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="font-mono text-[10px] text-cream-dim/40">Age {bg.age}</span>
+                    {bg.bonus && (
+                      <span className="font-mono text-[10px] text-green-light">{bg.bonus}</span>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
@@ -308,13 +409,59 @@ export function DynastySetupPage() {
               {CHARACTER_ARCHETYPES.map(arch => {
                 const selected = character.archetypes.includes(arch.id);
                 const disabled = !selected && character.archetypes.length >= 3;
+
+                // Build pros/cons from traitEffects
+                const pros: string[] = [];
+                const cons: string[] = [];
+                for (const [trait, effect] of Object.entries(arch.traitEffects)) {
+                  if (!effect) continue;
+                  const name = formatTraitName(trait);
+                  if (effect.max !== undefined && effect.max < 50) {
+                    cons.push(`${name} ${effect.min}-${effect.max}`);
+                  } else {
+                    pros.push(`${name} ${effect.min}+`);
+                  }
+                }
+
+                // Build attr bonus/penalty strings
+                const attrPros: string[] = [];
+                const attrCons: string[] = [];
+                for (const [key, val] of Object.entries(arch.attrBonus)) {
+                  const name = key.charAt(0).toUpperCase() + key.slice(1);
+                  if ((val as number) > 0) {
+                    attrPros.push(`+${val} max ${name}`);
+                  } else if ((val as number) < 0) {
+                    attrCons.push(`${val} max ${name}`);
+                  }
+                }
+
                 return (
                   <button key={arch.id} onClick={() => !disabled && handleArchetypeToggle(arch.id)}
                     className={cn('text-left rounded-lg border px-3 py-2 transition-all',
                       selected ? 'border-gold bg-gold/15 text-gold' :
                       disabled ? 'border-navy-lighter/30 text-cream-dim/30 cursor-not-allowed' :
                       'border-navy-lighter hover:border-gold/30 text-cream cursor-pointer')}>
-                    <span className="font-mono text-sm">{arch.label}</span>
+                    <span className="font-mono text-sm font-bold">{arch.label}</span>
+                    {pros.length > 0 && (
+                      <div className="font-mono text-[10px] text-green-light mt-0.5">
+                        +{pros.join(' · +')}
+                      </div>
+                    )}
+                    {cons.length > 0 && (
+                      <div className="font-mono text-[10px] text-red-400 mt-0.5">
+                        -{cons.join(' · -')}
+                      </div>
+                    )}
+                    {(attrPros.length > 0 || attrCons.length > 0) && (
+                      <div className="flex flex-wrap gap-x-2 mt-0.5">
+                        {attrPros.map(s => (
+                          <span key={s} className="font-mono text-[10px] text-green-light">{s}</span>
+                        ))}
+                        {attrCons.map(s => (
+                          <span key={s} className="font-mono text-[10px] text-red-400">{s}</span>
+                        ))}
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -334,30 +481,46 @@ export function DynastySetupPage() {
       {step === 'attributes' && (
         <div className="space-y-6">
           <Panel title={isPitcher ? 'Pitching Attributes' : 'Hitting Attributes'}>
-            <div className="mb-3 flex items-center justify-between">
-              <span className="font-mono text-xs text-cream-dim/50">Distribute your ability points</span>
-              <span className={cn('font-mono text-sm font-bold', isOverBudget ? 'text-red-400' : pointsRemaining < 20 ? 'text-gold' : 'text-green-light')}>
-                {pointsRemaining} pts remaining
-              </span>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <span className="font-mono text-xs text-cream-dim/50">Distribute your ability points</span>
+                {bgConfig.bonusPoints > 0 && (
+                  <span className="font-mono text-xs text-green-light ml-2">(+{bgConfig.bonusPoints} from {character.background === 'high_school' ? 'High School' : 'International'} background)</span>
+                )}
+              </div>
+              <div className="text-right">
+                <span className={cn(
+                  'font-mono text-xl font-bold',
+                  isOverBudget ? 'text-red-400' : pointsRemaining >= 20 ? 'text-green-light' : pointsRemaining >= 5 ? 'text-gold' : 'text-red-400'
+                )}>
+                  {pointsRemaining} pts remaining
+                </span>
+              </div>
             </div>
 
-            <div className="space-y-3">
+            {pointsRemaining === 0 && !isOverBudget && (
+              <div className="mb-3 font-mono text-xs text-cream-dim/50 bg-navy-lighter/30 border border-navy-lighter rounded px-3 py-2 text-center">
+                Decrease an attribute to free up points
+              </div>
+            )}
+
+            <div className="space-y-1">
               {isPitcher ? (
                 <>
-                  <AttributeSlider label="Stuff" value={attrs.stuff} onChange={v => handleAttr('stuff', v)} />
-                  <AttributeSlider label="Control" value={attrs.control} onChange={v => handleAttr('control', v)} />
-                  <AttributeSlider label="Stamina" value={attrs.stamina} onChange={v => handleAttr('stamina', v)} />
-                  <VelocitySlider value={attrs.velocity} onChange={v => handleAttr('velocity', v)} />
-                  <AttributeSlider label="Fielding" value={attrs.fielding} onChange={v => handleAttr('fielding', v)} />
+                  <AttributeControl label="Stuff" value={attrs.stuff} onChange={v => handleAttr('stuff', v)} min={getEffectiveMin('stuff')} max={getEffectiveMax('stuff')} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Control" value={attrs.control} onChange={v => handleAttr('control', v)} min={getEffectiveMin('control')} max={getEffectiveMax('control')} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Stamina" value={attrs.stamina} onChange={v => handleAttr('stamina', v)} min={getEffectiveMin('stamina')} max={getEffectiveMax('stamina')} pointsRemaining={pointsRemaining} />
+                  <VelocityControl value={attrs.velocity} onChange={v => handleAttr('velocity', v)} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Fielding" value={attrs.fielding} onChange={v => handleAttr('fielding', v)} min={getEffectiveMin('fielding')} max={getEffectiveMax('fielding')} pointsRemaining={pointsRemaining} />
                 </>
               ) : (
                 <>
-                  <AttributeSlider label="Contact" value={attrs.contact} onChange={v => handleAttr('contact', v)} />
-                  <AttributeSlider label="Power" value={attrs.power} onChange={v => handleAttr('power', v)} />
-                  <AttributeSlider label="Speed" value={attrs.speed} onChange={v => handleAttr('speed', v)} />
-                  <AttributeSlider label="Fielding" value={attrs.fielding} onChange={v => handleAttr('fielding', v)} />
-                  <AttributeSlider label="Arm" value={attrs.arm} onChange={v => handleAttr('arm', v)} />
-                  <AttributeSlider label="Eye" value={attrs.eye} onChange={v => handleAttr('eye', v)} />
+                  <AttributeControl label="Contact" value={attrs.contact} onChange={v => handleAttr('contact', v)} min={getEffectiveMin('contact')} max={getEffectiveMax('contact')} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Power" value={attrs.power} onChange={v => handleAttr('power', v)} min={getEffectiveMin('power')} max={getEffectiveMax('power')} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Speed" value={attrs.speed} onChange={v => handleAttr('speed', v)} min={getEffectiveMin('speed')} max={getEffectiveMax('speed')} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Fielding" value={attrs.fielding} onChange={v => handleAttr('fielding', v)} min={getEffectiveMin('fielding')} max={getEffectiveMax('fielding')} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Arm" value={attrs.arm} onChange={v => handleAttr('arm', v)} min={getEffectiveMin('arm')} max={getEffectiveMax('arm')} pointsRemaining={pointsRemaining} />
+                  <AttributeControl label="Eye" value={attrs.eye} onChange={v => handleAttr('eye', v)} min={getEffectiveMin('eye')} max={getEffectiveMax('eye')} pointsRemaining={pointsRemaining} />
                 </>
               )}
             </div>
@@ -370,6 +533,19 @@ export function DynastySetupPage() {
           </Panel>
 
           <Panel title="Scouting Report Preview">
+            {/* Overall Rating — prominent */}
+            <div className="text-center mb-4">
+              <div className="text-[10px] font-mono text-cream-dim/50 uppercase tracking-widest mb-1">Overall</div>
+              <div className={cn(
+                'font-display text-5xl text-gold font-bold',
+              )}>
+                {overallRating}
+              </div>
+              <div className="font-mono text-xs text-cream-dim/40 mt-1">
+                Age {bgConfig.age} &middot; {character.position} &middot; {character.background.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+              </div>
+            </div>
+
             <div className="grid grid-cols-3 gap-3 text-center font-mono">
               {(isPitcher ? [
                 { label: 'Stuff', val: attrs.stuff }, { label: 'Control', val: attrs.control },
@@ -387,10 +563,6 @@ export function DynastySetupPage() {
                   )}>{attr.val}</div>
                 </div>
               ))}
-              <div className="bg-navy-lighter/30 rounded p-2">
-                <div className="text-[10px] text-cream-dim/50 uppercase">Overall</div>
-                <div className="text-lg font-bold text-gold">{Math.round(totalPoints / (isPitcher ? 5 : 6))}</div>
-              </div>
             </div>
           </Panel>
 
@@ -475,7 +647,7 @@ export function DynastySetupPage() {
             <div className="max-w-lg mx-auto">
               <Panel>
                 <p className="text-cream text-sm leading-relaxed text-center italic">
-                  "{draftResult.description}"
+                  &ldquo;{draftResult.description}&rdquo;
                 </p>
               </Panel>
             </div>
@@ -485,7 +657,7 @@ export function DynastySetupPage() {
                 Re-roll Draft
               </Button>
               <Button onClick={handleStart} className="bg-gradient-to-r from-gold/80 to-gold border-gold">
-                Accept & Begin Career
+                Accept &amp; Begin Career
               </Button>
             </div>
           </div>
