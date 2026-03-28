@@ -733,7 +733,232 @@ These aren't punishments. They're REAL. And the narrative journal captures them 
 
 ---
 
-## 16. Success Criteria (Final)
+## 16. The Daily Grind Engine (Post-Baseball Gameplay)
+
+The game doesn't end when baseball ends. It EVOLVES. Your daily schedule becomes the gameplay.
+
+### The Week Planner
+
+At 35+, whether retired from MLB or grinding a comeback, you build your week:
+
+| Time Slot | Options | Energy Cost | What It Builds |
+|-----------|---------|------------|---------------|
+| 4:30-5:30 AM | Early rise + meditation / Sleep in | -1 energy, +1 discipline / +1 recovery | Mental toughness, work ethic rep |
+| 5:30-7:00 AM | Workout / Yoga / Run / BJJ | -2 to -3 energy | Physical maintenance, sport skills |
+| 7:00-5:00 PM | Day job (multiple options) | Time, -2 energy | Income, career progression, work relationships |
+| 5:00-7:00 PM | Sport practice / Family time / Networking | -2 energy | Competition, bonds, connections |
+| 7:00-9:00 PM | Second workout / Family / Rest / Study | -1 to -2 energy | Double-day bonus OR relationship maintenance |
+| 9:00-10:00 PM | Wind down | — | Recovery prep |
+
+**Energy system:** You have 10 energy per day. Each activity costs energy. Two-a-days cost 5-6 total. Three-a-days cost 7-8 — doable, but you're running on fumes the next day. Sleep recovers 8 energy. Bad sleep (stress, overtraining) recovers only 5-6.
+
+**The trade-off is ALWAYS time:** Train more → less family time → wife gets upset. Work overtime → more money → less training → body deteriorates. Skip work to train → income drops → financial stress → marriage strain.
+
+**Two-a-days and three-a-days:**
+- Day 1: Morning workout + evening rugby practice = two-a-day. Energy cost 5.
+- Day 2: Morning run + afternoon jiu-jitsu + evening sprint work = three-a-day. Energy cost 8. Tomorrow you're wrecked.
+- Sustaining this for weeks: Work Ethic must be 65+. Discipline personality trait matters. Body maintenance (yoga, nutrition) prevents breakdown.
+- The game rewards the grind — but only if you've built the foundation to sustain it.
+
+### Day Jobs
+
+Your career doesn't stop. What you do 9-to-5 matters:
+
+| Job | Income | Energy Cost | Perks | Requirements |
+|-----|--------|------------|-------|-------------|
+| Youth baseball coach | Low ($40K) | Low | Mentor relationships, stays in the game | Baseball IQ 50+ |
+| High school coach | Medium ($55K) | Medium | Prospect discovery, community rep | Leadership 55+, connections |
+| Scout (part-time) | Medium ($60K) | Low-Medium | Uses scouting intelligence, travel | Baseball IQ 60+, org connection |
+| Broadcaster (local) | Medium ($70K) | Medium | Media rep, stays visible | Charisma 60+ |
+| Broadcaster (national) | High ($150K+) | High | Fame, endorsements, media empire | Charisma 70+, MLB career required |
+| Business owner | Variable | High | Wealth building, independence | Financial literacy, capital |
+| Personal trainer | Medium ($50K) | Medium | Stays fit, helps others, flexible schedule | Fitness knowledge |
+| Front office (assistant) | Medium ($80K) | High | GM pipeline, insider knowledge | Baseball IQ 65+, connections |
+| Real estate | Variable | Medium | Wealth building | Capital, charisma |
+| "Figuring it out" | None | Low | Free time to train, but no income | Savings only |
+
+The day job interacts with EVERYTHING:
+- Coach discovers a prospect → scouting intelligence event
+- Broadcaster interviews your old rival → relationship event
+- Business fails → financial crisis → affects training budget
+- Front office job → inside track to GM role
+
+### Holding a Job + Competing
+
+The ultimate achievement: maintain a career AND compete at a high level.
+
+A 42-year-old who wakes up at 4:30 AM, works a full day, trains twice, and still outperforms college kids on the rugby pitch — that's not just a stat line. That's a CHARACTER who's been built through 30 years of decisions.
+
+The game tracks this with a **Life Balance Score:**
+- Physical: Are you training enough to compete?
+- Professional: Are you meeting job responsibilities?
+- Relationships: Are you present for the people who matter?
+- Mental: Are you sleeping enough, managing stress?
+
+All four need to stay above 40% or consequences cascade. The GRIND is maintaining all four simultaneously. Most people let one or two slide. The ones who keep all four high? They're the legends.
+
+---
+
+## 17. The Second Career Competition System
+
+After baseball, competitive fire doesn't die. It finds a new outlet.
+
+### Available Sports (unlocked based on geography, personality, age)
+
+| Sport | Key Attributes | Progression | Big Game Moments |
+|-------|---------------|-------------|-----------------|
+| **Rugby** | Speed, Power, Toughness | Club → competitive → national pathway | Championship match, national trial |
+| **Softball** | Contact, Power | Beer league → competitive → senior tournaments | Tournament championship, HR derby |
+| **Boxing/MMA** | Power, Speed, Composure | Gym → amateur bouts → competitive circuit | First fight, title bout |
+| **Golf** | Eye, Composure | Casual → club championship → senior tour | Club championship, qualifying tournament |
+| **Jiu-jitsu** | Flexibility, IQ, Composure | White → blue → purple → brown → black belt | Belt promotion, tournament |
+| **Marathon/Triathlon** | Stamina, Work Ethic | Training → local races → qualifying events | Race day, qualifying attempt |
+| **CrossFit** | Power, Stamina, Speed | Box → local comp → regionals → masters | Competition day |
+
+### Attribute Transfer
+
+Baseball skills partially translate:
+- Speed → rugby wings, track events
+- Power → rugby forward, boxing, softball
+- Hand-eye → golf, softball, boxing
+- Composure → any high-pressure competition
+- Work ethic → EVERYTHING
+- Flexibility (from yoga) → jiu-jitsu, longevity
+
+But you start at the BOTTOM in the new sport. The humility is real:
+
+> **FIRST DAY EVENT: Jiu-Jitsu**
+> "You walked into the gym in your new white belt. A 22-year-old purple belt submitted you in 30 seconds. Then did it again. And again.
+>
+> For the first time in 20 years, you were the worst person in the room.
+>
+> And somehow... it felt amazing."
+>
+> Choice:
+> - "I love this. I'm coming back tomorrow." (New sport unlocked, commitment +)
+> - "This isn't for me." (Try something else)
+> - "I'm going to get good at this." (Obsession risk — overtraining possible)
+
+### Mini-Progression Per Sport
+
+Each sport has:
+- Skill ratings (separate from baseball, start low)
+- Ranking/belt system with milestones
+- NPC relationships (training partners, coaches, rivals)
+- Big Game Moments (tournament finals, belt tests, championship matches)
+- Decision events (push through injury? Enter a higher division? Travel for competition?)
+
+The progression creates NEW stories layered on top of the baseball story. Your jiu-jitsu coach doesn't care about your MVP awards. Your rugby teammates know you as "the old guy who's weirdly fast."
+
+### Competing Against Younger Athletes
+
+At 40+, you're not the most athletic person anymore. But you're the smartest.
+
+The game models this:
+- Physical tools decline (speed, power slow down)
+- Mental tools INCREASE (composure, IQ, leadership compound)
+- Experience creates shortcuts: you read the play before it happens
+- Your body can sustain the grind IF you've invested (yoga, nutrition, sports science)
+
+The joy of scoring a try against a 22-year-old who's faster than you — because you read his angle and cut back — that's a Big Game Moment that triggers a life event:
+
+> "The college kid had 3 steps on you. Everyone saw it. But you read the angle, planted your foot, and somehow got there first. The try went to the old man. Your teammates mobbed you. The college kids just stared.
+>
+> Your phone buzzed after the game. Your daughter texted: 'Mom showed me the video. You're insane. 😂💪'"
+
+---
+
+## 18. Relationships Are The Game
+
+By year 30+, the reason you keep playing isn't stats or competition. It's PEOPLE.
+
+### The Phone
+
+Your phone is the relationship hub. Throughout every day, messages arrive from NPCs you've known across your life:
+
+**Types of messages:**
+- **Check-ins:** "How you doing, man? Haven't talked in a while." (Relationship maintenance)
+- **News:** "Did you see Danny got the coaching job at State?" (World is alive)
+- **Advice:** "My son wants to quit travel ball. What should I tell him?" (You're the mentor now)
+- **Invitations:** "Reunion game this Saturday — the old travel ball team. You in?" (Event trigger)
+- **Crisis:** "I need to talk. Things aren't good at home." (Deep relationship moment)
+- **Celebration:** "I GOT THE JOB! Thanks for the recommendation." (Your influence matters)
+- **From your kids:** "Dad, I made the varsity team!!" (Generational payoff)
+
+Each message is a choice: respond or ignore. Respond = relationship maintained. Ignore = slow decay. But you can't respond to everyone — there are only so many hours.
+
+### The Generational Payoff
+
+Your KIDS inherit your world:
+- Son wants to play baseball → do you push him (tiger parent) or let him find his way?
+- Daughter makes varsity softball → do you coach her team or just be a supportive dad?
+- Nephew gets drafted → he calls you for advice. Your relationship with your brother determines whether he listens.
+- Your kid's travel ball coach is terrible → do you intervene (politics!) or let it play out?
+
+**The ultimate moment:** Your child gets drafted. The narrative journal writes:
+
+> "With the 47th pick in the 2058 MLB Draft, the Nashville Sounds select... Maria Burns, shortstop, University of Texas. In the living room in Austin, Will Burns watched his daughter's name appear on the TV screen and felt something he hadn't felt since his own draft day 36 years ago. She turned to him with tears in her eyes. 'We did it, Dad.' He couldn't speak."
+
+### The Mentor Tree
+
+Everyone you've helped remembers:
+- The rookie you mentored at 28 is now a manager. He names you as his biggest influence.
+- The prospect Danny told you about? You scouted him. He credits you in his Hall of Fame speech.
+- Your jiu-jitsu white belts are now purple belts. They call you "coach."
+- The high school kid you coached is now in the minors. He texts you after every game.
+
+Each mentoring relationship compounds your **legacy score** in the prestige engine. You don't need championships for a great legacy — you need IMPACT.
+
+### The Legacy Web
+
+By your 50s, your life is a web of hundreds of relationships across decades:
+
+- **Family:** Parents (aging), siblings, spouse, kids (growing up), nieces/nephews, grandkids
+- **Baseball:** Former teammates (scattered across baseball), front office contacts, scouts, coaches
+- **Second sport:** Rugby/BJJ/golf mates, coaches, training partners, rivals turned friends
+- **Community:** People in your city who know you as a local legend
+- **Protégés:** Every person whose career you influenced
+
+The narrative journal at age 52:
+
+> "At 52, Will Burns was no longer the fastest guy on the rugby pitch. But he was the most respected. The college kids called him 'Unc' and asked about the MLB days between drills. On Tuesday nights he taught jiu-jitsu to beginners — mostly parents from his daughter's school. On weekends he scouted for the Thunderhawks, the team he'd played for and would one day own. His phone rang constantly. Danny Reeves about another prospect. His mom reminding him to eat. His wife asking if he'd be home for dinner. His daughter FaceTiming from college to show him her dorm. At 52, Will Burns had never been busier. And never been happier."
+
+---
+
+## 19. Success Criteria (Final)
+
+1. Player can start at age 12 and play to owner (40+ year arc)
+2. Every stage is skippable (sim in seconds) or playable
+3. Big Game Moments feel impactful — the outcome matters
+4. Decision events create genuine dilemmas with cascading consequences
+5. A high school → college → MLB career feels different from HS → draft → minors
+6. The same player played twice generates a different story each time
+7. Personality traits formed in Little League affect decisions available in the MLB
+8. Total playthrough time: 30 min (all sim) to 10+ hours (play everything)
+9. Family members are persistent NPCs with their own stories
+10. Geography meaningfully affects development path and story
+11. Financial decisions from childhood compound across the entire career
+12. The signing bonus moment makes the player emotional
+13. Childhood rivals and friends appear throughout the career
+14. The narrative journal produces a unique, readable biography
+15. Overtraining has real consequences (burnout, relationship decay, injury)
+16. Players who invest in their bodies can play into their late 40s
+17. Comeback arc works: injury → rehab → international ball → minors → MLB return
+18. Enhancement spectrum creates real moral dilemmas gated by money and desperation
+19. PED temptation scales with career stage and personal circumstances
+20. The same injury at different wealth levels has completely different recovery paths
+21. Politics system: being passed over despite merit triggers real emotional events
+22. Connections matter: talent alone isn't always enough
+23. Identity crisis after retirement is a real, felt experience — not just a menu
+24. The void phase visually changes the game (desaturated, quiet, empty)
+25. Not every story has a happy ending — the game allows ugly, honest conclusions
+26. Post-baseball daily grind is playable: build your week, manage energy, maintain all four pillars
+27. Second sport competition has its own progression, NPCs, and Big Game Moments
+28. Relationships are the primary reason to keep playing past year 20
+29. The phone system makes NPCs feel alive — they text, call, and need you
+30. Your children can follow in your footsteps — generational payoff
+31. The mentor tree tracks everyone you've influenced across your career
+32. A 42-year-old outperforming college kids is a playable, celebratable moment
 
 1. Player can start at age 12 and play to owner (40+ year arc)
 2. Every stage is skippable (sim in seconds) or playable
