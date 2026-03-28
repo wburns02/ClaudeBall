@@ -143,11 +143,18 @@ test('Dynasty Living Crawler: Full lifecycle', async ({ page }) => {
   await page.waitForTimeout(2000);
   const sim30 = page.locator('main button:has-text("Sim 30")').first();
   if (await sim30.count() > 0) {
-    await sim30.click();
+    await sim30.click({ force: true });
     await page.waitForTimeout(5000);
-    for (const text of ['View Results', 'Dismiss', '✕ Dismiss', 'Continue', 'OK', 'Close']) {
-      const btn = page.locator(`button:has-text("${text}")`).first();
-      if (await btn.count() > 0) { await btn.click(); await page.waitForTimeout(300); }
+    for (let d = 0; d < 3; d++) {
+      await page.evaluate(() => {
+        for (const text of ['View Results', 'Dismiss', '✕ Dismiss', 'Continue', 'OK', 'Close']) {
+          const btn = [...document.querySelectorAll('button')].find(b => b.textContent?.includes(text));
+          if (btn) (btn as HTMLButtonElement).click();
+        }
+        const overlay = document.querySelector('.fixed.inset-0');
+        if (overlay) { const btn = overlay.querySelector('button'); if (btn) (btn as HTMLButtonElement).click(); }
+      });
+      await page.waitForTimeout(500);
     }
   }
 
@@ -161,11 +168,18 @@ test('Dynasty Living Crawler: Full lifecycle', async ({ page }) => {
     await page.waitForTimeout(1500);
     const sim = page.locator('main button:has-text("Sim 30")').first();
     if (await sim.count() > 0) {
-      await sim.click();
+      await sim.click({ force: true });
       await page.waitForTimeout(4000);
-      for (const text of ['View Results', 'Dismiss', '✕ Dismiss', 'Continue', 'OK']) {
-        const btn = page.locator(`button:has-text("${text}")`).first();
-        if (await btn.count() > 0) { await btn.click(); await page.waitForTimeout(300); }
+      for (let d = 0; d < 3; d++) {
+        await page.evaluate(() => {
+          for (const text of ['View Results', 'Dismiss', '✕ Dismiss', 'Continue', 'OK', 'Close']) {
+            const btn = [...document.querySelectorAll('button')].find(b => b.textContent?.includes(text));
+            if (btn) (btn as HTMLButtonElement).click();
+          }
+          const overlay = document.querySelector('.fixed.inset-0');
+          if (overlay) { const btn = overlay.querySelector('button'); if (btn) (btn as HTMLButtonElement).click(); }
+        });
+        await page.waitForTimeout(500);
       }
     }
   }
