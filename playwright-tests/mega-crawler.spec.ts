@@ -142,19 +142,25 @@ async function simDays(page: Page, days: number) {
   for (let i = 0; i < batches; i++) {
     const sim30 = page.locator('main button:has-text("Sim 30")').first();
     if (await sim30.count() > 0) {
-      await sim30.click();
+      await sim30.click({ force: true });
       await page.waitForTimeout(4000);
-      // Dismiss overlays
+      // Dismiss ALL overlays via DOM — avoids Playwright interception issues
       for (let d = 0; d < 5; d++) {
-        for (const text of ['View Results', 'Dismiss', '\u2715 Dismiss', 'Continue', 'OK', 'Close']) {
-          const btn = page.locator(`button:has-text("${text}")`).first();
-          if (await btn.count() > 0) { await btn.click(); await page.waitForTimeout(300); }
-        }
-        const overlay = page.locator('.fixed.inset-0.bg-black').first();
-        if (await overlay.count() > 0) {
-          const closeBtn = overlay.locator('button').first();
-          if (await closeBtn.count() > 0) { await closeBtn.click(); await page.waitForTimeout(300); }
-        }
+        await page.evaluate(() => {
+          const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+          const dismissTexts = ['View Results', 'Dismiss', '✕ Dismiss', 'Continue', 'OK', 'Close'];
+          for (const text of dismissTexts) {
+            const btn = [...document.querySelectorAll('button')].find(b => b.textContent?.includes(text));
+            if (btn) { (btn as HTMLButtonElement).click(); }
+          }
+          // Also dismiss fixed overlays
+          const overlay = document.querySelector('.fixed.inset-0');
+          if (overlay) {
+            const btn = overlay.querySelector('button');
+            if (btn) (btn as HTMLButtonElement).click();
+          }
+        });
+        await page.waitForTimeout(500);
       }
     }
     await page.waitForTimeout(500);

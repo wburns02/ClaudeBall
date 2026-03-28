@@ -2,7 +2,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './playwright-tests',
+  testDir: '.',
   timeout: 900000, // 15 min per test
   retries: 0,
   reporter: [['list'], ['json', { outputFile: 'crawler-results.json' }]],
