@@ -1030,7 +1030,9 @@ export const useFranchiseStore = create<FranchiseState>()(
     return result;
   },
 
-  // Morale system — updates moraleStore based on current season state
+  // Morale system — updates moraleStore based on current season state.
+  // Catches up all unprocessed days so morale accumulates properly when
+  // simming multiple days at once.
   refreshMorale: () => {
     const { engine, userTeamId, season } = get();
     if (!engine || !userTeamId || !season) return;
@@ -1041,11 +1043,22 @@ export const useFranchiseStore = create<FranchiseState>()(
 
     moraleStore.initMorales(players);
 
+    const currentDay = season.currentDay;
+    const lastProcessed = moraleStore.lastProcessedDay;
+
+    // Nothing new to process
+    if (currentDay <= lastProcessed) return;
+
+    // Determine how many days to catch up (cap at 200 to avoid perf issues)
+    const startDay = Math.max(lastProcessed + 1, 1);
+    const daysToProcess = Math.min(currentDay - startDay + 1, 200);
+
     const record = season.standings.getRecord(userTeamId);
     const teamWins = record?.wins ?? 0;
     const teamLosses = record?.losses ?? 0;
     const gamesPlayed = teamWins + teamLosses;
 
+    // Compute recent W/L from last 10 played games
     const userGames = season.schedule
       .filter(g => g.played && (g.awayId === userTeamId || g.homeId === userTeamId))
       .sort((a, b) => b.date - a.date)
@@ -1068,12 +1081,23 @@ export const useFranchiseStore = create<FranchiseState>()(
       contractYearsMap[p.id] = c?.yearsRemaining ?? 1;
     }
 
-    moraleStore.applyDailyUpdate({
-      players, teamWins, teamLosses, recentWins, recentLosses,
-      gamesPlayed, gamesInLineupMap, contractYearsMap,
-      salaryPercDiffMap: {},
-      day: season.currentDay,
-    });
+    // Process all unprocessed days in a single batch for performance
+    const endDay = startDay + daysToProcess - 1;
+    if (daysToProcess === 1) {
+      moraleStore.applyDailyUpdate({
+        players, teamWins, teamLosses, recentWins, recentLosses,
+        gamesPlayed, gamesInLineupMap, contractYearsMap,
+        salaryPercDiffMap: {},
+        day: endDay,
+      });
+    } else {
+      moraleStore.applyMultiDayUpdate(
+        { players, teamWins, teamLosses, recentWins, recentLosses,
+          gamesPlayed, gamesInLineupMap, contractYearsMap,
+          salaryPercDiffMap: {} },
+        startDay, endDay,
+      );
+    }
   },
 
   // Hot/cold performance tracking — updates player morale from recent game logs

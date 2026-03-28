@@ -20,9 +20,14 @@ interface MoraleState {
   // Cached team chemistry
   teamChemistry: TeamChemistry | null;
 
+  // Last day morale was processed — used to catch up when simming multiple days
+  lastProcessedDay: number;
+
   // Actions
   initMorales: (players: Player[]) => void;
   applyDailyUpdate: (params: DailyUpdateParams) => void;
+  /** Process multiple days in a single batch (single set() call for performance) */
+  applyMultiDayUpdate: (params: Omit<DailyUpdateParams, 'day'>, fromDay: number, toDay: number) => void;
   getPlayerMorale: (playerId: string) => number;
   applyManualBoost: (playerId: string, playerName: string, delta: number, reason: string, day: number) => void;
   clearMorales: () => void;
@@ -52,6 +57,7 @@ export const useMoraleStore = create<MoraleState>()(
       playerMorales: {},
       recentEvents: [],
       teamChemistry: null,
+      lastProcessedDay: 0,
 
       initMorales: (players) => {
         const { playerMorales } = get();
@@ -109,7 +115,58 @@ export const useMoraleStore = create<MoraleState>()(
         const chemistry = computeTeamChemistry(players, next, teamWins, teamLosses);
 
         const allEvents = [...newEvents, ...recentEvents].slice(0, MAX_EVENTS);
-        set({ playerMorales: next, recentEvents: allEvents, teamChemistry: chemistry });
+        set({ playerMorales: next, recentEvents: allEvents, teamChemistry: chemistry, lastProcessedDay: day });
+      },
+
+      applyMultiDayUpdate: (params, fromDay, toDay) => {
+        const { players, teamWins, teamLosses, recentWins, recentLosses,
+                gamesPlayed, gamesInLineupMap, contractYearsMap, salaryPercDiffMap } = params;
+        const { playerMorales, recentEvents } = get();
+
+        // Work with a mutable copy — single set() at the end
+        const next = { ...playerMorales };
+        const newEvents: MoraleEvent[] = [];
+
+        for (let day = fromDay; day <= toDay; day++) {
+          const rng = new RandomProvider(day * 31337 + teamWins * 7);
+
+          for (const player of players) {
+            const current = next[player.id] ?? initPlayerMorale(player);
+            const gamesInLineup = gamesInLineupMap[player.id] ?? 0;
+            const contractYearsLeft = contractYearsMap[player.id] ?? 1;
+            const salaryPercDiff = salaryPercDiffMap[player.id] ?? 0;
+            const isStarter = player.position !== 'P';
+
+            const { delta, reason } = computeDailyMoraleChange({
+              player, currentMorale: current,
+              teamWins, teamLosses, recentWins, recentLosses,
+              gamesPlayed, gamesInLineup, contractYearsLeft, salaryPercDiff,
+              isStarter, day, rng,
+            });
+
+            if (delta !== 0) {
+              next[player.id] = Math.round(Math.max(5, Math.min(99, current + delta)));
+              if (reason && Math.abs(delta) >= 1) {
+                newEvents.push({
+                  playerId: player.id,
+                  playerName: `${player.firstName} ${player.lastName}`,
+                  delta: Math.round(delta),
+                  reason,
+                  day,
+                });
+              }
+            } else {
+              next[player.id] = current;
+            }
+          }
+        }
+
+        // Recompute team chemistry based on final morales
+        const chemistry = computeTeamChemistry(players, next, teamWins, teamLosses);
+
+        // Keep only the most recent events
+        const allEvents = [...newEvents, ...recentEvents].slice(0, MAX_EVENTS);
+        set({ playerMorales: next, recentEvents: allEvents, teamChemistry: chemistry, lastProcessedDay: toDay });
       },
 
       getPlayerMorale: (playerId) => {
@@ -127,7 +184,7 @@ export const useMoraleStore = create<MoraleState>()(
         set({ playerMorales: next, recentEvents: [event, ...recentEvents].slice(0, MAX_EVENTS) });
       },
 
-      clearMorales: () => set({ playerMorales: {}, recentEvents: [], teamChemistry: null }),
+      clearMorales: () => set({ playerMorales: {}, recentEvents: [], teamChemistry: null, lastProcessedDay: 0 }),
     }),
     {
       name: 'claudeball-morale',
@@ -135,6 +192,7 @@ export const useMoraleStore = create<MoraleState>()(
         playerMorales: s.playerMorales,
         recentEvents: s.recentEvents,
         teamChemistry: s.teamChemistry,
+        lastProcessedDay: s.lastProcessedDay,
       }),
     }
   )
