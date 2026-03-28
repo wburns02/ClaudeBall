@@ -449,7 +449,144 @@ As you play, the game writes your story in prose. A "My Story" page accumulates 
 
 ---
 
-## 12. Success Criteria (Updated)
+## 12. Career Longevity + Comeback System
+
+### Playing Into Your 40s
+
+A player who invests in their body from age 15 can play into their late 40s:
+
+**Longevity factors (compound over career):**
+| Factor | Effect | How |
+|--------|--------|-----|
+| Yoga/flexibility (annual) | +1 career year per 3 seasons | Reduces age-related decline curve |
+| Nutrition plan (annual) | +1 career year per 2 seasons | Body composition stays optimal |
+| Sports science (annual) | +1 career year per 3 seasons | Biomechanics optimized |
+| No major injuries | +3-5 career years | Clean medical record |
+| Position switch to DH/1B | +2-3 career years | Less wear on body |
+| Reinvent game (power→contact) | +2-3 career years | Adapt to aging body |
+| Work ethic trait (70+) | Passive longevity bonus | Consistent maintenance habits |
+
+**Maximum career:** A player who does EVERYTHING right since HS could play to age 46-47 (Nolan Ryan territory). Average career ends at 34-36. Players who abuse their bodies (overtraining, partying, ignoring rehab) flame out by 30.
+
+### The Comeback Arc
+
+Career-threatening injury doesn't mean career over. The comeback path:
+
+1. **Injury occurs** — surgery + standard rehab (6-18 months depending on severity)
+2. **Current ratings DROP** — speed -10 to -20, relevant tools decline
+3. **Potential stays** — the ceiling doesn't lower (unless catastrophic)
+4. **Rehab decisions** — affects recovery speed and completeness:
+   - Standard rehab only (slow, conservative, safe)
+   - Standard + enhancement therapy (faster, see below)
+   - Rush back (fast but high re-injury risk)
+5. **Prove yourself** — play internationally or independent league
+   - Dominican Winter League
+   - Mexican League
+   - Atlantic League (independent)
+   - KBO/NPB stint
+6. **Get noticed** — good stats → AAA invite → September callup
+7. **The Return** — changed player, less tools, more wisdom. Standing ovation.
+
+The narrative journal writes:
+> "They said Will Burns would never play again after the torn ACL in 2034. Two years later, after a stint in the Dominican Winter League and 47 games in AAA Memphis, he walked into the Austin Thunderhawks clubhouse for the second time. The ovation lasted three minutes."
+
+### The Enhancement Spectrum
+
+Recovery and performance enhancement exists on a spectrum from completely legal to career-ending. **Money is the biggest factor** — especially pre-MLB.
+
+#### Tier 1: Fully Legal (Available Everywhere)
+| Treatment | Cost | Effect | Access |
+|-----------|------|--------|--------|
+| Creatine + protein | $50/month | +1-2 power/stamina | Anyone |
+| Over-the-counter supplements | $100/month | +1 recovery speed | Anyone |
+| Ice bath / compression | $0-200 | Injury prevention | Most facilities |
+| Physical therapy (standard) | $150/session | Standard rehab | Insurance covers for pros |
+
+#### Tier 2: Legal But Expensive (Money-Gated)
+| Treatment | Cost | Effect | Access |
+|-----------|------|--------|--------|
+| PRP injections (platelet-rich plasma) | $500-2,000 | +3-4 healing speed, joint preservation | US clinics, cash pay |
+| BPC-157 peptide therapy | $300-800/month | +3-5 healing, tendon repair | US peptide clinics |
+| TB-500 peptide therapy | $200-600/month | +2-4 tissue repair, inflammation | US peptide clinics |
+| Stem cell injections | $5,000-15,000 | +5-8 healing, potential ceiling preservation | US regenerative clinics |
+| Hyperbaric oxygen therapy | $200/session | +2 recovery speed | Specialty facilities |
+| Cryotherapy chambers | $50-100/session | +1 recovery, inflammation | Sports facilities |
+| Personal biomechanics lab | $2,000-5,000/year | Injury prevention, efficiency | Elite facilities |
+
+**The money gate:** A kid in A-ball making $2,000/month CAN'T AFFORD stem cells ($15K). He gets ice and ibuprofen. A major leaguer making $5M/year flies to a regenerative clinic without thinking. **Wealth = access to recovery = longer career.**
+
+Decision event for a minor leaguer with a torn UCL:
+> "Dr. Martinez in Miami does stem cell + PRP for $12,000. Your insurance won't cover it. Your signing bonus is gone. Mom could maybe borrow against the house..."
+> - Borrow the money (family financial stress, but faster/better recovery)
+> - Standard surgery only (Tommy John, 12-18 month rehab, traditional path)
+> - Ask the team to pay (they might say no, or they might invest in you)
+
+#### Tier 3: Legal Gray Area (Not Banned... Yet)
+| Treatment | Cost | Effect | Risk |
+|-----------|------|--------|------|
+| HGH for recovery (with medical need) | $1,000-3,000/month | +5-8 healing, +2 power, muscle preservation | Needs TUE from MLB, scrutiny |
+| Offshore stem cell clinics (DR, Panama, Mexico) | $3,000-10,000 | +5-10 healing, potential ceiling restoration | Not FDA approved, media exposure risk |
+| Gene therapy (experimental) | $20,000-50,000 | Unknown/massive potential | Completely unregulated, could be banned retroactively |
+| Peptide stacking (multiple compounds) | $1,000-3,000/month | +5-8 recovery + performance | Legal today, might not be tomorrow |
+
+**The drama:** You fly to a clinic in Panama City for stem cell therapy on your shoulder. It works miraculously — your arm feels 25 again. Two years later, MLB announces they're investigating "offshore medical tourism by active players." You're on a list.
+
+Decision chain:
+> Step 1: Your agent mentions a clinic in Panama. "Completely legal. Players go all the time."
+> Step 2: You fly there. Treatment works. Arm feels incredible.
+> Step 3: ESPN reports MLB is investigating offshore clinics.
+> Step 4: Your name appears in leaked documents.
+> Choice: Come forward proactively (media rep hit, but integrity preserved) OR deny everything (50/50 it blows over or explodes)
+
+#### Tier 4: Banned Substances
+| Substance | Effect | Penalty | Legacy Impact |
+|-----------|--------|---------|--------------|
+| Anabolic steroids | +10-15 power/speed, recovery halved | 80-game suspension (1st), 162 (2nd), lifetime (3rd) | HOF denied, asterisk on records |
+| Testosterone | +8-12 power, energy, recovery | Same as steroids | Same |
+| EPO (blood doping) | +10 stamina, endurance | 80-game suspension | Reputation destroyed |
+| Amphetamines | +5 focus, reaction time | 80-game suspension | Minor stigma (historically common) |
+
+**Pre-MLB PED decisions are different:**
+- High school: teammate offers "supplements" before a showcase. Do you take them?
+- College: culture of pill-sharing in the locker room. Adderall before games.
+- Minors: desperate to get called up. A teammate who made the jump says "this is what I did."
+
+Each decision at each stage has different consequences:
+- HS: no testing → no suspension risk, but habit forms
+- College: NCAA testing → potential suspension and scholarship loss
+- Minors: MLB testing begins → real career risk
+- MLB: full testing program → 80-game suspension, public shame
+
+**The PED temptation scales with desperation:**
+- Healthy star player: low temptation (why risk it?)
+- Aging player losing a step: moderate temptation
+- Player returning from injury, career on the line: HIGH temptation
+- Minor leaguer who's been in AAA for 4 years, watching younger guys pass him: HIGHEST temptation
+
+---
+
+## 13. Success Criteria (Updated)
+
+1. Player can start at age 12 and play to owner (40+ year arc)
+2. Every stage is skippable (sim in seconds) or playable
+3. Big Game Moments feel impactful — the outcome matters
+4. Decision events create genuine dilemmas with cascading consequences
+5. A high school → college → MLB career feels different from HS → draft → minors
+6. The same player played twice generates a different story each time
+7. Personality traits formed in Little League affect decisions available in the MLB
+8. Total playthrough time: 30 min (all sim) to 10+ hours (play everything)
+9. Family members are persistent NPCs with their own stories
+10. Geography meaningfully affects development path and story
+11. Financial decisions from childhood compound across the entire career
+12. The signing bonus moment makes the player emotional
+13. Childhood rivals and friends appear throughout the career
+14. The narrative journal produces a unique, readable biography
+15. Overtraining has real consequences (burnout, relationship decay, injury)
+16. Players who invest in their bodies can play into their late 40s
+17. Comeback arc works: injury → rehab → international ball → minors → MLB return
+18. Enhancement spectrum creates real moral dilemmas gated by money and desperation
+19. PED temptation scales with career stage and personal circumstances
+20. The same injury at different wealth levels has completely different recovery paths
 
 1. Player can start at age 12 and play to owner (40+ year arc)
 2. Every stage is skippable (sim in seconds) or playable
