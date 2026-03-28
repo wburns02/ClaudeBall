@@ -36,11 +36,11 @@ const PITCHER_MAX_POINTS = 320;
 
 // Background config: starting age, bonus attribute points
 const BACKGROUND_CONFIG: Record<PlayerBackground, { age: number; bonusPoints: number }> = {
-  high_school: { age: 18, bonusPoints: 10 },
-  college_star: { age: 22, bonusPoints: 0 },
-  late_round: { age: 23, bonusPoints: 0 },
-  undrafted: { age: 24, bonusPoints: 0 },
-  international: { age: 20, bonusPoints: 5 },
+  high_school: { age: 18, bonusPoints: 20 },    // Youngest, rawest, highest ceiling
+  international: { age: 20, bonusPoints: 10 },   // Young with upside
+  college_star: { age: 22, bonusPoints: 0 },      // Polished, balanced (baseline)
+  late_round: { age: 23, bonusPoints: -10 },      // Less talent, prove-it guy
+  undrafted: { age: 24, bonusPoints: -20 },       // Least gifted, ultimate underdog
 };
 
 // Draft simulation based on background + attributes
@@ -382,11 +382,11 @@ export function DynastySetupPage() {
           <Panel title="Background">
             <div className="grid grid-cols-2 gap-3">
               {([
-                { id: 'high_school' as PlayerBackground, label: 'High School Phenom', desc: 'Straight out of high school — raw but sky-high potential', age: 18, bonus: '+10 bonus pts' },
-                { id: 'college_star' as PlayerBackground, label: 'College Star', desc: 'Top prospect — expected 1st round pick', age: 22, bonus: '' },
-                { id: 'late_round' as PlayerBackground, label: 'Late-Round Pick', desc: 'Chip on your shoulder — rounds 3-10', age: 23, bonus: '' },
-                { id: 'undrafted' as PlayerBackground, label: 'Undrafted Free Agent', desc: 'Nobody drafted you — earn a tryout', age: 24, bonus: '' },
-                { id: 'international' as PlayerBackground, label: 'International Signee', desc: 'Global talent — signed out of intl pool', age: 20, bonus: '+5 bonus pts' },
+                { id: 'high_school' as PlayerBackground, label: 'High School Phenom', desc: 'Straight out of high school — raw but sky-high potential', age: 18, bonus: '+20 bonus pts' },
+                { id: 'international' as PlayerBackground, label: 'International Signee', desc: 'Global talent — signed out of intl pool', age: 20, bonus: '+10 bonus pts' },
+                { id: 'college_star' as PlayerBackground, label: 'College Star', desc: 'Top prospect — expected 1st round pick', age: 22, bonus: 'Baseline' },
+                { id: 'late_round' as PlayerBackground, label: 'Late-Round Pick', desc: 'Chip on your shoulder — rounds 3-10', age: 23, bonus: '-10 pts (harder)' },
+                { id: 'undrafted' as PlayerBackground, label: 'Undrafted Free Agent', desc: 'Nobody drafted you — earn a tryout', age: 24, bonus: '-20 pts (hardest)' },
               ]).map(bg => (
                 <button key={bg.id} onClick={() => setCharacter(prev => ({ ...prev, background: bg.id }))}
                   className={cn('text-left rounded-lg border p-3 transition-all cursor-pointer',

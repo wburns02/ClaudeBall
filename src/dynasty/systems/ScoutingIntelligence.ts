@@ -139,7 +139,9 @@ export class ScoutingIntelligence {
   /** Load pre-generated report library (call once on init) */
   async loadReportLibrary(): Promise<void> {
     try {
-      const response = await fetch('/conversations/scout-reports.json');
+      // Try expanded library first (480 reports), fall back to original (160)
+      let response = await fetch('/conversations/scout-reports-expanded.json');
+      if (!response.ok) response = await fetch('/conversations/scout-reports.json');
       if (response.ok) {
         this.reportLibrary = await response.json();
       }
