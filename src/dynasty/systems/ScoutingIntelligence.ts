@@ -130,9 +130,29 @@ export class ScoutingIntelligence {
   private headlines: InternationalHeadline[] = [];
   private prospectFamilies: ProspectFamily[] = [];
   private rng: () => number;
+  private reportLibrary: Record<string, Record<string, Record<string, string[]>>> | null = null;
 
   constructor(rng?: () => number) {
     this.rng = rng ?? Math.random;
+  }
+
+  /** Load pre-generated report library (call once on init) */
+  async loadReportLibrary(): Promise<void> {
+    try {
+      const response = await fetch('/conversations/scout-reports.json');
+      if (response.ok) {
+        this.reportLibrary = await response.json();
+      }
+    } catch { /* Non-critical — will use inline templates */ }
+  }
+
+  /** Pick a random pre-generated narrative from the library */
+  pickLibraryNarrative(bias: ScoutBias, position: 'hitter' | 'pitcher', tier: 'elite' | 'good' | 'average' | 'bust'): string | null {
+    if (!this.reportLibrary) return null;
+    const biasKey = bias === 'tools_first' ? 'tools_first' : bias === 'stats_first' ? 'stats_first' : bias;
+    const pool = this.reportLibrary[biasKey]?.[position]?.[tier];
+    if (!pool || pool.length === 0) return null;
+    return pool[Math.floor(this.rng() * pool.length)];
   }
 
   // ── Scout Management ──
@@ -235,7 +255,22 @@ export class ScoutingIntelligence {
     if (scoutedControl && scoutedControl < 40) redFlags.push('Command needs major work');
 
     // Generate narrative (template-based — AI version below)
-    const narrative = this.generateNarrative(scout, playerName, scoutedOverall, rec, strengths, redFlags, comparablePlayer);
+    // Try pre-generated library first (free, instant, high quality)
+    const tier = scoutedOverall >= 65 ? 'elite' : scoutedOverall >= 55 ? 'good' : scoutedOverall >= 45 ? 'average' : 'bust';
+    const posType = trueRatings.stuff !== undefined ? 'pitcher' : 'hitter';
+    let narrative = this.pickLibraryNarrative(scout.bias, posType as 'hitter' | 'pitcher', tier as 'elite' | 'good' | 'average' | 'bust');
+    if (narrative) {
+      // Substitute variables
+      narrative = narrative
+        .replace(/\{\{name\}\}/g, playerName)
+        .replace(/\{\{comp\}\}/g, comparablePlayer)
+        .replace(/\{\{position\}\}/g, 'his position')
+        .replace(/\{\{league\}\}/g, 'his league')
+        .replace(/\{\{scoutYears\}\}/g, String(scout.experience));
+    } else {
+      // Fallback to inline template
+      narrative = this.generateNarrative(scout, playerName, scoutedOverall, rec, strengths, redFlags, comparablePlayer);
+    }
 
     const report: ScoutReport = {
       scoutId: scout.id,
