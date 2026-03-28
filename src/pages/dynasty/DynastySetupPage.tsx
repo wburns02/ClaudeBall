@@ -26,21 +26,36 @@ interface PlayerAttributes {
 }
 
 const DEFAULT_ATTRS: PlayerAttributes = {
-  contact: 50, power: 45, speed: 55, fielding: 50, arm: 50, eye: 50,
-  stuff: 40, control: 40, stamina: 40, velocity: 88,
+  contact: 45, power: 40, speed: 50, fielding: 45, arm: 45, eye: 45,
+  stuff: 35, control: 35, stamina: 35, velocity: 88,
 };
 
-// Total attribute points budget — forces trade-offs
-const MAX_POINTS = 350;
-const PITCHER_MAX_POINTS = 320;
+const DEFAULT_POTENTIAL: PlayerAttributes = {
+  contact: 65, power: 60, speed: 65, fielding: 60, arm: 60, eye: 60,
+  stuff: 55, control: 55, stamina: 55, velocity: 95,
+};
 
-// Background config: starting age, bonus attribute points
-const BACKGROUND_CONFIG: Record<PlayerBackground, { age: number; bonusPoints: number }> = {
-  high_school: { age: 18, bonusPoints: 20 },    // Youngest, rawest, highest ceiling
-  international: { age: 20, bonusPoints: 10 },   // Young with upside
-  college_star: { age: 22, bonusPoints: 0 },      // Polished, balanced (baseline)
-  late_round: { age: 23, bonusPoints: -10 },      // Less talent, prove-it guy
-  undrafted: { age: 24, bonusPoints: -20 },       // Least gifted, ultimate underdog
+// Two pools: Current points + Potential points
+// Background determines the split
+const BASE_CURRENT_POINTS = 300;
+const BASE_POTENTIAL_POINTS = 400;
+
+/**
+ * Background config — the ITP-style split:
+ * High School: low current (raw), high potential (ceiling)
+ * College: higher current (polished), lower potential (closer to peak)
+ */
+const BACKGROUND_CONFIG: Record<PlayerBackground, {
+  age: number;
+  currentPoints: number;  // Points for RIGHT NOW ratings
+  potentialPoints: number; // Points for CEILING ratings
+  description: string;
+}> = {
+  high_school: { age: 18, currentPoints: 250, potentialPoints: 450, description: 'Raw but unlimited ceiling' },
+  international: { age: 20, currentPoints: 280, potentialPoints: 420, description: 'Young with high upside' },
+  college_star: { age: 22, currentPoints: 320, potentialPoints: 380, description: 'Polished, ready to contribute' },
+  late_round: { age: 23, currentPoints: 300, potentialPoints: 340, description: 'Less talent, prove-it mentality' },
+  undrafted: { age: 24, currentPoints: 280, potentialPoints: 300, description: 'Lowest ceiling, ultimate grinder' },
 };
 
 // Draft simulation based on background + attributes
@@ -201,6 +216,7 @@ export function DynastySetupPage() {
   const [settings, setSettings] = useState<DynastySettings>(createSettings('classic'));
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [attrs, setAttrs] = useState<PlayerAttributes>({ ...DEFAULT_ATTRS });
+  const [potential, setPotential] = useState<PlayerAttributes>({ ...DEFAULT_POTENTIAL });
   const [draftResult, setDraftResult] = useState<DraftResult | null>(null);
 
   const [character, setCharacter] = useState<CharacterCreation>({
@@ -239,15 +255,27 @@ export function DynastySetupPage() {
 
   const bgConfig = BACKGROUND_CONFIG[character.background];
 
-  const totalPoints = useMemo(() => {
+  // Current ratings points
+  const currentTotal = useMemo(() => {
     if (isPitcher) return attrs.stuff + attrs.control + attrs.stamina + Math.round(attrs.velocity / 2) + attrs.fielding;
     return attrs.contact + attrs.power + attrs.speed + attrs.fielding + attrs.arm + attrs.eye;
   }, [attrs, isPitcher]);
-  const pointsMax = (isPitcher ? PITCHER_MAX_POINTS : MAX_POINTS) + bgConfig.bonusPoints;
-  const pointsRemaining = pointsMax - totalPoints;
-  const isOverBudget = pointsRemaining < 0;
+  const currentMax = bgConfig.currentPoints;
+  const currentRemaining = currentMax - currentTotal;
 
-  const overallRating = Math.round(totalPoints / (isPitcher ? 5 : 6));
+  // Potential ratings points
+  const potentialTotal = useMemo(() => {
+    if (isPitcher) return potential.stuff + potential.control + potential.stamina + Math.round(potential.velocity / 2) + potential.fielding;
+    return potential.contact + potential.power + potential.speed + potential.fielding + potential.arm + potential.eye;
+  }, [potential, isPitcher]);
+  const potentialMax = bgConfig.potentialPoints;
+  const potentialRemaining = potentialMax - potentialTotal;
+
+  const isOverBudget = currentRemaining < 0 || potentialRemaining < 0;
+
+  // Overall = average of current ratings
+  const overallCurrent = Math.round(currentTotal / (isPitcher ? 5 : 6));
+  const overallPotential = Math.round(potentialTotal / (isPitcher ? 5 : 6));
 
   const handleModeSelect = (m: DynastyMode) => {
     setMode(m);
@@ -273,6 +301,10 @@ export function DynastySetupPage() {
     setAttrs(prev => ({ ...prev, [key]: val }));
   };
 
+  const handlePotential = (key: keyof PlayerAttributes, val: number) => {
+    setPotential(prev => ({ ...prev, [key]: val }));
+  };
+
   const handleRunDraft = () => {
     const result = simulateDraft(character.background, attrs, isPitcher);
     setDraftResult(result);
@@ -287,7 +319,7 @@ export function DynastySetupPage() {
     localStorage.setItem('claudeball_dynasty_mode', mode);
     if (mode === 'living') {
       localStorage.setItem('claudeball_dynasty_character', JSON.stringify(character));
-      localStorage.setItem('claudeball_dynasty_attrs', JSON.stringify(attrs));
+      localStorage.setItem('claudeball_dynasty_attrs', JSON.stringify({ current: attrs, potential }));
     }
     navigate('/franchise');
   };
@@ -480,92 +512,113 @@ export function DynastySetupPage() {
       {/* Step: Attributes */}
       {step === 'attributes' && (
         <div className="space-y-6">
-          <Panel title={isPitcher ? 'Pitching Attributes' : 'Hitting Attributes'}>
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <span className="font-mono text-xs text-cream-dim/50">Distribute your ability points</span>
-                {bgConfig.bonusPoints > 0 && (
-                  <span className="font-mono text-xs text-green-light ml-2">(+{bgConfig.bonusPoints} from {character.background === 'high_school' ? 'High School' : 'International'} background)</span>
-                )}
-              </div>
-              <div className="text-right">
-                <span className={cn(
-                  'font-mono text-xl font-bold',
-                  isOverBudget ? 'text-red-400' : pointsRemaining >= 20 ? 'text-green-light' : pointsRemaining >= 5 ? 'text-gold' : 'text-red-400'
+          {/* Dual columns: Current (RIGHT NOW) + Potential (CEILING) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* LEFT: Current Ratings (RIGHT NOW) */}
+            <Panel title="Right Now Ratings">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="font-mono text-xs text-cream-dim/50">How good you are TODAY</span>
+                <span className={cn('font-mono text-lg font-bold',
+                  currentRemaining < 0 ? 'text-red-400' : currentRemaining >= 20 ? 'text-green-light' : currentRemaining >= 5 ? 'text-gold' : 'text-red-400'
                 )}>
-                  {pointsRemaining} pts remaining
+                  {currentRemaining} pts
                 </span>
               </div>
-            </div>
-
-            {pointsRemaining === 0 && !isOverBudget && (
-              <div className="mb-3 font-mono text-xs text-cream-dim/50 bg-navy-lighter/30 border border-navy-lighter rounded px-3 py-2 text-center">
-                Decrease an attribute to free up points
+              <div className="font-mono text-[10px] text-cream-dim/40 mb-2">
+                {character.background === 'high_school' ? 'HS: fewer current pts (raw)' :
+                 character.background === 'undrafted' ? 'UDFA: modest current pts' :
+                 character.background === 'college_star' ? 'College: balanced current pts' :
+                 character.background === 'international' ? 'Intl: moderate current pts' :
+                 'Late-round: moderate current pts'}
               </div>
-            )}
 
-            <div className="space-y-1">
-              {isPitcher ? (
-                <>
-                  <AttributeControl label="Stuff" value={attrs.stuff} onChange={v => handleAttr('stuff', v)} min={getEffectiveMin('stuff')} max={getEffectiveMax('stuff')} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Control" value={attrs.control} onChange={v => handleAttr('control', v)} min={getEffectiveMin('control')} max={getEffectiveMax('control')} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Stamina" value={attrs.stamina} onChange={v => handleAttr('stamina', v)} min={getEffectiveMin('stamina')} max={getEffectiveMax('stamina')} pointsRemaining={pointsRemaining} />
-                  <VelocityControl value={attrs.velocity} onChange={v => handleAttr('velocity', v)} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Fielding" value={attrs.fielding} onChange={v => handleAttr('fielding', v)} min={getEffectiveMin('fielding')} max={getEffectiveMax('fielding')} pointsRemaining={pointsRemaining} />
-                </>
-              ) : (
-                <>
-                  <AttributeControl label="Contact" value={attrs.contact} onChange={v => handleAttr('contact', v)} min={getEffectiveMin('contact')} max={getEffectiveMax('contact')} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Power" value={attrs.power} onChange={v => handleAttr('power', v)} min={getEffectiveMin('power')} max={getEffectiveMax('power')} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Speed" value={attrs.speed} onChange={v => handleAttr('speed', v)} min={getEffectiveMin('speed')} max={getEffectiveMax('speed')} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Fielding" value={attrs.fielding} onChange={v => handleAttr('fielding', v)} min={getEffectiveMin('fielding')} max={getEffectiveMax('fielding')} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Arm" value={attrs.arm} onChange={v => handleAttr('arm', v)} min={getEffectiveMin('arm')} max={getEffectiveMax('arm')} pointsRemaining={pointsRemaining} />
-                  <AttributeControl label="Eye" value={attrs.eye} onChange={v => handleAttr('eye', v)} min={getEffectiveMin('eye')} max={getEffectiveMax('eye')} pointsRemaining={pointsRemaining} />
-                </>
-              )}
-            </div>
-
-            {isOverBudget && (
-              <div className="mt-3 font-mono text-xs text-red-400 bg-red-400/10 border border-red-400/30 rounded px-3 py-2">
-                Over budget by {Math.abs(pointsRemaining)} points — lower some attributes
-              </div>
-            )}
-          </Panel>
-
-          <Panel title="Scouting Report Preview">
-            {/* Overall Rating — prominent */}
-            <div className="text-center mb-4">
-              <div className="text-[10px] font-mono text-cream-dim/50 uppercase tracking-widest mb-1">Overall</div>
-              <div className={cn(
-                'font-display text-5xl text-gold font-bold',
-              )}>
-                {overallRating}
-              </div>
-              <div className="font-mono text-xs text-cream-dim/40 mt-1">
-                Age {bgConfig.age} &middot; {character.position} &middot; {character.background.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 text-center font-mono">
-              {(isPitcher ? [
-                { label: 'Stuff', val: attrs.stuff }, { label: 'Control', val: attrs.control },
-                { label: 'Stamina', val: attrs.stamina }, { label: 'Velocity', val: attrs.velocity },
-                { label: 'Fielding', val: attrs.fielding },
-              ] : [
-                { label: 'Contact', val: attrs.contact }, { label: 'Power', val: attrs.power },
-                { label: 'Speed', val: attrs.speed }, { label: 'Fielding', val: attrs.fielding },
-                { label: 'Arm', val: attrs.arm }, { label: 'Eye', val: attrs.eye },
-              ]).map(attr => (
-                <div key={attr.label} className="bg-navy-lighter/30 rounded p-2">
-                  <div className="text-[10px] text-cream-dim/50 uppercase">{attr.label}</div>
-                  <div className={cn('text-lg font-bold',
-                    attr.val >= 70 ? 'text-gold' : attr.val >= 60 ? 'text-green-light' : attr.val >= 50 ? 'text-cream' : 'text-orange-400'
-                  )}>{attr.val}</div>
+              {currentRemaining === 0 && (
+                <div className="mb-2 font-mono text-[10px] text-cream-dim/50 bg-navy-lighter/30 rounded px-2 py-1 text-center">
+                  Lower an attribute to free up points
                 </div>
-              ))}
+              )}
+
+              <div className="space-y-1">
+                {(isPitcher
+                  ? [['Stuff', 'stuff'], ['Control', 'control'], ['Stamina', 'stamina'], ['Fielding', 'fielding']] as const
+                  : [['Contact', 'contact'], ['Power', 'power'], ['Speed', 'speed'], ['Fielding', 'fielding'], ['Arm', 'arm'], ['Eye', 'eye']] as const
+                ).map(([label, key]) => (
+                  <AttributeControl key={key} label={label} value={attrs[key as keyof PlayerAttributes]}
+                    onChange={v => handleAttr(key as keyof PlayerAttributes, v)}
+                    min={getEffectiveMin(key)} max={getEffectiveMax(key)}
+                    pointsRemaining={currentRemaining} />
+                ))}
+                {isPitcher && (
+                  <VelocityControl value={attrs.velocity} onChange={v => handleAttr('velocity', v)} pointsRemaining={currentRemaining} />
+                )}
+              </div>
+            </Panel>
+
+            {/* RIGHT: Potential Ratings (CEILING) */}
+            <Panel title="Potential Ratings">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="font-mono text-xs text-cream-dim/50">How good you COULD become</span>
+                <span className={cn('font-mono text-lg font-bold',
+                  potentialRemaining < 0 ? 'text-red-400' : potentialRemaining >= 20 ? 'text-green-light' : potentialRemaining >= 5 ? 'text-gold' : 'text-red-400'
+                )}>
+                  {potentialRemaining} pts
+                </span>
+              </div>
+              <div className="font-mono text-[10px] text-cream-dim/40 mb-2">
+                {character.background === 'high_school' ? 'HS: most potential pts (sky-high ceiling!)' :
+                 character.background === 'undrafted' ? 'UDFA: lowest potential (limited ceiling)' :
+                 character.background === 'college_star' ? 'College: balanced potential' :
+                 character.background === 'international' ? 'Intl: high potential' :
+                 'Late-round: below-avg potential'}
+              </div>
+
+              {potentialRemaining === 0 && (
+                <div className="mb-2 font-mono text-[10px] text-cream-dim/50 bg-navy-lighter/30 rounded px-2 py-1 text-center">
+                  Lower a ceiling to free up points
+                </div>
+              )}
+
+              <div className="space-y-1">
+                {(isPitcher
+                  ? [['Stuff', 'stuff'], ['Control', 'control'], ['Stamina', 'stamina'], ['Fielding', 'fielding']] as const
+                  : [['Contact', 'contact'], ['Power', 'power'], ['Speed', 'speed'], ['Fielding', 'fielding'], ['Arm', 'arm'], ['Eye', 'eye']] as const
+                ).map(([label, key]) => (
+                  <AttributeControl key={`pot_${key}`} label={label} value={potential[key as keyof PlayerAttributes]}
+                    onChange={v => handlePotential(key as keyof PlayerAttributes, v)}
+                    min={Math.max(20, attrs[key as keyof PlayerAttributes])} max={80}
+                    pointsRemaining={potentialRemaining} />
+                ))}
+                {isPitcher && (
+                  <VelocityControl value={potential.velocity} onChange={v => handlePotential('velocity', v)} pointsRemaining={potentialRemaining} />
+                )}
+              </div>
+            </Panel>
+          </div>
+
+          {/* Overall Preview */}
+          <Panel title="Scouting Report">
+            <div className="flex items-center justify-center gap-8 py-4">
+              <div className="text-center">
+                <div className="font-mono text-[10px] text-cream-dim/40 uppercase tracking-wider">Current OVR</div>
+                <div className="font-display text-5xl text-cream">{overallCurrent}</div>
+              </div>
+              <div className="text-cream-dim/30 font-display text-2xl">→</div>
+              <div className="text-center">
+                <div className="font-mono text-[10px] text-gold/60 uppercase tracking-wider">Potential OVR</div>
+                <div className="font-display text-5xl text-gold">{overallPotential}</div>
+              </div>
+            </div>
+            <div className="text-center font-mono text-xs text-cream-dim/50">
+              Age {bgConfig.age} · {character.position} · {character.background.replace('_', ' ')}
             </div>
           </Panel>
 
+          {isOverBudget && (
+              <div className="font-mono text-xs text-red-400 bg-red-400/10 border border-red-400/30 rounded px-3 py-2">
+                Over budget — lower some attributes
+              </div>
+            )}
+            {/* Overall Rating — prominent */}
           <div className="flex justify-between">
             <Button variant="secondary" onClick={() => setStep('character')}>Back</Button>
             <Button onClick={() => setStep('settings')} disabled={isOverBudget}>
