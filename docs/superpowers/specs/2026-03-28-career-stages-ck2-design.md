@@ -1040,7 +1040,224 @@ That moment — playing as Maria, receiving the news that your father (your FIRS
 
 ---
 
-## 20. Success Criteria (Final)
+## 20. Social Media & Public Feed
+
+The modern world experiences sports through feeds, not newspapers. A scrolling timeline of reactions makes the world feel alive and contemporary.
+
+### The Feed
+
+A persistent scrollable feed that updates after every significant event:
+
+**Post types:**
+| Source | Style | Example |
+|--------|-------|---------|
+| @MLBHighlights | Official, video-style | "WALKOFF. Will Burns sends the crowd home happy. 🔥" [12K likes] |
+| @hot_takes_dave | Random fan hot take | "Burns is the most clutch hitter in baseball and it's not close" |
+| Rival fan accounts | Hostile | "Lucky swing. Pitcher hung that slider" |
+| Your family | Personal | Your daughter reposted with "That's my dad 😭💪" |
+| Former teammates | Insider | "That swing hasn't changed since Little League 💯" |
+| Media personalities | Analysis | "Burns' expected slugging this month is .620. He's locked in." |
+| Meme accounts | Humor | [Image macro: Burns' walkoff face] "When the 0-2 pitch hangs" |
+| Your rival | Subtle | Liked the post. No comment. (Silent respect) |
+
+**After scandals:**
+- @ESPNBreaking: "REPORT: Will Burns linked to offshore clinic"
+- @burns_haters: "Always knew he was dirty"
+- @old_teammate: "I know this man. Wait for the facts."
+- Phone rings: Mom calling (not a social post — cuts through the noise)
+
+**After retirement:**
+- @MLBNetwork: "End of an era. Will Burns announces retirement after 18 seasons."
+- @danny_reeves_42: "From travel ball at 13 to the Hall of Fame. Proud of you brother."
+- Trending: #ThankYouBurns — fans share their favorite memories
+- Your daughter posts a childhood photo of you playing catch
+
+### Feed Mechanics
+
+- Feed items are auto-generated from game events using template pools + NPC relationships
+- Engagement numbers (likes, replies) scale with your Fame/Fan Rep
+- You can RESPOND to posts (affects media rep, fan rep, can go viral for good or bad)
+- Choosing NOT to respond is also a choice (some controversies die if you stay quiet)
+- Your social media presence is a personality trait: "Active" vs "Private" vs "Unfiltered"
+
+### Era Adaptation
+
+- Pre-2005 careers: newspaper headlines instead of social media
+- 2005-2015: early social media (MySpace → Twitter emergence)
+- 2015+: full social media ecosystem
+- The feed format stays the same — the PLATFORM changes by era
+
+---
+
+## 21. Coaching Philosophy System
+
+When you become a coach or manager, your STYLE defines the team culture.
+
+### Philosophy Selection
+
+When you accept a coaching/managing role, choose your approach:
+
+| Philosophy | Style | Player Impact | Who Thrives | Who Struggles |
+|-----------|-------|--------------|-------------|--------------|
+| **Player's Manager** | Supportive, trusting, player-first | Morale +10 across roster | High-ego players, veterans | Low work ethic players slack off |
+| **Disciplinarian** | Strict rules, accountability, structure | Work ethic +5, but morale -3 | High coachability, young players | Ego players rebel, demand trade |
+| **Analytics-Driven** | Data-first, platoons, matchups | Optimal lineup decisions | Smart players, versatile guys | Old-school players feel disrespected |
+| **Old School** | Gut instinct, loyalty to veterans, "the right way" | Clubhouse chemistry +8 | Grinders, high-loyalty players | Analytics-minded players frustrated |
+| **Developer** | Focus on growth, patient with young players | Prospect development +15% | Young players, projects | Veterans feel undervalued |
+| **Tactician** | Aggressive baserunning, defensive shifts, small ball | Win close games, defensive identity | Speed guys, defensive players | Power hitters feel constrained |
+
+### Philosophy Interactions
+
+- Your philosophy clashes OR harmonizes with your players' personalities
+- A disciplinarian managing a team of high-ego stars = clubhouse revolt
+- A player's manager with a team of grinders = everyone loves you but nobody's pushed
+- The BEST managers adapt: start disciplinarian, earn respect, then loosen up
+
+### Coaching Tree Legacy
+
+Your coaching philosophy passes to your assistants:
+- They learn YOUR system
+- When they get their own jobs, they implement variations of your approach
+- "The Burns Coaching Tree" becomes a real thing — multiple managers across baseball all trained under you
+- The narrative journal tracks: "Six of the 30 MLB managers learned their craft under Will Burns."
+
+---
+
+## 22. Historical Era System
+
+Start your career in ANY era. The rules, culture, money, and social landscape change everything.
+
+### Available Eras
+
+| Era | Start Year | Defining Features |
+|-----|-----------|------------------|
+| **Dead Ball** | 1900-1919 | Low scoring, small ball, segregation, WWI |
+| **Golden Age** | 1920-1945 | Babe Ruth, integration battles, WWII service |
+| **Integration** | 1946-1960 | Jackie Robinson, Negro League talent floods in, Cold War |
+| **Expansion** | 1961-1975 | New teams, dominant pitching, counterculture, Vietnam |
+| **Free Agency** | 1976-1990 | Money changes everything, cocaine crisis, labor wars |
+| **Steroid Era** | 1991-2005 | Home run explosion, PEDs everywhere, "everybody knew" |
+| **Analytics Revolution** | 2006-2020 | Moneyball, shifts, launch angle, social media emerges |
+| **Modern** | 2021-present | NIL, universal DH, pitch clock, international expansion |
+| **Future** | 2030+ | AI scouting, robot umps, expansion to 32+ teams, global league |
+
+### Era-Specific Gameplay
+
+**Steroid Era (1991-2005):**
+- PEDs are EVERYWHERE. Your teammates use. Your competitors use.
+- The pressure isn't "should I use" — it's "can I compete WITHOUT using?"
+- Testing barely exists until 2003
+- 70 HR seasons are possible on juice
+- Decision: stay clean (harder to compete) or join the club (risk future legacy)
+
+**Integration Era (1946-1960):**
+- If you're Black: segregated hotels, death threats, hate mail, separate restaurants
+- But also: Jackie Robinson as mentor NPC, Negro League legends as coaches
+- The courage required to play isn't physical — it's emotional
+- Decision events around dignity, restraint, and breaking barriers
+
+**Modern Era:**
+- NIL deals in college worth millions
+- Social media presence matters as much as stats for endorsements
+- Analytics determine your playing time (not just your manager)
+- International pipeline is massive
+- Pitch clock, shift restrictions change strategy
+
+### Era Affects Everything
+
+- **Money:** League minimum in 1960 was $6,000. In 2025 it's $740,000.
+- **Travel:** Trains in 1940, propeller planes in 1960, jets by 1970
+- **Media:** Newspapers → radio → TV → cable → internet → social media
+- **Culture:** Segregation → integration → free agency → analytics → global
+- **PEDs:** Amphetamines (50s-80s) → steroids (80s-00s) → HGH/peptides (00s+) → gene therapy (future)
+- **Family:** Wife stays home (1950s) → dual income → modern family dynamics
+
+---
+
+## 23. Multiplayer Dynasty
+
+Two or more real players share the same world. The ultimate CK2 multiplayer experience.
+
+### Modes
+
+**Co-op Dynasty:**
+- Two players create characters in the same league
+- One is a player, the other is a GM — or both are players on different teams
+- They face each other in Big Game Moments
+- They text each other (real messages overlaid on the NPC phone system)
+- One trades for the other's player. Real negotiation.
+
+**Rivalry Dynasty:**
+- Two players create characters specifically designed to be rivals
+- They're drafted by division rivals
+- Every head-to-head matchup is a Big Game Moment for BOTH players
+- The rivalry arc spans decades — from Little League to the Hall of Fame
+
+**Family Dynasty:**
+- One player is the father, the other is the daughter
+- They play simultaneously in different eras
+- The father's decisions affect the daughter's starting conditions
+- When the father passes the torch, the second player's character becomes the focus
+
+**League Dynasty:**
+- 4-8 players each control a character in the same league
+- Full CK2 multiplayer: alliances, betrayals, trade wars, free agency bidding
+- One becomes the commissioner. Another becomes the union rep.
+- Political maneuvering between real humans
+
+### Technical Approach
+
+- Shared world state stored in cloud (the Railway API we designed for cloud sync)
+- Turn-based OR real-time async (like Civilization multiplayer)
+- Each player sees their own phone, their own feed, their own events
+- When two players' Big Game Moments overlap, both play the same at-bat from different perspectives
+
+---
+
+## 24. Success Criteria (Final — Complete)
+
+1. Player can start at age 12 and play to owner (40+ year arc)
+2. Every stage is skippable (sim in seconds) or playable
+3. Big Game Moments feel impactful — the outcome matters
+4. Decision events create genuine dilemmas with cascading consequences
+5. A high school → college → MLB career feels different from HS → draft → minors
+6. The same player played twice generates a different story each time
+7. Personality traits formed in Little League affect decisions available in the MLB
+8. Total playthrough time: 30 min (all sim) to 10+ hours (play everything)
+9. Family members are persistent NPCs with their own stories
+10. Geography meaningfully affects development path and story
+11. Financial decisions from childhood compound across the entire career
+12. The signing bonus moment makes the player emotional
+13. Childhood rivals and friends appear throughout the career
+14. The narrative journal produces a unique, readable biography
+15. Overtraining has real consequences (burnout, relationship decay, injury)
+16. Players who invest in their bodies can play into their late 40s
+17. Comeback arc works: injury → rehab → international ball → minors → MLB return
+18. Enhancement spectrum creates real moral dilemmas gated by money and desperation
+19. PED temptation scales with career stage and personal circumstances
+20. The same injury at different wealth levels has completely different recovery paths
+21. Politics system: being passed over despite merit triggers real emotional events
+22. Connections matter: talent alone isn't always enough
+23. Identity crisis after retirement is a real, felt experience — not just a menu
+24. The void phase visually changes the game (desaturated, quiet, empty)
+25. Not every story has a happy ending — the game allows ugly, honest conclusions
+26. Post-baseball daily grind is playable: build your week, manage energy, maintain all four pillars
+27. Second sport competition has its own progression, NPCs, and Big Game Moments
+28. Relationships are the primary reason to keep playing past year 20
+29. The phone system makes NPCs feel alive — they text, call, and need you
+30. Your children can follow in your footsteps — generational payoff
+31. The mentor tree tracks everyone you've influenced across your career
+32. A 42-year-old outperforming college kids is a playable, celebratable moment
+33. Pass the torch: become your child, protégé, or coaching tree successor
+34. Original character becomes an NPC who calls, texts, watches your games
+35. Multiple successions create a multi-generational family saga
+36. Previous characters age and eventually die — the most powerful moment in gaming
+37. The narrative journal spans volumes across generations
+38. A 100-year baseball family dynasty is achievable through successive play
+39. Social media feed makes the modern world feel alive and reactive
+40. Coaching philosophy defines team culture and creates a coaching tree legacy
+41. Historical eras change rules, money, culture, PED landscape, and social context
+42. Multiplayer: shared world where real players compete, trade, and build rivalries
 
 1. Player can start at age 12 and play to owner (40+ year arc)
 2. Every stage is skippable (sim in seconds) or playable
