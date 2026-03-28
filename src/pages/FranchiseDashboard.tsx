@@ -218,7 +218,8 @@ export function FranchiseDashboard() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals, dynastyYear } = useFranchiseStore();
   const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount, items: inboxItems } = useInboxStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const [showEvents, setShowEvents] = useState(true);
   const [recapTab, setRecapTab] = useState<'summary' | 'scores' | 'performers'>('summary');
   const [simConfirm, setSimConfirm] = useState<number | null>(null);

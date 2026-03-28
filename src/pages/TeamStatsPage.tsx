@@ -17,7 +17,8 @@ import { cn } from '@/lib/cn.ts';
 export function TeamStatsPage() {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
-  const { playerStats, leagueTotals } = useStatsStore();
+  const { getCurrentSeasonStats, leagueTotals } = useStatsStore();
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const { engine, season } = useFranchiseStore();
 
   const team = useMemo(() => {

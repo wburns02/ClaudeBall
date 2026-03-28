@@ -55,7 +55,8 @@ type PitPosFilter = typeof PIT_POS_FILTERS[number];
 
 export function LeagueLeadersPage() {
   const navigate = useNavigate();
-  const { getBattingLeaders, getPitchingLeaders, leagueTotals, playerStats } = useStatsStore();
+  const { getBattingLeaders, getPitchingLeaders, leagueTotals, getCurrentSeasonStats } = useStatsStore();
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const { engine, season } = useFranchiseStore();
 
   const [tab, setTab] = useState<Tab>('batting');

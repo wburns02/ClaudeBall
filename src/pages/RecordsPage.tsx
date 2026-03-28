@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -66,7 +67,8 @@ function GameRecordCard({
 
 export function RecordsPage() {
   const navigate = useNavigate();
-  const { records, playerStats, leagueTotals } = useStatsStore();
+  const { records, getCurrentSeasonStats, leagueTotals } = useStatsStore();
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const { engine, season } = useFranchiseStore();
 
   const handlePlayerClick = (playerId: string) => {

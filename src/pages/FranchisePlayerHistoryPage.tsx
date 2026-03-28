@@ -278,7 +278,8 @@ export function FranchisePlayerHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const franchisePlayerHistory = useHistoryStore(s => s.franchisePlayerHistory);
   const awardHistory = useHistoryStore(s => s.awardHistory);
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const currentSeason = useStatsStore(s => s.currentSeason);
   const { season, engine, userTeamId } = useFranchiseStore();
 

@@ -119,7 +119,7 @@ export function PlayerQuickView() {
   // Compute WAR using league context
   const leagueCtx = (() => {
     if (!engine) return DEFAULT_LEAGUE_CONTEXT;
-    const allStats = Object.values(useStatsStore.getState().playerStats);
+    const allStats = Object.values(useStatsStore.getState().getCurrentSeasonStats());
     if (allStats.length === 0) return DEFAULT_LEAGUE_CONTEXT;
     let totalAB = 0, totalPA = 0, totalH = 0, totalDoubles = 0, totalTriples = 0;
     let totalHR = 0, totalBB = 0, totalHBP = 0, totalSF = 0, totalSO = 0, totalRuns = 0;

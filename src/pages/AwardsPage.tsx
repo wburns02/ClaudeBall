@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/ui/Panel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
@@ -83,7 +83,8 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
   engine: import('@/engine/season/SeasonEngine.ts').SeasonEngine;
   userTeamId: string;
 }) {
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   // Calculate from current stats: highest OVR composite = MVP, lowest ERA = Cy Young, best rookie = ROY
   const calculatedAwards = useMemo(() => {
@@ -328,7 +329,8 @@ export function AwardsPage() {
   const { season, engine, userTeamId } = useFranchiseStore();
   const { awardHistory } = useHistoryStore();
   const [showCeremony, setShowCeremony] = useState(false);
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   if (!season || !engine || !userTeamId) {
     return (

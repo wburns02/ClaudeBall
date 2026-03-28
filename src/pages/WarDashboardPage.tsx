@@ -57,7 +57,8 @@ function WarBadge({ war }: { war: number }) {
 export function WarDashboardPage() {
   const navigate = useNavigate();
   const { engine, userTeamId, season } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const openPlayer = usePlayerModal(s => s.openPlayer);
   const [viewMode, setViewMode] = useState<ViewMode>('leaders');
   const [playerType, setPlayerType] = useState<PlayerType>('all');

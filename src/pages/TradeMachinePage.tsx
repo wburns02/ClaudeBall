@@ -61,7 +61,8 @@ function PlayerChip({
 export function TradeMachinePage() {
   const navigate = useNavigate();
   const { engine, userTeamId, season, teams } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const openPlayer = usePlayerModal(s => s.openPlayer);
 
   const [partnerId, setPartnerId] = useState<string>('');

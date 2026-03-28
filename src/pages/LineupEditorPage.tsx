@@ -54,7 +54,8 @@ function Pip({ label, value }: { label: string; value: string | number }) {
 export function LineupEditorPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, reorderLineup: _reorderLineup, setRotation: _setRotation, setBullpen: _setBullpen } = useFranchiseStore();
-  const { playerStats } = useStatsStore();
+  const { getCurrentSeasonStats } = useStatsStore();
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   const [autoFilledBatting, setAutoFilledBatting] = useState(false);
   const [autoFilledPitching, setAutoFilledPitching] = useState(false);

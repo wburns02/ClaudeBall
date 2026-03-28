@@ -72,7 +72,8 @@ function RecordCategory({ title, entries, openPlayer }: { title: string; entries
 export function HallOfRecordsPage() {
   const navigate = useNavigate();
   const { engine, season, userTeamId } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const franchiseRecords = useStatsStore(s => s.records);
   const openPlayer = usePlayerModal(s => s.openPlayer);
 

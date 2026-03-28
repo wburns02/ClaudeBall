@@ -51,7 +51,8 @@ function GradeBar({ label, value, max = 100 }: { label: string; value: number; m
 export function FranchiseOverviewPage() {
   const navigate = useNavigate();
   const { engine, season, userTeamId, tradeLog } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const { staff, staffBonus } = useCoachingStore();
   const { getProgress } = useAchievementStore();
   const moraleData = useMoraleStore(s => s.playerMorales);

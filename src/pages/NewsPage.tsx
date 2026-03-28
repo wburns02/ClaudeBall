@@ -257,7 +257,8 @@ function newsItemNav(item: NewsItem): string | null {
 export function NewsPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, lastDayEvents, injuryLog, tradeLog, callupLog } = useFranchiseStore();
-  const { playerStats } = useStatsStore();
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const [categoryFilter, setCategoryFilter] = useState<NewsCategory | null>(null);
 
   const currentDay = season?.currentDay ?? 0;

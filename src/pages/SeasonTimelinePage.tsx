@@ -52,7 +52,8 @@ function streakRuns(results: GameResult[]): { type: 'W' | 'L'; length: number; s
 export function SeasonTimelinePage() {
   const navigate = useNavigate();
   const { engine, userTeamId, season } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const inboxItems = useInboxStore(s => s.items);
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);

@@ -15,7 +15,8 @@ export function GameLogPage() {
 
   const [filter, setFilter] = useState<FilterMode>('user');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   if (!season || !engine || !userTeamId) {
     return (

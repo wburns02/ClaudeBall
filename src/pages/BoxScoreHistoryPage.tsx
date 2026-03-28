@@ -34,7 +34,8 @@ export function BoxScoreHistoryPage() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
   const { season, engine, userTeamId } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   if (!season || !engine || !gameId) {
     return (

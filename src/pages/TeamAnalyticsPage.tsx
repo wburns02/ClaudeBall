@@ -193,7 +193,8 @@ export function TeamAnalyticsPage() {
   const hasData = gamesPlayed > 0;
 
   // ── Advanced sabermetrics ─────────────────────────────────────────────────
-  const { playerStats, leagueTotals } = useStatsStore();
+  const { getCurrentSeasonStats, leagueTotals } = useStatsStore();
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   const teamPlayerStats = useMemo(
     () => Object.values(playerStats).filter(ps => ps.teamId === userTeamId),

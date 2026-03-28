@@ -310,7 +310,8 @@ function HistoryPanel() {
 export function GoalsPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId } = useFranchiseStore();
-  const { playerStats } = useStatsStore();
+  const { getCurrentSeasonStats } = useStatsStore();
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const { goals, owner, initSeason, updateProgress } = useGoalsStore();
 
   // Auto-initialize goals if not set for current season

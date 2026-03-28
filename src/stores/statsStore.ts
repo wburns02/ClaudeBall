@@ -11,6 +11,7 @@ export interface PlayerSeasonStats {
   playerName: string;
   teamId: string;
   position: string;
+  season: number;       // which season these stats belong to
   gamesPlayed: number;
   batting: BattingStats;
   pitching: PitchingStats;
@@ -122,24 +123,29 @@ interface StatsStoreActions {
   /** Get stats for a specific player. */
   getPlayerStats: (playerId: string) => PlayerSeasonStats | null;
 
-  /** Get all player stats sorted by a batting stat. */
+  /** Get all player stats sorted by a batting stat (current season only). */
   getBattingLeaders: (minPA?: number) => PlayerSeasonStats[];
 
-  /** Get all pitcher stats sorted by a pitching stat. */
+  /** Get all pitcher stats sorted by a pitching stat (current season only). */
   getPitchingLeaders: (minIP?: number) => PlayerSeasonStats[];
+
+  /** Get current-season player stats only (filters out stale multi-season data). */
+  getCurrentSeasonStats: () => Record<string, PlayerSeasonStats>;
 }
 
 function emptyPlayerStats(
   playerId: string,
   name: string,
   teamId: string,
-  position: string
+  position: string,
+  season: number = 0,
 ): PlayerSeasonStats {
   return {
     playerId,
     playerName: name,
     teamId,
     position,
+    season,
     gamesPlayed: 0,
     batting: createEmptyBattingStats(),
     pitching: createEmptyPitchingStats(),
@@ -254,9 +260,12 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
                 playerStats[b.playerId] = emptyPlayerStats(
                   b.playerId, b.name,
                   getPlayerTeamId(b.playerId) || teamId,
-                  getPlayerPosition(b.playerId) || b.position
+                  getPlayerPosition(b.playerId) || b.position,
+                  season,
                 );
               }
+              // Tag the season on existing entries (handles legacy data)
+              playerStats[b.playerId].season = season;
               const ps = playerStats[b.playerId];
               const bs = ps.batting;
               const pa = b.ab + b.bb;
@@ -305,9 +314,12 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
                 playerStats[p.playerId] = emptyPlayerStats(
                   p.playerId, p.name,
                   getPlayerTeamId(p.playerId) || teamId,
-                  'P'
+                  'P',
+                  season,
                 );
               }
+              // Tag the season on existing entries (handles legacy data)
+              playerStats[p.playerId].season = season;
               const ps = playerStats[p.playerId];
               const pst = ps.pitching;
               const ipThirds = parseIPToThirds(p.ip);
@@ -365,13 +377,29 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
       },
 
       getBattingLeaders: (minPA = 10) => {
+        const currentSeason = get().currentSeason;
         return Object.values(get().playerStats)
-          .filter(p => p.batting.pa >= minPA && p.position !== 'P');
+          .filter(p => p.batting.pa >= minPA && p.position !== 'P'
+            && (p.season === currentSeason || p.season === 0 || p.season === undefined));
       },
 
       getPitchingLeaders: (minIP = 3) => {
+        const currentSeason = get().currentSeason;
         return Object.values(get().playerStats)
-          .filter(p => p.pitching.ip >= minIP * 3);
+          .filter(p => p.pitching.ip >= minIP * 3
+            && (p.season === currentSeason || p.season === 0 || p.season === undefined));
+      },
+
+      getCurrentSeasonStats: () => {
+        const currentSeason = get().currentSeason;
+        const all = get().playerStats;
+        const result: Record<string, PlayerSeasonStats> = {};
+        for (const [id, ps] of Object.entries(all)) {
+          if (ps.season === currentSeason || ps.season === 0 || ps.season === undefined) {
+            result[id] = ps;
+          }
+        }
+        return result;
       },
     }),
     {

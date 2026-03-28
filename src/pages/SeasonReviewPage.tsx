@@ -34,7 +34,8 @@ function GradeCircle({ grade, label }: { grade: string; label: string }) {
 export function SeasonReviewPage() {
   const navigate = useNavigate();
   const { engine, userTeamId, season } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const openPlayer = usePlayerModal(s => s.openPlayer);
 
   if (!engine || !userTeamId || !season) {

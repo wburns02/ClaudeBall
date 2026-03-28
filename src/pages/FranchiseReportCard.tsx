@@ -84,7 +84,8 @@ function StatBar({ label, value, max = 100, color = 'bg-gold' }: { label: string
 export function FranchiseReportCard() {
   const navigate = useNavigate();
   const { engine, userTeamId, season, teams } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   if (!engine || !userTeamId || !season) {
     return (

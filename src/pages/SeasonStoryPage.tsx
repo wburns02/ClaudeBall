@@ -34,7 +34,8 @@ function chapterMoodStyle(mood: StoryChapter['mood']) {
 export function SeasonStoryPage() {
   const navigate = useNavigate();
   const { engine, userTeamId, season, tradeLog } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
   const [expandedChapter, setExpandedChapter] = useState<string | null>(null);
 
   const team = useMemo(() => {

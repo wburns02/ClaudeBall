@@ -52,7 +52,8 @@ export function HotColdPage() {
   const navigate = useNavigate();
   const openPlayer = usePlayerModal(s => s.openPlayer);
   const { engine, userTeamId, teams, isOnIL } = useFranchiseStore();
-  const playerStats = useStatsStore(s => s.playerStats);
+  const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
+  const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
 
   const [sortKey, setSortKey] = useState<SortKey>('form');
   const [sortAsc, setSortAsc] = useState(false);
