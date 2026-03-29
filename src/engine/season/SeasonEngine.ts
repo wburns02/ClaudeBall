@@ -215,6 +215,10 @@ export class SeasonEngine {
     this.prepareStarterForGame(away);
     this.prepareStarterForGame(home);
 
+    // Record starters on the game object so stat recording can find them after bulk sim
+    game.awayStarterId = away.pitcherId;
+    game.homeStarterId = home.pitcherId;
+
     const result = QuickSimEngine.simulate(away, home, this.rng);
     game.awayScore = result.awayScore;
     game.homeScore = result.homeScore;

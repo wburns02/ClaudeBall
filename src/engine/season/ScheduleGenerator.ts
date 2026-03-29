@@ -11,6 +11,8 @@ export interface ScheduledGame {
   homeScore?: number;
   awayInnings?: number[];  // runs per inning, away team
   homeInnings?: number[];  // runs per inning, home team
+  awayStarterId?: string;  // pitcher who started this game (for stat recording)
+  homeStarterId?: string;  // pitcher who started this game (for stat recording)
 }
 
 /**

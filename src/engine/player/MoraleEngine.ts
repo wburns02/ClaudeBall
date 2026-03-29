@@ -87,66 +87,81 @@ export function computeDailyMoraleChange(input: DailyMoraleInput): { delta: numb
   let delta = 0;
   const reasons: string[] = [];
 
-  // 1. Win/loss momentum — based on last 10 games
+  // 1. Win/loss momentum — based on last 10 games (applies every day for steady drift)
   const recentTotal = recentWins + recentLosses;
-  if (recentTotal >= 5) {
+  if (recentTotal >= 3) {
     const winRate = recentWins / recentTotal;
-    if (winRate >= 0.7) { delta += 1.5; reasons.push('winning streak'); }
-    else if (winRate >= 0.55) { delta += 0.5; }
-    else if (winRate <= 0.3) { delta -= 1.5; reasons.push('losing streak'); }
-    else if (winRate <= 0.45) { delta -= 0.5; }
+    if (winRate >= 0.7) { delta += 2.5; reasons.push('winning streak'); }
+    else if (winRate >= 0.6) { delta += 1.5; reasons.push('winning more than losing'); }
+    else if (winRate >= 0.5) { delta += 0.5; }
+    else if (winRate <= 0.3) { delta -= 2.5; reasons.push('losing streak'); }
+    else if (winRate <= 0.4) { delta -= 1.5; reasons.push('losing more than winning'); }
+    else { delta -= 0.5; }
   }
 
-  // 2. Playing time — happens every 5 days to avoid noise
-  if (input.day % 5 === 0 && gamesPlayed >= 5) {
+  // 2. Playing time — checked every 3 days for more frequent impact
+  if (input.day % 3 === 0 && gamesPlayed >= 3) {
     const playRate = gamesInLineup / gamesPlayed;
     if (isStarter && playRate < 0.5) {
-      delta -= 2;
+      delta -= 3;
       reasons.push('not getting enough playing time');
+    } else if (isStarter && playRate < 0.7) {
+      delta -= 1;
+      reasons.push('wants more playing time');
     } else if (!isStarter && playRate > 0.7) {
-      delta += 1;
+      delta += 1.5;
       reasons.push('earning more playing time');
     } else if (isStarter && playRate >= 0.85) {
-      delta += 0.5;
+      delta += 1;
+      reasons.push('everyday player confidence');
     }
   }
 
-  // 3. Contract security — checked weekly
-  if (input.day % 7 === 0) {
+  // 3. Contract security — checked every 5 days
+  if (input.day % 5 === 0) {
     if (contractYearsLeft === 0) {
-      delta -= 1.5;
+      delta -= 2;
       reasons.push('contract uncertainty heading into free agency');
     } else if (contractYearsLeft >= 3) {
-      delta += 0.5;
+      delta += 1;
+      reasons.push('long-term contract security');
     }
     // Underpaid players (salaryPercDiff < -15%) feel slighted
     if (salaryPercDiff < -0.15) {
-      delta -= 1;
+      delta -= 1.5;
       reasons.push('feeling underpaid');
     } else if (salaryPercDiff > 0.2) {
-      delta += 0.5;
+      delta += 1;
     }
   }
 
   // 4. Leadership contagion — high-morale leaders lift the room
   const leadership = player.mental.leadership;
-  if (currentMorale > 75 && leadership > 70) {
-    delta += 0.3;
+  if (currentMorale > 70 && leadership > 60) {
+    delta += 0.5;
+  } else if (currentMorale < 40 && leadership < 40) {
+    delta -= 0.5; // low-morale non-leaders drag the clubhouse down
   }
 
-  // 5. Mean-reversion toward 60 (natural baseline)
-  const baseline = 58 + (player.mental.work_ethic / 100) * 8;
-  if (currentMorale > baseline + 20) delta -= 0.4;
-  if (currentMorale < baseline - 20) delta += 0.4;
+  // 5. Mean-reversion toward personal baseline (stronger pull)
+  const baseline = 55 + (player.mental.work_ethic / 100) * 12;
+  const distFromBaseline = currentMorale - baseline;
+  // Gentle linear pull toward baseline — stronger the further away
+  delta -= distFromBaseline * 0.03;
 
-  // 6. Random noise — dampened by composure/consistency
-  const noiseScale = 1 - (player.mental.composure / 100) * 0.5;
-  const noise = (rng.next() - 0.5) * 2 * noiseScale;
+  // 6. Random daily mood swing — larger range so morale actually moves
+  //    Dampened by composure: high-composure players are steadier
+  const composureFactor = 1 - (player.mental.composure / 100) * 0.4;
+  const noise = (rng.next() - 0.5) * 4 * composureFactor;
   delta += noise;
 
-  // Round and clamp
-  const roundedDelta = Math.round(delta * 2) / 2; // nearest 0.5
-  if (Math.abs(roundedDelta) < 0.5) return { delta: 0, reason: null };
+  // 7. Personality-driven drift: high work ethic players trend up, low trend down
+  const ethicDrift = ((player.mental.work_ethic - 50) / 100) * 0.8;
+  delta += ethicDrift;
+
+  // Round to nearest integer (no dead zone — even ±1 changes accumulate)
+  const roundedDelta = Math.round(delta);
+  if (roundedDelta === 0) return { delta: 0, reason: null };
 
   const topReason = reasons.length > 0 ? reasons[0] : null;
   return { delta: roundedDelta, reason: topReason };

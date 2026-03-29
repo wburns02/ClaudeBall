@@ -350,8 +350,8 @@ export const useFranchiseStore = create<FranchiseState>()(
         if (!awayTeam || !homeTeam) continue;
         const awayBatters = generateBatterLines(awayTeam, game.awayScore, rng);
         const homeBatters = generateBatterLines(homeTeam, game.homeScore, rng);
-        const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng);
-        const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng);
+        const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng, game.awayStarterId);
+        const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng, game.homeStarterId);
         useStatsStore.getState().recordGameStats(
           game.id, game.date, season.year,
           game.awayId, game.homeId,
@@ -443,8 +443,8 @@ export const useFranchiseStore = create<FranchiseState>()(
         if (!awayTeam || !homeTeam) continue;
         const awayBatters = generateBatterLines(awayTeam, game.awayScore, rng);
         const homeBatters = generateBatterLines(homeTeam, game.homeScore, rng);
-        const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng);
-        const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng);
+        const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng, game.awayStarterId);
+        const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng, game.homeStarterId);
         useStatsStore.getState().recordGameStats(
           game.id, game.date, season.year,
           game.awayId, game.homeId,
@@ -515,8 +515,8 @@ export const useFranchiseStore = create<FranchiseState>()(
           if (awayTeam && homeTeam) {
             const awayBatters = generateBatterLines(awayTeam, game.awayScore, rng);
             const homeBatters = generateBatterLines(homeTeam, game.homeScore, rng);
-            const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng);
-            const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng);
+            const awayPitchers = generatePitcherLine(awayTeam, game.homeScore, game.awayScore > game.homeScore, rng, game.awayStarterId);
+            const homePitchers = generatePitcherLine(homeTeam, game.awayScore, game.homeScore > game.awayScore, rng, game.homeStarterId);
             useStatsStore.getState().recordGameStats(
               game.id, game.date, season.year,
               game.awayId, game.homeId,

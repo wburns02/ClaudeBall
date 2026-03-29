@@ -144,12 +144,17 @@ export function generateBatterLines(
 /**
  * Generate approximate pitcher line for quick sim.
  * Starting pitcher gets most of the innings; closer might get a save.
+ *
+ * @param overrideStarterId - If provided, use this pitcher ID instead of team.pitcherId.
+ *   This is needed when recording stats after a bulk sim, because team.pitcherId
+ *   reflects the LAST game's starter, not the starter for this specific game.
  */
 export function generatePitcherLine(
   team: Team,
   runsAllowed: number,
   won: boolean,
-  rng: RandomProvider
+  rng: RandomProvider,
+  overrideStarterId?: string,
 ): BoxScorePitcher[] {
   // Auto-build rotation from pitching staff if not set
   if (!team.rotation || team.rotation.length === 0) {
@@ -163,9 +168,8 @@ export function generatePitcherLine(
     }
   }
 
-  // Use the current pitcher (already set by SeasonEngine.prepareStarterForGame)
-  // Do NOT advance rotationIndex here — SeasonEngine handles rotation advancement
-  const starterId = team.pitcherId;
+  // Use the override if provided (needed after bulk sim), otherwise fall back to team.pitcherId
+  const starterId = overrideStarterId ?? team.pitcherId;
   const starter = team.roster.players.find(p => p.id === starterId);
 
   if (!starter) return [];
