@@ -177,14 +177,17 @@ export function BoxScoreHistoryPage() {
   // Build normalized inning arrays (pad/trim to exactly 9)
   const awayInn = useMemo(() => {
     const arr = game.awayInnings ?? [];
-    return Array.from({ length: 9 }, (_, i) => arr[i] ?? null);
+    return Array.from({ length: 9 }, (_, i) => {
+      const val = arr[i];
+      return (val === undefined || val === null || Number.isNaN(val)) ? null : val;
+    });
   }, [game.awayInnings]);
 
   const homeInn = useMemo(() => {
     const arr = game.homeInnings ?? [];
     return Array.from({ length: 9 }, (_, i) => {
       const val = arr[i];
-      if (val === undefined) return null;
+      if (val === undefined || val === null || Number.isNaN(val)) return null;
       if (val === -1) return 'x' as const;  // walk-off: home didn't bat in 9th
       return val;
     });

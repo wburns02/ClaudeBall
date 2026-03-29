@@ -69,17 +69,17 @@ export class QuickSimEngine {
     if (totalRuns === 0) return innings;
 
     // Choose 1-3 "hot" innings that will receive extra runs
+    const lastIdx = numInnings - 1;
     const hotCount = totalRuns === 1 ? 1 : rng.nextInt(1, Math.min(3, totalRuns));
     const hotInnings = new Set<number>();
     while (hotInnings.size < hotCount) {
-      hotInnings.add(rng.nextInt(0, 8));
+      hotInnings.add(rng.nextInt(0, lastIdx));
     }
 
     // Distribute runs: ~65% to hot innings, ~35% scattered
     const hotRuns = Math.round(totalRuns * 0.65);
     const scatterRuns = totalRuns - hotRuns;
     const hotArr = [...hotInnings];
-    const lastIdx = numInnings - 1;
 
     for (let r = 0; r < hotRuns; r++) {
       innings[hotArr[Math.floor(rng.next() * hotArr.length)]]++;
