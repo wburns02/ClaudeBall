@@ -216,7 +216,7 @@ function OwnerWidget() {
 
 export function FranchiseDashboard() {
   const navigate = useNavigate();
-  const { season, engine, userTeamId, isInitialized, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals, dynastyYear } = useFranchiseStore();
+  const { season, engine, userTeamId, isInitialized, _hasHydrated, advanceDay, simDays, startPlayoffs, lastDayEvents, ilRoster, getTeamInjuries, tradeProposals, dynastyYear } = useFranchiseStore();
   const { addItems, addItem, hasSeenProposal, markProposalSeen, getUnreadCount, items: inboxItems } = useInboxStore();
   const getCurrentSeasonStats = useStatsStore(s => s.getCurrentSeasonStats);
   const playerStats = useMemo(() => getCurrentSeasonStats(), [getCurrentSeasonStats]);
@@ -267,8 +267,10 @@ export function FranchiseDashboard() {
   const prevDayRef = useRef<number>(-1);
 
   useEffect(() => {
-    if (!isInitialized) navigate('/franchise/new');
-  }, [isInitialized, navigate]);
+    // Wait for IndexedDB rehydration before deciding to redirect —
+    // isInitialized is false during async hydration, which caused false redirects
+    if (_hasHydrated && !isInitialized) navigate('/franchise/new');
+  }, [_hasHydrated, isInitialized, navigate]);
 
   // Generate inbox items from day events whenever they change
   useEffect(() => {

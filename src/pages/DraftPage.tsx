@@ -488,7 +488,7 @@ function PickAnnouncement({ reveal, onDismiss }: { reveal: PickReveal; onDismiss
 export function DraftPage() {
   const navigate = useNavigate();
   const {
-    season, engine, userTeamId, isInitialized,
+    season, engine, userTeamId, isInitialized, _hasHydrated,
     draftClass, previewDraftClass, draftPickOrder, currentDraftPick, draftComplete,
     initDraft, draftPlayer, cpuDraftSinglePick, generatePreviewDraft,
   } = useFranchiseStore();
@@ -502,8 +502,8 @@ export function DraftPage() {
   const [autoPicking, setAutoPicking] = useState(false);
 
   useEffect(() => {
-    if (!isInitialized) navigate('/franchise/new');
-  }, [isInitialized, navigate]);
+    if (_hasHydrated && !isInitialized) navigate('/franchise/new');
+  }, [_hasHydrated, isInitialized, navigate]);
 
   const isOffseason = season?.phase === 'offseason';
   const isRegularSeason = season?.phase === 'regular' || season?.phase === 'preseason';
