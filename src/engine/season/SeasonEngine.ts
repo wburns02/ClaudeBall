@@ -365,6 +365,15 @@ export class SeasonEngine {
     const allInjuries: InjuryEvent[] = [];
     const allReturns: InjuryEvent[] = [];
 
+    // First: sim any previously-unplayed user games from earlier days
+    // (happens when advanceDay() skipped a user game for manual play, then user chose simDays)
+    const staleGames = this.state.schedule.filter(
+      g => g.date <= this.state.currentDay && !g.played
+    );
+    for (const game of staleGames) {
+      this.simGame(game);
+    }
+
     for (let i = 0; i < count && this.state.currentDay < this.state.totalDays; i++) {
       this.state.currentDay++;
       if (this.state.phase === 'preseason') this.state.phase = 'regular';

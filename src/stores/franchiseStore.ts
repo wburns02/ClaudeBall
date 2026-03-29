@@ -624,11 +624,73 @@ export const useFranchiseStore = create<FranchiseState>()(
       useHistoryStore.getState().recordFranchisePlayerSeasons(records);
     }
 
+    // ── Record season history before offseason processing ──
+    const historyStore = useHistoryStore.getState();
+    const seasonState = engine.getState();
+    const userTeamId = seasonState.userTeamId;
+
+    // Record season-end standings for the user's team
+    if (userTeamId) {
+      const userRecord = seasonState.standings.getRecord(userTeamId);
+      const userTeam = engine.getTeam(userTeamId);
+      if (userRecord && userTeam) {
+        const gp = userRecord.wins + userRecord.losses;
+        const divStandings = seasonState.standings.getDivisionStandings();
+        const userDiv = divStandings.find(d => d.teams.some(t => t.teamId === userTeamId));
+        const divRank = userDiv ? userDiv.teams.findIndex(t => t.teamId === userTeamId) + 1 : 99;
+        // Determine playoff result based on bracket
+        let playoffResult: 'champion' | 'runner-up' | 'league-cs' | 'division-series' | 'missed' = 'missed';
+        const bracket = seasonState.playoffBracket;
+        if (bracket) {
+          const champion = bracket.getChampion?.();
+          if (champion === userTeamId) playoffResult = 'champion';
+          else if (bracket.isComplete?.()) playoffResult = 'division-series'; // simplified
+        }
+        historyStore.recordSeasonEnd({
+          year,
+          teamId: userTeamId,
+          teamName: `${userTeam.city} ${userTeam.name}`,
+          wins: userRecord.wins,
+          losses: userRecord.losses,
+          winPct: gp > 0 ? (userRecord.wins / gp).toFixed(3).replace(/^0/, '') : '.000',
+          divisionRank: divRank,
+          playoffResult,
+        });
+      }
+    }
+
+    // Record champion if playoffs are complete
+    const bracket = seasonState.playoffBracket;
+    if (bracket && bracket.isComplete?.()) {
+      const champId = bracket.getChampion?.();
+      if (champId) {
+        const champTeam = engine.getTeam(champId);
+        const champRecord = seasonState.standings.getRecord(champId);
+        if (champTeam && champRecord) {
+          historyStore.recordChampion({
+            year,
+            teamId: champId,
+            teamName: `${champTeam.city} ${champTeam.name}`,
+            wins: champRecord.wins,
+            losses: champRecord.losses,
+          });
+        }
+      }
+    }
+
+    // Record AI trades for this season
+    const tradeLog = engine.aiTradeManager.getTradeLog();
+    if (tradeLog.length > 0) {
+      historyStore.recordTrades(tradeLog, year);
+    }
+
     engine.startOffseason(trainingAssignments);
     emitSeasonPhaseChanged('regular_season', 'offseason');
     // Emit awards to dynasty ECS
     const offseasonState = engine.getState();
     if (offseasonState.offseasonAwards) {
+      // Record awards to history store
+      historyStore.recordAwards(offseasonState.offseasonAwards, year);
       for (const award of offseasonState.offseasonAwards) {
         emitAwardWon(award.playerId, award.type, award.league);
       }
@@ -1386,6 +1448,7 @@ export const useFranchiseStore = create<FranchiseState>()(
               playoffQualifiers: state.season.playoffQualifiers,
               offseasonAwards: state.season.offseasonAwards,
               offseasonRetirements: state.season.offseasonRetirements,
+              offseasonDevelopment: state.season.offseasonDevelopment,
             }
           : null,
       }),

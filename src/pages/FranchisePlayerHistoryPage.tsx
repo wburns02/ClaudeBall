@@ -53,7 +53,9 @@ function BattingTable({ rows }: { rows: DisplayRecord[] }) {
   const singles = tot.h - tot.doubles - tot.triples - tot.hr;
   const tb = singles + 2*tot.doubles + 3*tot.triples + 4*tot.hr;
   const cSlg = tot.ab > 0 ? fmt3(tb / tot.ab) : '.000';
-  const cOps = tot.ab > 0 ? fmt3(parseFloat(cObp) + parseFloat(cSlg.replace('.', '0.'))) : '.000';
+  const cObpNum = (tot.ab + tot.bb) > 0 ? (tot.h + tot.bb) / (tot.ab + tot.bb) : 0;
+  const cSlgNum = tot.ab > 0 ? tb / tot.ab : 0;
+  const cOps = tot.ab > 0 ? fmt3(cObpNum + cSlgNum) : '.000';
 
   return (
     <div className="overflow-x-auto">
