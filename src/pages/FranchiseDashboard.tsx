@@ -230,6 +230,8 @@ export function FranchiseDashboard() {
   const [decisionOutcome, setDecisionOutcome] = useState<DecisionOutcome | null>(null);
   const [simProgress, setSimProgress] = useState<{ startDay: number; endDay: number; days: { day: number; userWon: boolean | null; userScore?: number; oppScore?: number; oppAbbr?: string }[] } | null>(null);
 
+  const achieveUnlock = useAchievementStore(s => s.unlock);
+
   // Unlock first-franchise achievement on dashboard mount
   useEffect(() => { achieveUnlock('first-franchise'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -461,7 +463,6 @@ export function FranchiseDashboard() {
     }
   };
 
-  const achieveUnlock = useAchievementStore(s => s.unlock);
   const doSim = (days: number) => {
     const startDay = season.currentDay;
     const rec = season.standings.getRecord(userTeamId);
