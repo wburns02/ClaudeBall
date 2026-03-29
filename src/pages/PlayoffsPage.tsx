@@ -120,6 +120,20 @@ export function PlayoffsPage() {
   const navigate = useNavigate();
   const { season, engine, userTeamId, isInitialized, startPlayoffs, simPlayoffRound, startOffseason } = useFranchiseStore();
 
+  const bracket = season?.playoffBracket ?? null;
+  // After localStorage rehydration, bracket may be a plain object without class methods.
+  // Use optional chaining with typeof checks to handle both cases.
+  const champion = typeof bracket?.getChampion === 'function' ? bracket.getChampion() : null;
+  const championTeam = champion && engine ? engine.getTeam(champion) : null;
+  const isComplete = typeof bracket?.isComplete === 'function' ? bracket.isComplete() : false;
+  const currentRound = typeof bracket?.getCurrentRound === 'function' ? bracket.getCurrentRound() : null;
+
+  // Achievement hooks — MUST be before any early returns to satisfy React rules of hooks
+  useEffect(() => {
+    if (season?.phase === 'postseason') import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('playoffs'));
+    if (isComplete && champion === userTeamId) import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('world-series'));
+  }, [season?.phase, isComplete, champion, userTeamId]);
+
   if (!season || !engine || !isInitialized) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
@@ -159,20 +173,6 @@ export function PlayoffsPage() {
       </div>
     );
   }
-
-  const bracket = season.playoffBracket;
-  // After localStorage rehydration, bracket may be a plain object without class methods.
-  // Use optional chaining with typeof checks to handle both cases.
-  const champion = typeof bracket?.getChampion === 'function' ? bracket.getChampion() : null;
-  const championTeam = champion ? engine.getTeam(champion) : null;
-  const isComplete = typeof bracket?.isComplete === 'function' ? bracket.isComplete() : false;
-
-  // Achievement hooks
-  useEffect(() => {
-    if (season.phase === 'postseason') import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('playoffs'));
-    if (isComplete && champion === userTeamId) import('@/stores/achievementStore.ts').then(m => m.useAchievementStore.getState().unlock('world-series'));
-  }, [season.phase, isComplete, champion, userTeamId]);
-  const currentRound = typeof bracket?.getCurrentRound === 'function' ? bracket.getCurrentRound() : null;
 
   // Derive actual league names from qualifiers (avoid hardcoding 'AL'/'NL')
   const leagueNames = season.playoffQualifiers

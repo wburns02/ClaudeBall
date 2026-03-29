@@ -271,6 +271,25 @@ export class PlayoffBracket {
   getResults(): SeriesMatchup[] {
     return this.matchups.filter(m => m.winner !== null);
   }
+
+  /**
+   * Reconstruct a PlayoffBracket instance from a plain-object snapshot
+   * (e.g. after JSON round-trip from IndexedDB persistence).
+   */
+  static deserialize(
+    data: { matchups: SeriesMatchup[]; currentRound: SeriesMatchup['round'] },
+    allTeams: Team[],
+    rng: RandomProvider,
+  ): PlayoffBracket {
+    // We use Object.create to skip the constructor's buildBracket() call,
+    // then manually assign the fields that the constructor would have set.
+    const instance = Object.create(PlayoffBracket.prototype) as PlayoffBracket;
+    (instance as any).matchups = data.matchups ?? [];
+    (instance as any).currentRound = data.currentRound ?? 'wildcard';
+    (instance as any).rng = rng;
+    (instance as any).teams = new Map(allTeams.map(t => [t.id, t]));
+    return instance;
+  }
 }
 
 /**

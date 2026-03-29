@@ -575,7 +575,19 @@ export class SeasonEngine {
       this.leagueStructure,
     );
     if (snapshot.playoffBracket) {
-      this.state.playoffBracket = snapshot.playoffBracket as SeasonState['playoffBracket'];
+      // Reconstruct PlayoffBracket class instance from plain-object snapshot
+      // (persistence strips prototype methods, causing advanceRound() etc. to fail)
+      const allTeams = Array.from(this.teams.values());
+      const bracketData = snapshot.playoffBracket as { matchups?: SeriesMatchup[]; currentRound?: SeriesMatchup['round'] };
+      if (bracketData.matchups) {
+        this.state.playoffBracket = PlayoffBracket.deserialize(
+          { matchups: bracketData.matchups, currentRound: bracketData.currentRound ?? 'wildcard' },
+          allTeams,
+          this.rng,
+        );
+      } else {
+        this.state.playoffBracket = snapshot.playoffBracket as SeasonState['playoffBracket'];
+      }
     }
     if (snapshot.playoffQualifiers) {
       this.state.playoffQualifiers = snapshot.playoffQualifiers as SeasonState['playoffQualifiers'];
