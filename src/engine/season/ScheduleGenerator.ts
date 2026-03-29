@@ -86,28 +86,92 @@ export class ScheduleGenerator {
       gameCounts.set(m.home, (gameCounts.get(m.home) || 0) + 1);
     }
 
-    // Add interleague games for teams under 162
+    // Interleague: fill to exactly 162 per team.
+    // Build all possible interleague pairs, shuffle, then greedily add games.
+    const TARGET = 162;
     const leagues = Object.keys(leagueStructure);
     if (leagues.length >= 2) {
       const league1Teams = allTeams.filter(t => teamLeague.get(t) === leagues[0]);
       const league2Teams = allTeams.filter(t => teamLeague.get(t) === leagues[1]);
 
+      // Build shuffled pair list so no league/division gets systematically starved
+      const ilPairs: Array<[string, string]> = [];
       for (const t1 of league1Teams) {
         for (const t2 of league2Teams) {
-          const t1Count = gameCounts.get(t1) || 0;
-          const t2Count = gameCounts.get(t2) || 0;
-          if (t1Count >= 162 || t2Count >= 162) continue;
-
-          const games = rng.nextInt(2, 3);
-          for (let g = 0; g < games; g++) {
-            if ((gameCounts.get(t1) || 0) >= 162 || (gameCounts.get(t2) || 0) >= 162) break;
-            const isHome = rng.chance(0.5);
-            matchups.push(isHome ? { away: t2, home: t1 } : { away: t1, home: t2 });
-            gameCounts.set(t1, (gameCounts.get(t1) || 0) + 1);
-            gameCounts.set(t2, (gameCounts.get(t2) || 0) + 1);
-          }
+          ilPairs.push([t1, t2]);
         }
       }
+      ilPairs.sort(() => rng.next() - 0.5);
+
+      // Multiple passes over shuffled pairs to fill games one at a time
+      let added = true;
+      while (added) {
+        added = false;
+        for (const [t1, t2] of ilPairs) {
+          if ((gameCounts.get(t1) || 0) >= TARGET || (gameCounts.get(t2) || 0) >= TARGET) continue;
+          const isHome = rng.chance(0.5);
+          matchups.push(isHome ? { away: t2, home: t1 } : { away: t1, home: t2 });
+          gameCounts.set(t1, (gameCounts.get(t1) || 0) + 1);
+          gameCounts.set(t2, (gameCounts.get(t2) || 0) + 1);
+          added = true;
+        }
+      }
+    }
+
+    // Fill-up pass: if any teams are still under 162, pair them (same-league extra games)
+    let safety = 0;
+    while (safety++ < 500) {
+      const underTeams = allTeams.filter(t => (gameCounts.get(t) || 0) < TARGET);
+      if (underTeams.length === 0) break;
+      if (underTeams.length === 1) {
+        // Exactly one team under 162 — find the team closest to it in game count
+        // and pair them. The partner goes to 163 briefly, so swap: find a game
+        // involving the partner and an at-162 team, remove it, and add game
+        // with the under-team instead.
+        const solo = underTeams[0];
+        const soloLeague = teamLeague.get(solo)!;
+        // Find a game we can "steal" from a 162-game team and redirect to solo
+        let swapped = false;
+        for (let i = matchups.length - 1; i >= 0 && !swapped; i--) {
+          const m = matchups[i];
+          // Look for a game between two 162-game teams where one is in the opposite league from solo
+          const ac = gameCounts.get(m.away) || 0;
+          const hc = gameCounts.get(m.home) || 0;
+          if (ac === TARGET && hc === TARGET) {
+            // Replace one side with solo
+            matchups.splice(i, 1);
+            gameCounts.set(m.away, ac - 1);
+            gameCounts.set(m.home, hc - 1);
+            // Add game: solo vs whichever was removed
+            // Pick the team from the opposite league if possible
+            const partner = teamLeague.get(m.away) !== soloLeague ? m.away : m.home;
+            const other = partner === m.away ? m.home : m.away;
+            matchups.push({ away: solo, home: partner });
+            gameCounts.set(solo, (gameCounts.get(solo) || 0) + 1);
+            gameCounts.set(partner, (gameCounts.get(partner) || 0) + 1);
+            // Re-add a game for the displaced team with another under-162 team if possible
+            const otherCount = gameCounts.get(other) || 0;
+            if (otherCount < TARGET) {
+              // Other team also needs a game now — find another under-162 team
+              const newUnder = allTeams.filter(t => t !== other && t !== solo && (gameCounts.get(t) || 0) < TARGET);
+              if (newUnder.length > 0) {
+                const p2 = newUnder[0];
+                matchups.push({ away: other, home: p2 });
+                gameCounts.set(other, otherCount + 1);
+                gameCounts.set(p2, (gameCounts.get(p2) || 0) + 1);
+              }
+            }
+            swapped = true;
+          }
+        }
+        if (!swapped) break; // can't fix — accept 161 (extremely rare)
+        continue;
+      }
+      const a = underTeams[0], b = underTeams[1];
+      const isHome = rng.chance(0.5);
+      matchups.push(isHome ? { away: b, home: a } : { away: a, home: b });
+      gameCounts.set(a, (gameCounts.get(a) || 0) + 1);
+      gameCounts.set(b, (gameCounts.get(b) || 0) + 1);
     }
 
     // Shuffle matchups randomly
