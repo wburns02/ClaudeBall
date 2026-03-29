@@ -319,6 +319,8 @@ export const useFranchiseStore = create<FranchiseState>()(
       minorLeagueStats: {},
       teamBudgets,
     });
+    // Reset stats store so old franchise data doesn't carry over
+    useStatsStore.getState().resetSeason(engine.getState().year);
     // Initialize morale for all players immediately
     try {
       const userTeam = engine.getTeam(userTeamId);
