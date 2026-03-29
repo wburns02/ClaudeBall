@@ -1,8 +1,9 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ToastContainer } from '@/components/ui/Toast.tsx';
 import { SplashScreen } from '@/components/ui/SplashScreen.tsx';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner.tsx';
+import { Button } from '@/components/ui/Button.tsx';
 import { HelpOverlay } from '@/components/ui/HelpOverlay.tsx';
 import { AchievementToast } from '@/components/ui/AchievementToast.tsx';
 import { OnboardingFlow } from '@/components/ui/OnboardingFlow.tsx';
@@ -136,6 +137,26 @@ const TEAM_OPTIONS = (() => {
 function TeamStatsRedirect() {
   const userTeamId = useFranchiseStore(s => s.userTeamId);
   return <Navigate to={`/franchise/team-stats/${userTeamId ?? 'unknown'}`} replace />;
+}
+
+/** 404 page for unknown routes */
+function NotFoundPage() {
+  const navigate = useNavigate();
+  return (
+    <MainLayout>
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 p-8 text-center">
+        <p className="font-display text-6xl text-gold">404</p>
+        <h2 className="font-display text-2xl text-cream tracking-wide uppercase">Page Not Found</h2>
+        <p className="font-mono text-cream-dim text-sm max-w-md">
+          The page you&apos;re looking for doesn&apos;t exist. It may have been moved or you may have mistyped the URL.
+        </p>
+        <div className="flex gap-3">
+          <Button onClick={() => navigate('/')}>Main Menu</Button>
+          <Button variant="ghost" onClick={() => navigate(-1)}>Go Back</Button>
+        </div>
+      </div>
+    </MainLayout>
+  );
 }
 
 /** Fade wrapper — re-mounts on location change, triggering CSS animation */
@@ -286,6 +307,9 @@ function AppRoutes() {
           <Route path="/franchise/ideas" element={<Navigate to="/ideas" replace />} />
           <Route path="/franchise/team-stats" element={<TeamStatsRedirect />} />
           <Route path="/franchise/player-stats" element={<Navigate to="/franchise/roster" replace />} />
+
+          {/* ── 404 catch-all ──────────────────────────────────────── */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </FadeWrapper>
