@@ -72,6 +72,7 @@ export interface RecordsState {
 }
 
 interface StatsStoreState {
+  _hasHydrated: boolean;  // true after IndexedDB rehydration completes
   // Season stats — playerID → PlayerSeasonStats
   playerStats: Record<string, PlayerSeasonStats>;
   // Current season year
@@ -224,6 +225,7 @@ function updateRecords(
 export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
   persist(
     (set, get) => ({
+      _hasHydrated: false,
       playerStats: {},
       currentSeason: 2026,
       records: emptyRecords(),
@@ -412,6 +414,9 @@ export const useStatsStore = create<StatsStoreState & StatsStoreActions>()(
         records: state.records,
         leagueTotals: state.leagueTotals,
       }),
+      onRehydrateStorage: () => () => {
+        useStatsStore.setState({ _hasHydrated: true });
+      },
     }
   )
 );

@@ -19,7 +19,10 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const isInitialized = useFranchiseStore(s => s.isInitialized);
+  const { isInitialized, _hasHydrated } = useFranchiseStore(s => ({
+    isInitialized: s.isInitialized,
+    _hasHydrated: s._hasHydrated,
+  }));
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -27,7 +30,8 @@ export function MainLayout({ children }: MainLayoutProps) {
   };
 
   const getNavPath = (link: typeof NAV_LINKS[number]) => {
-    if (link.altPath && !isInitialized) return link.altPath;
+    // Wait for IDB hydration before routing to /franchise/new — avoid flashing wrong nav link
+    if (link.altPath && _hasHydrated && !isInitialized) return link.altPath;
     return link.path;
   };
 

@@ -5,9 +5,10 @@ import { useFranchiseStore } from '@/stores/franchiseStore.ts';
 
 export function MainMenuPage() {
   const navigate = useNavigate();
-  const { season, userTeamId, teams } = useFranchiseStore();
+  const { season, userTeamId, teams, _hasHydrated } = useFranchiseStore();
 
-  const hasFranchise = !!season && !!userTeamId;
+  // Wait for IDB hydration before evaluating franchise state so "Continue" button isn't hidden during hydration
+  const hasFranchise = _hasHydrated && !!season && !!userTeamId;
   const userTeam = hasFranchise ? teams?.find(t => t.id === userTeamId) : null;
   const record = hasFranchise && season && userTeamId ? (() => {
     const standing = season.standings?.getRecord?.(userTeamId);

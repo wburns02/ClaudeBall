@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button.tsx';
 import { Panel } from '@/components/ui/Panel.tsx';
@@ -203,9 +203,15 @@ export function SaveLoadPage() {
   const navigate = useNavigate();
   const saveStore = useSaveStore();
   const franchise = useFranchiseStore();
-  const [tab, setTab] = useState<Tab>(franchise.isInitialized ? 'save' : 'load');
+  // Wait for IDB hydration before checking isInitialized — otherwise it defaults to 'load'
+  const [tab, setTab] = useState<Tab>(franchise._hasHydrated && franchise.isInitialized ? 'save' : 'load');
   const [pendingSaveSlotId, setPendingSaveSlotId] = useState<string | undefined | null>(null); // null = closed, undefined = new slot
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // When IDB hydration completes and a franchise exists, auto-switch to 'save' tab
+  useEffect(() => {
+    if (franchise._hasHydrated && franchise.isInitialized) setTab('save');
+  }, [franchise._hasHydrated, franchise.isInitialized]);
 
   const saves = saveStore.listSaves();
 
@@ -249,7 +255,7 @@ export function SaveLoadPage() {
     showToast('Save deleted.');
   };
 
-  const hasFranchise = franchise.isInitialized;
+  const hasFranchise = franchise._hasHydrated && franchise.isInitialized;
 
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto space-y-6">
