@@ -19,10 +19,8 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isInitialized, _hasHydrated } = useFranchiseStore(s => ({
-    isInitialized: s.isInitialized,
-    _hasHydrated: s._hasHydrated,
-  }));
+  const isInitialized = useFranchiseStore(s => s.isInitialized);
+  const _hasHydrated = useFranchiseStore(s => s._hasHydrated);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';

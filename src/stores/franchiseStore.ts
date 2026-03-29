@@ -1390,7 +1390,17 @@ export const useFranchiseStore = create<FranchiseState>()(
           : null,
       }),
       onRehydrateStorage: () => (state) => {
-        if (!state?.isInitialized || !state.teams.length || !state.userTeamId) return;
+        if (!state) {
+          // state is null when IDB had nothing — still mark hydrated so pages render
+          useFranchiseStore.setState({ _hasHydrated: true });
+          return;
+        }
+        // Always mark hydrated, even when no franchise data exists.
+        // Without this, fresh installs get stuck on "Loading franchise..." forever.
+        // @ts-ignore
+        state._hasHydrated = true;
+
+        if (!state.isInitialized || !state.teams.length || !state.userTeamId) return;
         // Rebuild engine from persisted data
         const engine = new SeasonEngine(state.teams, state.leagueStructure, state.userTeamId);
         if (state._seasonSnapshot) {
@@ -1412,8 +1422,6 @@ export const useFranchiseStore = create<FranchiseState>()(
         // Null it out so the page's useEffect will call initFreeAgency() to generate a proper instance.
         // @ts-ignore
         state.freeAgentPool = null;
-        // @ts-ignore
-        state._hasHydrated = true;
       },
     },
   )
