@@ -93,10 +93,10 @@ function simulateDraft(background: PlayerBackground, attrs: PlayerAttributes, is
 
   const descriptions: Record<PlayerBackground, string> = {
     high_school: round <= 2
-      ? `With the ${pick}${pick === 1 ? 'st' : pick === 2 ? 'nd' : pick === 3 ? 'rd' : 'th'} pick in round ${round}, the ${team.city} ${team.name} select you straight out of high school! The youngest pick in the draft — the sky's the limit.`
+      ? `With the ${ordinal(pick)} pick in round ${round}, the ${team.city} ${team.name} select you straight out of high school! The youngest pick in the draft — the sky's the limit.`
       : `The ${team.city} ${team.name} take a gamble on you in round ${round}, pick ${pick}. Straight from prom to the pros — raw talent with everything to prove.`,
     college_star: round === 1
-      ? `With the ${pick}${pick === 1 ? 'st' : pick === 2 ? 'nd' : pick === 3 ? 'rd' : 'th'} pick in the first round, the ${team.city} ${team.name} select you!`
+      ? `With the ${ordinal(pick)} pick in the first round, the ${team.city} ${team.name} select you!`
       : `The ${team.city} ${team.name} select you in round ${round}, pick ${pick}. Not the first round — you've got something to prove.`,
     late_round: `Round ${round}, pick ${pick}. The ${team.city} ${team.name} take a flyer on you. Most people have never heard your name. Time to change that.`,
     undrafted: `Nobody drafted you. But the ${team.city} ${team.name} invite you to spring training as a non-roster invitee. This is your shot — make it count.`,
@@ -111,6 +111,13 @@ function simulateDraft(background: PlayerBackground, attrs: PlayerAttributes, is
     teamCity: team.city,
     description: descriptions[background],
   };
+}
+
+// Helper: ordinal suffix for numbers (1st, 2nd, 3rd, 11th, 12th, 13th, 21st, etc.)
+function ordinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 // Helper: format a camelCase trait name for display
@@ -297,6 +304,56 @@ export function DynastySetupPage() {
     });
   };
 
+  const handleBackgroundChange = (bg: PlayerBackground) => {
+    setCharacter(prev => ({ ...prev, background: bg }));
+    const newConfig = BACKGROUND_CONFIG[bg];
+    const hitterKeys: (keyof PlayerAttributes)[] = ['contact', 'power', 'speed', 'fielding', 'arm', 'eye'];
+    const pitcherKeys: (keyof PlayerAttributes)[] = ['stuff', 'control', 'stamina', 'fielding'];
+    const keys = isPitcher ? pitcherKeys : hitterKeys;
+
+    // Helper: rescale a set of attributes to fit within a budget
+    const rescale = (
+      source: PlayerAttributes,
+      budget: number,
+      setter: (fn: (prev: PlayerAttributes) => PlayerAttributes) => void,
+    ) => {
+      const calcTotal = (a: PlayerAttributes) =>
+        keys.reduce((s, k) => s + a[k], 0) + (isPitcher ? Math.round(a.velocity / 2) : 0);
+      const total = calcTotal(source);
+      if (total <= budget) return;
+
+      const scale = budget / total;
+      const scaled = { ...source };
+      for (const k of keys) {
+        scaled[k] = Math.max(20, Math.floor(source[k] * scale));
+      }
+      if (isPitcher) {
+        scaled.velocity = Math.max(78, Math.floor(source.velocity * scale));
+      }
+      // Fix rounding: if still over, shave 1 from the highest-value attributes
+      let newTotal = calcTotal(scaled);
+      let safetyCounter = 0;
+      while (newTotal > budget && safetyCounter < 50) {
+        // Find the key with the highest value (above 20) to shave from
+        let maxKey = keys[0];
+        let maxVal = 0;
+        for (const k of keys) {
+          if (scaled[k] > maxVal && scaled[k] > 20) {
+            maxVal = scaled[k];
+            maxKey = k;
+          }
+        }
+        scaled[maxKey]--;
+        newTotal = calcTotal(scaled);
+        safetyCounter++;
+      }
+      setter(prev => ({ ...prev, ...scaled }));
+    };
+
+    rescale(attrs, newConfig.currentPoints, setAttrs);
+    rescale(potential, newConfig.potentialPoints, setPotential);
+  };
+
   const handleAttr = (key: keyof PlayerAttributes, val: number) => {
     setAttrs(prev => ({ ...prev, [key]: val }));
   };
@@ -420,7 +477,7 @@ export function DynastySetupPage() {
                 { id: 'late_round' as PlayerBackground, label: 'Late-Round Pick', desc: 'Chip on your shoulder — rounds 3-10', age: 23, bonus: '-10 pts (harder)' },
                 { id: 'undrafted' as PlayerBackground, label: 'Undrafted Free Agent', desc: 'Nobody drafted you — earn a tryout', age: 24, bonus: '-20 pts (hardest)' },
               ]).map(bg => (
-                <button key={bg.id} onClick={() => setCharacter(prev => ({ ...prev, background: bg.id }))}
+                <button key={bg.id} onClick={() => handleBackgroundChange(bg.id)}
                   className={cn('text-left rounded-lg border p-3 transition-all cursor-pointer',
                     character.background === bg.id ? 'border-gold bg-gold/10' : 'border-navy-lighter hover:border-gold/30')}>
                   <div className="font-mono text-sm text-cream">{bg.label}</div>
@@ -519,7 +576,7 @@ export function DynastySetupPage() {
               <div className="mb-3 flex items-center justify-between">
                 <span className="font-mono text-xs text-cream-dim/50">How good you are TODAY</span>
                 <span className={cn('font-mono text-lg font-bold',
-                  currentRemaining < 0 ? 'text-red-400' : currentRemaining >= 20 ? 'text-green-light' : currentRemaining >= 5 ? 'text-gold' : 'text-red-400'
+                  currentRemaining < 0 ? 'text-red-400' : currentRemaining >= 20 ? 'text-green-light' : currentRemaining > 0 ? 'text-gold' : 'text-cream'
                 )}>
                   {currentRemaining} pts
                 </span>
@@ -559,7 +616,7 @@ export function DynastySetupPage() {
               <div className="mb-3 flex items-center justify-between">
                 <span className="font-mono text-xs text-cream-dim/50">How good you COULD become</span>
                 <span className={cn('font-mono text-lg font-bold',
-                  potentialRemaining < 0 ? 'text-red-400' : potentialRemaining >= 20 ? 'text-green-light' : potentialRemaining >= 5 ? 'text-gold' : 'text-red-400'
+                  potentialRemaining < 0 ? 'text-red-400' : potentialRemaining >= 20 ? 'text-green-light' : potentialRemaining > 0 ? 'text-gold' : 'text-cream'
                 )}>
                   {potentialRemaining} pts
                 </span>
