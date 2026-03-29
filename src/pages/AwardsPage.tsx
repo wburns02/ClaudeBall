@@ -115,7 +115,7 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
           playerId: mvp.playerId,
           playerName: mvp.playerName,
           teamId: mvp.teamId,
-          value: mvp.batting.hr + Math.round(mvp.batting.rbi / 10),
+          value: mvp.batting.hr + mvp.batting.rbi,
           calculated: true,
         });
       }
@@ -160,7 +160,7 @@ function CurrentSeasonAwards({ season, engine, userTeamId }: {
           playerId: roy.playerId,
           playerName: roy.playerName,
           teamId: roy.teamId,
-          value: roy.batting.hr + Math.round(roy.batting.rbi / 10),
+          value: roy.batting.hr + roy.batting.rbi,
           calculated: true,
         });
       }

@@ -401,7 +401,10 @@ export function FranchiseDashboard() {
   const userDiv = divStandings.find(d => d.teams.some(t => t.teamId === userTeamId));
 
   // IL action: injured players not yet placed on IL
-  const activeInjuries = getTeamInjuries(userTeamId).filter(r => !r.returned);
+  // Exclude returned injuries, season-ending injuries, and injuries where the player's recovery day has passed
+  const activeInjuries = getTeamInjuries(userTeamId).filter(r =>
+    !r.returned && r.severity !== 'season-ending' && r.injuredUntilDay > season.currentDay
+  );
   const ilPlayerIds = new Set(ilRoster.map(s => s.playerId));
   const unplacedInjuries = activeInjuries.filter(r => !ilPlayerIds.has(r.playerId));
   // Players healed but still on IL
@@ -1210,13 +1213,13 @@ export function FranchiseDashboard() {
                 const won = isHome ? (g.homeScore ?? 0) > (g.awayScore ?? 0) : (g.awayScore ?? 0) > (g.homeScore ?? 0);
                 return (
                   <button
-                    key={g.id}
-                    onClick={() => navigate(`/franchise/box-score/${g.id}`)}
+                    key={g.id || `game-${g.date}`}
+                    onClick={() => g.id ? navigate(`/franchise/box-score/${g.id}`) : undefined}
                     className="w-full flex justify-between items-center py-1 border-b border-navy-lighter/30 hover:bg-navy-lighter/20 rounded px-1 transition-colors cursor-pointer group"
                   >
                     <span className={cn(won ? 'text-green-light' : 'text-red', 'font-bold w-4')}>{won ? 'W' : 'L'}</span>
                     <span className="text-cream">{isHome ? 'vs' : '@'} {oppTeam?.abbreviation ?? opp}</span>
-                    <span className="text-cream-dim group-hover:text-gold transition-colors">{g.awayScore}-{g.homeScore} <span className="text-cream-dim/30 text-xs">BOX</span></span>
+                    <span className="text-cream-dim group-hover:text-gold transition-colors">{isHome ? (g.homeScore ?? 0) : (g.awayScore ?? 0)}-{isHome ? (g.awayScore ?? 0) : (g.homeScore ?? 0)} <span className="text-cream-dim/30 text-xs">BOX</span></span>
                   </button>
                 );
               })}
