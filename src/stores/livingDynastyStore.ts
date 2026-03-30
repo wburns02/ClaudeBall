@@ -13,8 +13,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { idbStorage } from '@/stores/idbStorage.ts';
 import type { CareerStageComponent, CareerStage } from '@/dynasty/systems/CareerStageSystem.ts';
-import type { DecisionEvent, DecisionChoice } from '@/dynasty/systems/DecisionEventSystem.ts';
-import type { BigGameMoment, MomentOutcome } from '@/dynasty/systems/BigGameMoments.ts';
+import type { DecisionEvent } from '@/dynasty/systems/DecisionEventSystem.ts';
+import type { BigGameMoment } from '@/dynasty/systems/BigGameMoments.ts';
 import type { FamilyComponent, FamilyArchetype } from '@/dynasty/systems/FamilySystem.ts';
 import type { Region } from '@/dynasty/systems/GeographySystem.ts';
 
@@ -177,7 +177,7 @@ export const useLivingDynastyStore = create<LivingDynastyState>()(
       // ── initialize ──
       async initialize(opts: LivingDynastyInitOptions) {
         const [
-          { createCareerStage, STAGE_CONFIG },
+          { createCareerStage },
           { generateFamily },
         ] = await Promise.all([
           import('@/dynasty/systems/CareerStageSystem.ts'),
@@ -189,7 +189,6 @@ export const useLivingDynastyStore = create<LivingDynastyState>()(
         const careerStage = createCareerStage(startStage, startAge);
         const lastName = opts.playerName.split(' ').pop() ?? opts.playerName;
         const family = generateFamily(opts.familyArchetype, lastName);
-        const config = STAGE_CONFIG[startStage];
 
         const originEntry: NarrativeEntry = {
           id: nextNarrativeId(),
