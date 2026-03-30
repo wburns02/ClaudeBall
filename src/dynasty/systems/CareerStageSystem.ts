@@ -61,7 +61,7 @@ export interface StageTransitionResult {
 }
 
 // Stage configuration
-const STAGE_CONFIG: Record<CareerStage, {
+export const STAGE_CONFIG: Record<CareerStage, {
   ageRange: [number, number];
   timeMode: 'key_moments' | 'seasonal_blocks' | 'weekly_planner';
   developmentRate: number;      // multiplier for attribute growth
