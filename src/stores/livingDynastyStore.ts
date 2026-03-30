@@ -45,6 +45,7 @@ export interface SeasonStats {
   rbi: number;
   walks: number;
   strikeouts: number;
+  stolenBases: number;
   battingAverage: number;
 }
 
@@ -127,7 +128,7 @@ function generateRoughStats(stage: CareerStage, rng: () => number = Math.random)
   const gamesPlayed = range[0] + Math.floor(rng() * (range[1] - range[0] + 1));
   if (gamesPlayed === 0) return {
     gamesPlayed: 0, atBats: 0, hits: 0, doubles: 0, homeRuns: 0,
-    rbi: 0, walks: 0, strikeouts: 0, battingAverage: 0,
+    rbi: 0, walks: 0, strikeouts: 0, stolenBases: 0, battingAverage: 0,
   };
 
   const atBats = Math.floor(gamesPlayed * (3.2 + rng() * 0.8));
@@ -142,6 +143,7 @@ function generateRoughStats(stage: CareerStage, rng: () => number = Math.random)
 
   return {
     gamesPlayed, atBats, hits, doubles, homeRuns, rbi, walks, strikeouts,
+    stolenBases: Math.floor(rng() * (stage === 'little_league' ? 8 : 20)),
     battingAverage: Math.round((hits / atBats) * 1000) / 1000,
   };
 }

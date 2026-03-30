@@ -238,7 +238,7 @@ export function LivingDynastyPage() {
                   <p className="text-cream-dim/50 text-xs font-mono uppercase">RBI</p>
                 </div>
                 <div>
-                  <p className="text-gold font-display text-xl">{store.seasonStats.hits - store.seasonStats.doubles - store.seasonStats.homeRuns}</p>
+                  <p className="text-gold font-display text-xl">{store.seasonStats.stolenBases}</p>
                   <p className="text-cream-dim/50 text-xs font-mono uppercase">SB</p>
                 </div>
               </div>
