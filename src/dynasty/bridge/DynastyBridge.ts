@@ -18,6 +18,7 @@ import { LifeEventSystem } from '../systems/LifeEventSystem.ts';
 import { FinanceSystem } from '../systems/FinanceSystem.ts';
 import { PersonalFinanceSystem } from '../systems/PersonalFinanceSystem.ts';
 import { ScandalSystem } from '../systems/ScandalSystem.ts';
+import { CareerStageSystem } from '../systems/CareerStageSystem.ts';
 
 export class DynastyBridge {
   readonly bus: EventBus;
@@ -72,6 +73,11 @@ export class DynastyBridge {
     this.runner.addSystem(financeSystem);
     this.runner.addSystem(personalFinanceSystem);
     this.runner.addSystem(this.scandals);
+
+    if (mode === 'living') {
+      const careerStageSystem = new CareerStageSystem(this.entities, this.bus);
+      this.runner.addSystem(careerStageSystem);
+    }
   }
 
   /** Load conversation templates from JSON files (call after create) */

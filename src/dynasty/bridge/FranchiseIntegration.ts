@@ -69,6 +69,53 @@ function applyCharacterCreation(): void {
       bridge.entities.addComponent(avatarEntityId, createPersonalFinances(salary));
     }
 
+    // Add CK2 components (CareerStage, Family, Geography) from Living Dynasty setup
+    const livingJson = localStorage.getItem('claudeball_dynasty_living');
+    if (livingJson) {
+      const living = JSON.parse(livingJson) as {
+        familyArchetype?: string;
+        region?: string;
+        startStage?: string;
+        startAge?: number;
+      };
+
+      // CareerStage
+      if (living.startStage && !bridge.entities.getComponent(avatarEntityId, 'CareerStage')) {
+        import('../systems/CareerStageSystem.ts').then(({ createCareerStage }) => {
+          bridge!.entities.addComponent(
+            avatarEntityId,
+            createCareerStage(
+              living.startStage as import('../systems/CareerStageSystem.ts').CareerStage,
+              living.startAge ?? 12,
+            ),
+          );
+        }).catch(() => {});
+      }
+
+      // Family
+      if (living.familyArchetype && !bridge.entities.getComponent(avatarEntityId, 'Family')) {
+        import('../systems/FamilySystem.ts').then(({ generateFamily }) => {
+          bridge!.entities.addComponent(
+            avatarEntityId,
+            generateFamily(
+              living.familyArchetype as import('../systems/FamilySystem.ts').FamilyArchetype,
+              character.name.split(' ').pop() ?? 'Smith',
+            ),
+          );
+        }).catch(() => {});
+      }
+
+      // Geography
+      if (living.region && !bridge.entities.getComponent(avatarEntityId, 'Geography')) {
+        import('../systems/GeographySystem.ts').then(({ createGeography }) => {
+          bridge!.entities.addComponent(
+            avatarEntityId,
+            createGeography(living.region as import('../systems/GeographySystem.ts').Region),
+          );
+        }).catch(() => {});
+      }
+    }
+
     console.log(`Dynasty: Applied character "${character.name}" archetypes [${character.archetypes.join(', ')}] to avatar entity`);
   } catch {
     // Non-critical — character data may not exist
