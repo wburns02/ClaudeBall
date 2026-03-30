@@ -295,12 +295,27 @@ export function DynastySetupPage() {
     setSettings(createSettings(mode, p));
   };
 
+  // Personality point budget
+  const PERSONALITY_BUDGET = 5;
+  const usedPoints = character.archetypes.reduce(
+    (sum, id) => sum + (CHARACTER_ARCHETYPES.find(a => a.id === id)?.cost ?? 0), 0
+  );
+  const remainingPoints = PERSONALITY_BUDGET - usedPoints;
+
   const handleArchetypeToggle = (id: string) => {
     setCharacter(prev => {
-      const archs = prev.archetypes.includes(id)
-        ? prev.archetypes.filter(a => a !== id)
-        : prev.archetypes.length < 3 ? [...prev.archetypes, id] : prev.archetypes;
-      return { ...prev, archetypes: archs };
+      if (prev.archetypes.includes(id)) {
+        // Always allow deselection
+        return { ...prev, archetypes: prev.archetypes.filter(a => a !== id) };
+      }
+      // Check budget before adding
+      const arch = CHARACTER_ARCHETYPES.find(a => a.id === id);
+      if (!arch) return prev;
+      const currentUsed = prev.archetypes.reduce(
+        (sum, aid) => sum + (CHARACTER_ARCHETYPES.find(a => a.id === aid)?.cost ?? 0), 0
+      );
+      if (prev.archetypes.length >= 3 || currentUsed + arch.cost > PERSONALITY_BUDGET) return prev;
+      return { ...prev, archetypes: [...prev.archetypes, id] };
     });
   };
 
@@ -493,11 +508,19 @@ export function DynastySetupPage() {
             </div>
           </Panel>
 
-          <Panel title={`Personality (Pick 3) — ${character.archetypes.length}/3 selected`}>
+          <Panel title={`Personality (Pick up to 3) — ${character.archetypes.length}/3 selected`}>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="font-mono text-xs text-cream-dim/60">Personality Points</span>
+              <span className={cn('font-mono text-sm font-bold',
+                remainingPoints <= 0 ? 'text-red-400' : remainingPoints <= 2 ? 'text-gold' : 'text-green-light'
+              )}>
+                {remainingPoints}/{PERSONALITY_BUDGET} remaining
+              </span>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               {CHARACTER_ARCHETYPES.map(arch => {
                 const selected = character.archetypes.includes(arch.id);
-                const disabled = !selected && character.archetypes.length >= 3;
+                const disabled = !selected && (character.archetypes.length >= 3 || usedPoints + arch.cost > PERSONALITY_BUDGET);
 
                 // Build pros/cons from traitEffects
                 const pros: string[] = [];
@@ -530,7 +553,14 @@ export function DynastySetupPage() {
                       selected ? 'border-gold bg-gold/15 text-gold' :
                       disabled ? 'border-navy-lighter/30 text-cream-dim/30 cursor-not-allowed' :
                       'border-navy-lighter hover:border-gold/30 text-cream cursor-pointer')}>
-                    <span className="font-mono text-sm font-bold">{arch.label}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-sm font-bold">{arch.label}</span>
+                      <span className={cn('font-mono text-[10px] px-1.5 py-0.5 rounded-full border',
+                        arch.cost === 3 ? 'text-gold border-gold/40 bg-gold/10' :
+                        arch.cost === 2 ? 'text-cream border-cream-dim/30 bg-cream-dim/5' :
+                        'text-green-light border-green-light/30 bg-green-light/5'
+                      )}>{arch.cost} pt{arch.cost !== 1 ? 's' : ''}</span>
+                    </div>
                     {pros.length > 0 && (
                       <div className="font-mono text-[10px] text-green-light mt-0.5">
                         +{pros.join(' · +')}
@@ -557,11 +587,19 @@ export function DynastySetupPage() {
             </div>
           </Panel>
 
-          <div className="flex justify-between">
+          <div className="flex justify-between items-end">
             <Button variant="secondary" onClick={() => setStep('mode')}>Back</Button>
-            <Button onClick={() => setStep('attributes')} disabled={!character.name || character.archetypes.length !== 3}>
-              Next: Set Attributes
-            </Button>
+            <div className="text-right">
+              <Button onClick={() => setStep('attributes')} disabled={!character.name || character.archetypes.length === 0}>
+                Next: Set Attributes
+              </Button>
+              {!character.name && (
+                <p className="text-red-400 text-xs mt-1 font-mono">Enter a player name to continue</p>
+              )}
+              {character.name && character.archetypes.length === 0 && (
+                <p className="text-red-400 text-xs mt-1 font-mono">Select at least 1 personality</p>
+              )}
+            </div>
           </div>
         </div>
       )}

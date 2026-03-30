@@ -110,21 +110,22 @@ export interface AttrBonus {
 export interface CharacterArchetype {
   id: string;
   label: string;
+  cost: number; // 1-3 personality points
   traitEffects: Partial<Record<string, { min: number; max?: number }>>;
   attrBonus: AttrBonus;
 }
 
 export const CHARACTER_ARCHETYPES: CharacterArchetype[] = [
-  { id: 'grinder', label: 'Grinder', traitEffects: { workEthic: { min: 70 }, coachability: { min: 65 } }, attrBonus: { contact: 5, fielding: 5 } },
-  { id: 'natural_leader', label: 'Natural Leader', traitEffects: { leadership: { min: 75 }, charisma: { min: 60 } }, attrBonus: {} },
-  { id: 'big_ego', label: 'Big Ego', traitEffects: { ego: { min: 75 }, composure: { min: 20, max: 50 } }, attrBonus: { power: 10, fielding: -5 } },
-  { id: 'clutch_gene', label: 'Clutch Gene', traitEffects: { composure: { min: 75 }, integrity: { min: 60 } }, attrBonus: { contact: 5 } },
-  { id: 'baseball_nerd', label: 'Baseball Nerd', traitEffects: { baseballIQ: { min: 80 }, charisma: { min: 20, max: 40 } }, attrBonus: { eye: 10, speed: -5 } },
-  { id: 'fan_favorite', label: 'Fan Favorite', traitEffects: { charisma: { min: 70 }, loyalty: { min: 65 } }, attrBonus: { speed: 5 } },
-  { id: 'risk_taker', label: 'Risk Taker', traitEffects: { aggression: { min: 70 }, integrity: { min: 20, max: 45 } }, attrBonus: { power: 5, contact: -5 } },
-  { id: 'loyal_soldier', label: 'Loyal Soldier', traitEffects: { loyalty: { min: 80 }, ego: { min: 20, max: 35 } }, attrBonus: { fielding: 5 } },
-  { id: 'hothead', label: 'Hothead', traitEffects: { aggression: { min: 80 }, composure: { min: 20, max: 35 } }, attrBonus: { power: 5, eye: -5 } },
-  { id: 'smooth_operator', label: 'Smooth Operator', traitEffects: { charisma: { min: 75 }, coachability: { min: 50 } }, attrBonus: { arm: 5 } },
+  { id: 'grinder', label: 'Grinder', cost: 2, traitEffects: { workEthic: { min: 70 }, coachability: { min: 65 } }, attrBonus: { contact: 5, fielding: 5 } },
+  { id: 'natural_leader', label: 'Natural Leader', cost: 3, traitEffects: { leadership: { min: 75 }, charisma: { min: 60 } }, attrBonus: {} },
+  { id: 'big_ego', label: 'Big Ego', cost: 3, traitEffects: { ego: { min: 75 }, composure: { min: 20, max: 50 } }, attrBonus: { power: 10, fielding: -5 } },
+  { id: 'clutch_gene', label: 'Clutch Gene', cost: 2, traitEffects: { composure: { min: 75 }, integrity: { min: 60 } }, attrBonus: { contact: 5 } },
+  { id: 'baseball_nerd', label: 'Baseball Nerd', cost: 3, traitEffects: { baseballIQ: { min: 80 }, charisma: { min: 20, max: 40 } }, attrBonus: { eye: 10, speed: -5 } },
+  { id: 'fan_favorite', label: 'Fan Favorite', cost: 2, traitEffects: { charisma: { min: 70 }, loyalty: { min: 65 } }, attrBonus: { speed: 5 } },
+  { id: 'risk_taker', label: 'Risk Taker', cost: 1, traitEffects: { aggression: { min: 70 }, integrity: { min: 20, max: 45 } }, attrBonus: { power: 5, contact: -5 } },
+  { id: 'loyal_soldier', label: 'Loyal Soldier', cost: 1, traitEffects: { loyalty: { min: 80 }, ego: { min: 20, max: 35 } }, attrBonus: { fielding: 5 } },
+  { id: 'hothead', label: 'Hothead', cost: 1, traitEffects: { aggression: { min: 80 }, composure: { min: 20, max: 35 } }, attrBonus: { power: 5, eye: -5 } },
+  { id: 'smooth_operator', label: 'Smooth Operator', cost: 2, traitEffects: { charisma: { min: 75 }, coachability: { min: 50 } }, attrBonus: { arm: 5 } },
 ];
 
 export type PlayerBackground = 'college_star' | 'late_round' | 'undrafted' | 'international' | 'high_school';
