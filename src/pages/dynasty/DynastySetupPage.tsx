@@ -6,10 +6,13 @@ import { cn } from '@/lib/cn.ts';
 import { createSettings, PRESETS, CHARACTER_ARCHETYPES } from '@/dynasty/DynastySettings.ts';
 import type { DynastyPreset, CharacterCreation, DynastySettings, PlayerBackground, AttrBonus } from '@/dynasty/DynastySettings.ts';
 import type { DynastyMode } from '@/dynasty/ecs/types.ts';
+import type { FamilyArchetype } from '@/dynasty/systems/FamilySystem.ts';
+import type { Region } from '@/dynasty/systems/GeographySystem.ts';
 import { useFranchiseStore } from '@/stores/franchiseStore.ts';
+import { useLivingDynastyStore } from '@/stores/livingDynastyStore.ts';
 import { TEAMS as ALL_TEAMS, LEAGUE_STRUCTURE } from '@/engine/data/teams30.ts';
 
-type SetupStep = 'mode' | 'character' | 'attributes' | 'settings' | 'draft' | 'team';
+type SetupStep = 'mode' | 'character' | 'attributes' | 'family' | 'settings' | 'draft' | 'team';
 
 interface PlayerAttributes {
   contact: number;
@@ -245,6 +248,9 @@ export function DynastySetupPage() {
   const [potential, setPotential] = useState<PlayerAttributes>({ ...DEFAULT_POTENTIAL });
   const [draftResult, setDraftResult] = useState<DraftResult | null>(null);
 
+  const [familyArchetype, setFamilyArchetype] = useState<FamilyArchetype | null>(null);
+  const [region, setRegion] = useState<Region | null>(null);
+
   const [character, setCharacter] = useState<CharacterCreation>({
     name: '', background: 'college_star', archetypes: [], position: 'SS',
   });
@@ -420,12 +426,51 @@ export function DynastySetupPage() {
     if (mode === 'living') {
       localStorage.setItem('claudeball_dynasty_character', JSON.stringify(character));
       localStorage.setItem('claudeball_dynasty_attrs', JSON.stringify({ current: attrs, potential }));
+
+      // Map background to starting stage and age for Living Dynasty
+      const stageMap: Record<PlayerBackground, string> = {
+        high_school: 'high_school',
+        international: 'minor_leagues',
+        college_star: 'college',
+        late_round: 'minor_leagues',
+        undrafted: 'minor_leagues',
+      };
+      const ageMap: Record<PlayerBackground, number> = {
+        high_school: 18,
+        international: 20,
+        college_star: 22,
+        late_round: 23,
+        undrafted: 24,
+      };
+      const startStage = stageMap[character.background] as import('@/dynasty/systems/CareerStageSystem.ts').CareerStage;
+      const startAge = ageMap[character.background];
+
+      localStorage.setItem('claudeball_dynasty_living', JSON.stringify({
+        familyArchetype,
+        region,
+        startStage,
+        startAge,
+      }));
+
+      // Initialize the Living Dynasty store
+      useLivingDynastyStore.getState().initialize({
+        playerName: character.name,
+        position: character.position,
+        background: character.background,
+        familyArchetype: familyArchetype!,
+        region: region!,
+        startStage,
+        startAge,
+      });
+
+      navigate('/dynasty/play');
+      return;
     }
     navigate('/franchise');
   };
 
   const allSteps: SetupStep[] = mode === 'living'
-    ? ['mode', 'character', 'attributes', 'settings', 'draft']
+    ? ['mode', 'character', 'attributes', 'family', 'settings', 'draft']
     : ['mode', 'settings', 'team'];
 
   return (
@@ -437,6 +482,7 @@ export function DynastySetupPage() {
           {step === 'mode' && 'Choose your experience'}
           {step === 'character' && 'Create your player'}
           {step === 'attributes' && 'Set your abilities'}
+          {step === 'family' && 'Family & Hometown'}
           {step === 'settings' && 'Configure your league'}
           {step === 'draft' && 'Draft Day'}
           {step === 'team' && 'Choose your team'}
@@ -771,7 +817,65 @@ export function DynastySetupPage() {
             {/* Overall Rating — prominent */}
           <div className="flex justify-between">
             <Button variant="secondary" onClick={() => setStep('character')}>Back</Button>
-            <Button onClick={() => setStep('settings')} disabled={isOverBudget}>
+            <Button onClick={() => setStep(mode === 'living' ? 'family' : 'settings')} disabled={isOverBudget}>
+              {mode === 'living' ? 'Next: Family & Hometown' : 'Next: League Settings'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step: Family & Geography (Living Dynasty) */}
+      {step === 'family' && (
+        <div className="space-y-6">
+          <Panel title="Family Background">
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { id: 'baseball_family' as FamilyArchetype, label: 'Baseball Family', desc: 'Dad played minors. Baseball runs in your blood.', icon: '\u26be' },
+                { id: 'blue_collar' as FamilyArchetype, label: 'Blue Collar', desc: 'Hard-working family. Every dollar counts.', icon: '\ud83d\udd27' },
+                { id: 'military' as FamilyArchetype, label: 'Military', desc: 'Discipline from day one. Moved 5 states by age 14.', icon: '\ud83c\udf96\ufe0f' },
+                { id: 'single_parent' as FamilyArchetype, label: 'Single Parent', desc: 'Mom holds it together. Unbreakable bond.', icon: '\ud83d\udcaa' },
+                { id: 'immigrant' as FamilyArchetype, label: 'Immigrant', desc: 'Parents left everything for your chance.', icon: '\ud83c\udf0e' },
+                { id: 'wealthy' as FamilyArchetype, label: 'Wealthy', desc: 'Private coaches, elite facilities, sky-high expectations.', icon: '\ud83d\udc8e' },
+                { id: 'broken_home' as FamilyArchetype, label: 'Broken Home', desc: 'The divorce was ugly. Baseball is your escape.', icon: '\ud83d\udd25' },
+              ]).map(fa => (
+                <button key={fa.id} onClick={() => setFamilyArchetype(fa.id)}
+                  className={cn('text-left rounded-lg border p-3 transition-all cursor-pointer',
+                    familyArchetype === fa.id ? 'border-gold bg-gold/15 text-gold' : 'border-navy-lighter hover:border-gold/30 text-cream')}>
+                  <div className="font-mono text-sm font-bold">
+                    <span className="mr-1.5">{fa.icon}</span>{fa.label}
+                  </div>
+                  <div className="font-mono text-xs text-cream-dim/60 mt-0.5">{fa.desc}</div>
+                </button>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel title="Where You Grew Up">
+            <div className="grid grid-cols-3 gap-3">
+              {([
+                { id: 'southern_california' as Region, label: 'SoCal', desc: 'Elite travel ball, year-round' },
+                { id: 'texas' as Region, label: 'Texas', desc: 'Football-first but HS ball is strong' },
+                { id: 'florida' as Region, label: 'Florida', desc: 'Baseball factories, max scout exposure' },
+                { id: 'dominican_republic' as Region, label: 'Dominican Republic', desc: 'Broomstick training, raw tools' },
+                { id: 'japan' as Region, label: 'Japan', desc: 'Structured, discipline-heavy' },
+                { id: 'puerto_rico' as Region, label: 'Puerto Rico', desc: 'Proud baseball tradition' },
+                { id: 'northeast' as Region, label: 'Northeast', desc: 'Short seasons, mental toughness' },
+                { id: 'midwest' as Region, label: 'Midwest', desc: 'Small-town ball, under-the-radar' },
+                { id: 'venezuela' as Region, label: 'Venezuela', desc: 'Academy system, passionate culture' },
+              ]).map(r => (
+                <button key={r.id} onClick={() => setRegion(r.id)}
+                  className={cn('text-left rounded-lg border p-3 transition-all cursor-pointer',
+                    region === r.id ? 'border-gold bg-gold/15 text-gold' : 'border-navy-lighter hover:border-gold/30 text-cream')}>
+                  <div className="font-mono text-sm font-bold">{r.label}</div>
+                  <div className="font-mono text-xs text-cream-dim/60 mt-0.5">{r.desc}</div>
+                </button>
+              ))}
+            </div>
+          </Panel>
+
+          <div className="flex justify-between">
+            <Button variant="secondary" onClick={() => setStep('attributes')}>Back</Button>
+            <Button onClick={() => setStep('settings')} disabled={!familyArchetype || !region}>
               Next: League Settings
             </Button>
           </div>
@@ -820,7 +924,7 @@ export function DynastySetupPage() {
           </Panel>
 
           <div className="flex justify-between">
-            <Button variant="secondary" onClick={() => setStep(mode === 'living' ? 'attributes' : 'mode')}>Back</Button>
+            <Button variant="secondary" onClick={() => setStep(mode === 'living' ? 'family' : 'mode')}>Back</Button>
             <Button onClick={() => { if (mode === 'living') { handleRunDraft(); setStep('draft'); } else { setStep('team'); } }}>
               {mode === 'living' ? 'Next: Draft Day' : 'Next: Choose Team'}
             </Button>
