@@ -129,9 +129,9 @@ function formatTraitName(trait: string): string {
 }
 
 // +/- button attribute control
-function AttributeControl({ label, value, onChange, min = 20, max = 80, pointsRemaining, disabled }: {
-  label: string; value: number; onChange: (v: number) => void;
-  min?: number; max?: number; pointsRemaining: number; disabled?: boolean;
+function AttributeControl({ label, value, onChange, min = 20, max = 80, pointsRemaining, disabled, isMaxedOut }: {
+  label: string; value: number; onChange: (v: number, delta: number) => void;
+  min?: number; max?: number; pointsRemaining: number; disabled?: boolean; isMaxedOut?: boolean;
 }) {
   const grade = value >= 70 ? 'A' : value >= 60 ? 'B' : value >= 50 ? 'C' : value >= 40 ? 'D' : 'F';
   const gradeColor = value >= 70 ? 'text-gold' : value >= 60 ? 'text-green-light' : value >= 50 ? 'text-cream' : value >= 40 ? 'text-orange-400' : 'text-red-400';
@@ -139,10 +139,14 @@ function AttributeControl({ label, value, onChange, min = 20, max = 80, pointsRe
   const canIncrease = value < max && pointsRemaining > 0 && !disabled;
 
   return (
-    <div className="flex items-center gap-2 py-1.5">
+    <div className={cn('flex items-center gap-2 py-1.5', isMaxedOut && 'bg-gold/5 rounded-md px-1 -mx-1')}>
       <span className="font-mono text-xs text-cream-dim w-20 shrink-0 uppercase tracking-wider">{label}</span>
       <button
-        onClick={() => canDecrease && onChange(value - 1)}
+        onClick={(e) => {
+          const delta = e.shiftKey ? 5 : 1;
+          const clamped = Math.max(min, value - delta);
+          if (canDecrease) onChange(clamped, -(value - clamped));
+        }}
         disabled={!canDecrease}
         className={cn(
           'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
@@ -155,7 +159,12 @@ function AttributeControl({ label, value, onChange, min = 20, max = 80, pointsRe
       </button>
       <span className="font-mono text-lg text-cream w-10 text-center font-bold">{value}</span>
       <button
-        onClick={() => canIncrease && onChange(value + 1)}
+        onClick={(e) => {
+          const delta = e.shiftKey ? 5 : 1;
+          const maxByPoints = value + Math.min(delta, pointsRemaining);
+          const clamped = Math.min(max, maxByPoints);
+          if (canIncrease) onChange(clamped, clamped - value);
+        }}
         disabled={!canIncrease}
         className={cn(
           'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
@@ -166,25 +175,30 @@ function AttributeControl({ label, value, onChange, min = 20, max = 80, pointsRe
       >
         +
       </button>
-      <span className="font-mono text-[10px] text-cream-dim/40 w-8 text-center">1 pt</span>
+      <span className="font-mono text-[10px] text-cream-dim/40 w-8 text-center">{isMaxedOut ? 'MAX' : '1/5'}</span>
       <span className={cn('font-mono text-xs w-4 font-bold', gradeColor)}>{grade}</span>
     </div>
   );
 }
 
-function VelocityControl({ value, onChange, pointsRemaining, disabled }: {
-  value: number; onChange: (v: number) => void; pointsRemaining: number; disabled?: boolean;
+function VelocityControl({ value, onChange, pointsRemaining, disabled, min = 78, max = 102, isMaxedOut }: {
+  value: number; onChange: (v: number, delta: number) => void; pointsRemaining: number; disabled?: boolean;
+  min?: number; max?: number; isMaxedOut?: boolean;
 }) {
   const label = value >= 97 ? 'Elite' : value >= 94 ? 'Plus' : value >= 91 ? 'Avg' : value >= 87 ? 'Below' : 'Soft';
   const color = value >= 97 ? 'text-gold' : value >= 94 ? 'text-green-light' : value >= 91 ? 'text-cream' : 'text-orange-400';
-  const canDecrease = value > 78 && !disabled;
-  const canIncrease = value < 102 && pointsRemaining > 0 && !disabled;
+  const canDecrease = value > min && !disabled;
+  const canIncrease = value < max && pointsRemaining > 0 && !disabled;
 
   return (
-    <div className="flex items-center gap-2 py-1.5">
+    <div className={cn('flex items-center gap-2 py-1.5', isMaxedOut && 'bg-gold/5 rounded-md px-1 -mx-1')}>
       <span className="font-mono text-xs text-cream-dim w-20 shrink-0 uppercase tracking-wider">Velocity</span>
       <button
-        onClick={() => canDecrease && onChange(value - 1)}
+        onClick={(e) => {
+          const delta = e.shiftKey ? 5 : 1;
+          const clamped = Math.max(min, value - delta);
+          if (canDecrease) onChange(clamped, -(value - clamped));
+        }}
         disabled={!canDecrease}
         className={cn(
           'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
@@ -197,7 +211,12 @@ function VelocityControl({ value, onChange, pointsRemaining, disabled }: {
       </button>
       <span className="font-mono text-lg text-cream w-14 text-center font-bold">{value} mph</span>
       <button
-        onClick={() => canIncrease && onChange(value + 1)}
+        onClick={(e) => {
+          const delta = e.shiftKey ? 5 : 1;
+          const maxByPoints = value + Math.min(delta, pointsRemaining);
+          const clamped = Math.min(max, maxByPoints);
+          if (canIncrease) onChange(clamped, clamped - value);
+        }}
         disabled={!canIncrease}
         className={cn(
           'w-8 h-8 rounded-md font-mono text-sm font-bold flex items-center justify-center border transition-all',
@@ -208,7 +227,7 @@ function VelocityControl({ value, onChange, pointsRemaining, disabled }: {
       >
         +
       </button>
-      <span className="font-mono text-[10px] text-cream-dim/40 w-8 text-center">1 pt</span>
+      <span className="font-mono text-[10px] text-cream-dim/40 w-8 text-center">{isMaxedOut ? 'MAX' : '1/5'}</span>
       <span className={cn('font-mono text-xs w-10 font-bold', color)}>{label}</span>
     </div>
   );
@@ -370,11 +389,20 @@ export function DynastySetupPage() {
   };
 
   const handleAttr = (key: keyof PlayerAttributes, val: number) => {
-    setAttrs(prev => ({ ...prev, [key]: val }));
+    // Bug fix: Current ratings must never exceed potential ratings
+    const cappedVal = Math.min(val, potential[key]);
+    setAttrs(prev => ({ ...prev, [key]: cappedVal }));
   };
 
   const handlePotential = (key: keyof PlayerAttributes, val: number) => {
     setPotential(prev => ({ ...prev, [key]: val }));
+    // Bug fix: If potential drops below current, drag current down to match
+    setAttrs(prev => {
+      if (prev[key] > val) {
+        return { ...prev, [key]: val };
+      }
+      return prev;
+    });
   };
 
   const handleRunDraft = () => {
@@ -485,6 +513,18 @@ export function DynastySetupPage() {
 
           <Panel title="Background">
             <div className="grid grid-cols-2 gap-3">
+              {/* Coming Soon: Childhood stages */}
+              <div className="relative text-left rounded-lg border border-navy-lighter/40 p-3 opacity-50 cursor-not-allowed col-span-2 md:col-span-1">
+                <div className="absolute top-2 right-2 font-mono text-[9px] uppercase tracking-wider bg-neon-green/20 text-neon-green border border-neon-green/30 rounded-full px-2 py-0.5">
+                  Coming Soon
+                </div>
+                <div className="font-mono text-sm text-cream-dim">Start from Childhood</div>
+                <div className="font-mono text-xs text-cream-dim/40 mt-0.5">Little League (age 12) through High School — full childhood gameplay</div>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="font-mono text-[10px] text-cream-dim/30">Ages 12-18</span>
+                  <span className="font-mono text-[10px] text-cream-dim/30">Career Stages System</span>
+                </div>
+              </div>
               {([
                 { id: 'high_school' as PlayerBackground, label: 'High School Phenom', desc: 'Straight out of high school — raw but sky-high potential', age: 18, bonus: '+20 bonus pts' },
                 { id: 'international' as PlayerBackground, label: 'International Signee', desc: 'Global talent — signed out of intl pool', age: 20, bonus: '+10 bonus pts' },
@@ -639,13 +679,21 @@ export function DynastySetupPage() {
                   : [['Contact', 'contact'], ['Power', 'power'], ['Speed', 'speed'], ['Fielding', 'fielding'], ['Arm', 'arm'], ['Eye', 'eye']] as const
                 ).map(([label, key]) => (
                   <AttributeControl key={key} label={label} value={attrs[key as keyof PlayerAttributes]}
-                    onChange={v => handleAttr(key as keyof PlayerAttributes, v)}
-                    min={getEffectiveMin(key)} max={getEffectiveMax(key)}
-                    pointsRemaining={currentRemaining} />
+                    onChange={(v) => handleAttr(key as keyof PlayerAttributes, v)}
+                    min={getEffectiveMin(key)} max={Math.min(getEffectiveMax(key), potential[key as keyof PlayerAttributes])}
+                    pointsRemaining={currentRemaining}
+                    isMaxedOut={attrs[key as keyof PlayerAttributes] === potential[key as keyof PlayerAttributes]} />
                 ))}
                 {isPitcher && (
-                  <VelocityControl value={attrs.velocity} onChange={v => handleAttr('velocity', v)} pointsRemaining={currentRemaining} />
+                  <VelocityControl value={attrs.velocity}
+                    onChange={(v) => handleAttr('velocity', v)}
+                    pointsRemaining={currentRemaining}
+                    max={potential.velocity}
+                    isMaxedOut={attrs.velocity === potential.velocity} />
                 )}
+              </div>
+              <div className="mt-2 font-mono text-[10px] text-cream-dim/40 text-center">
+                Hold Shift to adjust by 5
               </div>
             </Panel>
 
@@ -679,13 +727,20 @@ export function DynastySetupPage() {
                   : [['Contact', 'contact'], ['Power', 'power'], ['Speed', 'speed'], ['Fielding', 'fielding'], ['Arm', 'arm'], ['Eye', 'eye']] as const
                 ).map(([label, key]) => (
                   <AttributeControl key={`pot_${key}`} label={label} value={potential[key as keyof PlayerAttributes]}
-                    onChange={v => handlePotential(key as keyof PlayerAttributes, v)}
-                    min={Math.max(20, attrs[key as keyof PlayerAttributes])} max={80}
-                    pointsRemaining={potentialRemaining} />
+                    onChange={(v) => handlePotential(key as keyof PlayerAttributes, v)}
+                    min={20} max={80}
+                    pointsRemaining={potentialRemaining}
+                    isMaxedOut={attrs[key as keyof PlayerAttributes] === potential[key as keyof PlayerAttributes]} />
                 ))}
                 {isPitcher && (
-                  <VelocityControl value={potential.velocity} onChange={v => handlePotential('velocity', v)} pointsRemaining={potentialRemaining} />
+                  <VelocityControl value={potential.velocity}
+                    onChange={(v) => handlePotential('velocity', v)}
+                    pointsRemaining={potentialRemaining}
+                    isMaxedOut={attrs.velocity === potential.velocity} />
                 )}
+              </div>
+              <div className="mt-2 font-mono text-[10px] text-cream-dim/40 text-center">
+                Hold Shift to adjust by 5
               </div>
             </Panel>
           </div>
