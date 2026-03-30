@@ -128,7 +128,7 @@ export const CHARACTER_ARCHETYPES: CharacterArchetype[] = [
   { id: 'smooth_operator', label: 'Smooth Operator', cost: 2, traitEffects: { charisma: { min: 75 }, coachability: { min: 50 } }, attrBonus: { arm: 5 } },
 ];
 
-export type PlayerBackground = 'college_star' | 'late_round' | 'undrafted' | 'international' | 'high_school';
+export type PlayerBackground = 'childhood' | 'college_star' | 'late_round' | 'undrafted' | 'international' | 'high_school';
 
 export interface CharacterCreation {
   name: string;

@@ -54,6 +54,7 @@ const BACKGROUND_CONFIG: Record<PlayerBackground, {
   potentialPoints: number; // Points for CEILING ratings
   description: string;
 }> = {
+  childhood: { age: 12, currentPoints: 180, potentialPoints: 500, description: 'Start from scratch — unlimited ceiling' },
   high_school: { age: 18, currentPoints: 250, potentialPoints: 450, description: 'Raw but unlimited ceiling' },
   international: { age: 20, currentPoints: 280, potentialPoints: 420, description: 'Young with high upside' },
   college_star: { age: 22, currentPoints: 320, potentialPoints: 380, description: 'Polished, ready to contribute' },
@@ -78,6 +79,7 @@ function simulateDraft(background: PlayerBackground, attrs: PlayerAttributes, is
 
   let baseRound = 5;
   switch (background) {
+    case 'childhood': baseRound = 1; break; // TBD via career stages
     case 'high_school': baseRound = 1; break;
     case 'college_star': baseRound = 1; break;
     case 'late_round': baseRound = 6; break;
@@ -95,6 +97,7 @@ function simulateDraft(background: PlayerBackground, attrs: PlayerAttributes, is
   const team = ALL_TEAMS[teamIdx];
 
   const descriptions: Record<PlayerBackground, string> = {
+    childhood: `Your journey begins at age 12. The draft is years away — first, prove yourself through Little League, travel ball, and high school.`,
     high_school: round <= 2
       ? `With the ${ordinal(pick)} pick in round ${round}, the ${team.city} ${team.name} select you straight out of high school! The youngest pick in the draft — the sky's the limit.`
       : `The ${team.city} ${team.name} take a gamble on you in round ${round}, pick ${pick}. Straight from prom to the pros — raw talent with everything to prove.`,
@@ -417,6 +420,35 @@ export function DynastySetupPage() {
     setSelectedTeamId(result.teamId);
   };
 
+  const handleStartChildhood = () => {
+    // Pick a random team for franchise store (player won't be on it yet — they're 12)
+    const teamIdx = Math.floor(Math.random() * ALL_TEAMS.length);
+    const team = ALL_TEAMS[teamIdx];
+    startFranchise(ALL_TEAMS as any, LEAGUE_STRUCTURE, team.id);
+    localStorage.setItem('claudeball_dynasty_settings', JSON.stringify(settings));
+    localStorage.setItem('claudeball_dynasty_mode', mode);
+    localStorage.setItem('claudeball_dynasty_character', JSON.stringify(character));
+    localStorage.setItem('claudeball_dynasty_attrs', JSON.stringify({ current: attrs, potential }));
+    localStorage.setItem('claudeball_dynasty_living', JSON.stringify({
+      familyArchetype,
+      region,
+      startStage: 'little_league',
+      startAge: 12,
+    }));
+
+    useLivingDynastyStore.getState().initialize({
+      playerName: character.name,
+      position: character.position,
+      background: character.background,
+      familyArchetype: familyArchetype!,
+      region: region!,
+      startStage: 'little_league' as import('@/dynasty/systems/CareerStageSystem.ts').CareerStage,
+      startAge: 12,
+    });
+
+    navigate('/dynasty/play');
+  };
+
   const handleStart = () => {
     const teamId = selectedTeamId;
     if (!teamId) return;
@@ -429,6 +461,7 @@ export function DynastySetupPage() {
 
       // Map background to starting stage and age for Living Dynasty
       const stageMap: Record<PlayerBackground, string> = {
+        childhood: 'little_league',
         high_school: 'high_school',
         international: 'minor_leagues',
         college_star: 'college',
@@ -436,6 +469,7 @@ export function DynastySetupPage() {
         undrafted: 'minor_leagues',
       };
       const ageMap: Record<PlayerBackground, number> = {
+        childhood: 12,
         high_school: 18,
         international: 20,
         college_star: 22,
@@ -559,18 +593,20 @@ export function DynastySetupPage() {
 
           <Panel title="Background">
             <div className="grid grid-cols-2 gap-3">
-              {/* Coming Soon: Childhood stages */}
-              <div className="relative text-left rounded-lg border border-navy-lighter/40 p-3 opacity-50 cursor-not-allowed col-span-2 md:col-span-1">
+              {/* Childhood stages — full career path */}
+              <button onClick={() => handleBackgroundChange('childhood')}
+                className={cn('relative text-left rounded-lg border p-3 transition-all cursor-pointer col-span-2 md:col-span-1',
+                  character.background === 'childhood' ? 'border-gold bg-gold/10' : 'border-navy-lighter hover:border-gold/30')}>
                 <div className="absolute top-2 right-2 font-mono text-[9px] uppercase tracking-wider bg-neon-green/20 text-neon-green border border-neon-green/30 rounded-full px-2 py-0.5">
-                  Coming Soon
+                  Full Career
                 </div>
-                <div className="font-mono text-sm text-cream-dim">Start from Childhood</div>
-                <div className="font-mono text-xs text-cream-dim/40 mt-0.5">Little League (age 12) through High School — full childhood gameplay</div>
+                <div className="font-mono text-sm text-cream">Start from Childhood</div>
+                <div className="font-mono text-xs text-cream-dim/60 mt-0.5">Little League (age 12) through High School — full childhood gameplay</div>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="font-mono text-[10px] text-cream-dim/30">Ages 12-18</span>
-                  <span className="font-mono text-[10px] text-cream-dim/30">Career Stages System</span>
+                  <span className="font-mono text-[10px] text-cream-dim/40">Age 12</span>
+                  <span className="font-mono text-[10px] text-green-light">+30 bonus pts</span>
                 </div>
-              </div>
+              </button>
               {([
                 { id: 'high_school' as PlayerBackground, label: 'High School Phenom', desc: 'Straight out of high school — raw but sky-high potential', age: 18, bonus: '+20 bonus pts' },
                 { id: 'international' as PlayerBackground, label: 'International Signee', desc: 'Global talent — signed out of intl pool', age: 20, bonus: '+10 bonus pts' },
@@ -925,15 +961,63 @@ export function DynastySetupPage() {
 
           <div className="flex justify-between">
             <Button variant="secondary" onClick={() => setStep(mode === 'living' ? 'family' : 'mode')}>Back</Button>
-            <Button onClick={() => { if (mode === 'living') { handleRunDraft(); setStep('draft'); } else { setStep('team'); } }}>
-              {mode === 'living' ? 'Next: Draft Day' : 'Next: Choose Team'}
+            <Button onClick={() => {
+              if (mode === 'living') {
+                if (character.background === 'childhood') {
+                  setStep('draft'); // Goes to childhood start screen
+                } else {
+                  handleRunDraft();
+                  setStep('draft');
+                }
+              } else {
+                setStep('team');
+              }
+            }}>
+              {mode === 'living'
+                ? character.background === 'childhood' ? 'Next: Begin Journey' : 'Next: Draft Day'
+                : 'Next: Choose Team'}
             </Button>
           </div>
         </div>
       )}
 
+      {/* Step: Childhood Start (Living Dynasty — childhood background) */}
+      {step === 'draft' && character.background === 'childhood' && (
+        <div className="space-y-6">
+          <div className="text-center py-8">
+            <div className="font-mono text-xs text-cream-dim/40 uppercase tracking-widest mb-4">
+              The Journey Begins
+            </div>
+
+            <div className="font-display text-5xl text-gold mb-2">
+              Age 12
+            </div>
+
+            <div className="font-display text-3xl text-cream uppercase tracking-wide mb-6">
+              Little League
+            </div>
+
+            <div className="max-w-lg mx-auto">
+              <Panel>
+                <p className="text-cream text-sm leading-relaxed text-center italic">
+                  &ldquo;It all starts here — dusty diamonds, aluminum bats, and a dream.
+                  Travel ball tryouts are coming up. The scouts are years away,
+                  but every legend has a beginning.&rdquo;
+                </p>
+              </Panel>
+            </div>
+
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <Button onClick={handleStartChildhood} className="bg-gradient-to-r from-gold/80 to-gold border-gold">
+                Play Ball
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Step: Draft Day (Living Dynasty) */}
-      {step === 'draft' && draftResult && (
+      {step === 'draft' && character.background !== 'childhood' && draftResult && (
         <div className="space-y-6">
           <div className="text-center py-8">
             <div className="font-mono text-xs text-cream-dim/40 uppercase tracking-widest mb-4">
