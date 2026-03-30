@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { cn } from '@/lib/cn.ts';
-import { Panel } from '@/components/ui/Panel.tsx';
-import { Button } from '@/components/ui/Button.tsx';
 import type { DecisionEvent } from '@/dynasty/systems/DecisionEventSystem.ts';
 
 const CATEGORY_ICONS: Record<DecisionEvent['category'], string> = {
