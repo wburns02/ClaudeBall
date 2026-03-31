@@ -274,10 +274,10 @@ export function DynastySetupPage() {
     return bonus;
   }, [character.archetypes]);
 
-  // Effective max for each attribute (base 80 + archetype bonus, clamped to 20-99)
+  // Base 90 ensures all point budgets (up to 500 for childhood) can be fully spent across 6 attrs
   const getEffectiveMax = (attr: keyof AttrBonus): number => {
     const bonus = combinedAttrBonus[attr] || 0;
-    return Math.max(20, Math.min(99, 80 + bonus));
+    return Math.max(20, Math.min(99, 90 + bonus));
   };
 
   // Effective min stays at 20 always (bonus only raises ceiling)
