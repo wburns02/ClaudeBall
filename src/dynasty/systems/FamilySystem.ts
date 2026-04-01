@@ -189,6 +189,48 @@ const ARCHETYPE_CONFIGS: Record<FamilyArchetype, {
   },
 };
 
+// Archetype-specific story hooks override the generic pool
+// Ensures "wealthy" families don't get "works two jobs" hooks
+const ARCHETYPE_HOOKS: Partial<Record<FamilyArchetype, Partial<Record<FamilyRole, string[]>>>> = {
+  baseball_family: {
+    father: ['Played semi-pro ball in his 20s — still has the trophies', 'Coaches your Little League team', 'Your biggest fan — never misses a game'],
+    mother: ['Was a college softball star — knows the game', 'Your emotional anchor — always knows what to say', 'Keeps a scrapbook of every game you\'ve ever played'],
+    older_brother: ['Was a better athlete than you — got injured in college, career ended', 'Your first training partner — taught you everything', 'Played in the minors for 3 years — never got the call'],
+    grandfather: ['Played in the Negro Leagues in the 1950s — has incredible stories', 'Played in the Dominican Winter League — taught you with a broomstick', 'A quiet man who just sits and watches you play with tears in his eyes'],
+  },
+  wealthy: {
+    father: ['Runs a successful business — expects the same excellence from you', 'Hired a private hitting coach when you were 8', 'Played college ball at Stanford — connections everywhere', 'Your biggest investor — literally pays for everything'],
+    mother: ['Manages your travel ball schedule like a CEO', 'Former tennis player — understands elite athletics', 'Your emotional anchor — always knows what to say'],
+    younger_sister: ['Has her own private tennis coach', 'Looks up to you more than you realize', 'Gets everything she wants — but you\'re the favorite'],
+    uncle: ['Runs a training facility — gives you free access', 'Connected to MLB front offices through business', 'The family black sheep — but he believes in you'],
+  },
+  military: {
+    father: ['Former military — runs the house like a barracks', 'Deployed twice — missed two of your seasons', 'Discipline is love in his language', 'Taught you that quitting is never an option'],
+    mother: ['Held the family together during deployments', 'Tougher than she looks — military spouse resilience', 'Your emotional anchor — always knows what to say'],
+    older_brother: ['Enlisted right out of high school — sends letters from base', 'Your first training partner — taught you everything', 'Joined ROTC — might not come to your games anymore'],
+  },
+  blue_collar: {
+    father: ['Works two jobs to keep the family afloat', 'Your biggest fan — never misses a game', 'Coaches your Little League team', 'Doesn\'t understand the game — but shows up anyway'],
+    mother: ['Works double shifts to pay for travel ball', 'Your emotional anchor — always knows what to say', 'Worries about injuries — wants you to focus on school'],
+    younger_sister: ['Draws pictures of you playing baseball — puts them on the fridge', 'Looks up to you more than you realize', 'Born with a health condition — family rallied around her'],
+  },
+  single_parent: {
+    mother: ['Works double shifts to pay for travel ball', 'Your emotional anchor — the strongest person you know', 'Sacrificed everything for your dream', 'Drives you to every practice and game — never complains'],
+    grandmother: ['Makes the best food — feeds the whole team after games', 'Prays for you before every game — carries a rosary to the stands', 'Raised your mom — now helping raise you'],
+  },
+  immigrant: {
+    father: ['Left his country with nothing — built a life for you', 'Doesn\'t understand baseball — but shows up anyway', 'Works construction — comes to games in work boots', 'Sends money home to family — every dollar counted'],
+    mother: ['Immigrant who sacrificed everything for your opportunities', 'Cooks traditional food for the whole team', 'Learning English through your homework — you teach each other'],
+    grandmother: ['Still lives in the old country — you call her after every game', 'Prays for you before every game', 'Tells stories about your grandfather\'s athletic days'],
+    uncle: ['Came to America first — helped your family get settled', 'Runs a small business — might give you a summer job', 'The family black sheep — but he believes in you'],
+  },
+  broken_home: {
+    mother: ['Holds it all together — tougher than anyone knows', 'Works double shifts to pay for travel ball', 'Your emotional anchor — the only stable thing in your life'],
+    older_brother: ['Took on the "man of the house" role too young', 'Your protector — nobody messes with you when he\'s around', 'Jealous of your talent — complicated relationship'],
+    grandmother: ['Took you in when things got bad at home', 'Makes the best food — feeds the whole team after games', 'Was a track star in her day — you got your speed from her'],
+  },
+};
+
 let nextFamilyId = 1;
 
 /** Generate a complete family from an archetype */
@@ -200,7 +242,9 @@ export function generateFamily(archetype: FamilyArchetype, playerLastName: strin
     const isMale = ['father', 'older_brother', 'grandfather', 'uncle', 'cousin', 'son'].includes(role);
     const namePool = isMale ? MALE_NAMES : FEMALE_NAMES;
     const name = namePool[Math.floor(rng() * namePool.length)];
-    const hooks = STORY_HOOKS[role] ?? ['A presence in your life'];
+    // Use archetype-specific hooks if available, fall back to generic pool
+    const archetypeHooks = ARCHETYPE_HOOKS[archetype]?.[role];
+    const hooks = archetypeHooks ?? STORY_HOOKS[role] ?? ['A presence in your life'];
     const hook = hooks[Math.floor(rng() * hooks.length)];
 
     const ageDelta: Record<string, number> = {

@@ -70,11 +70,11 @@ export const STAGE_CONFIG: Record<CareerStage, {
 }> = {
   little_league: {
     ageRange: [12, 14], timeMode: 'key_moments',
-    developmentRate: 1.5, eventsPerSeason: [2, 4], bigMomentsPerSeason: [1, 2],
+    developmentRate: 1.5, eventsPerSeason: [6, 10], bigMomentsPerSeason: [1, 3],
   },
   high_school: {
     ageRange: [15, 18], timeMode: 'seasonal_blocks',
-    developmentRate: 1.3, eventsPerSeason: [4, 7], bigMomentsPerSeason: [2, 4],
+    developmentRate: 1.3, eventsPerSeason: [8, 12], bigMomentsPerSeason: [2, 4],
   },
   college: {
     ageRange: [18, 22], timeMode: 'seasonal_blocks',

@@ -77,6 +77,110 @@ const LITTLE_LEAGUE_EVENTS: Omit<DecisionEvent, 'id'>[] = [
       { label: 'Try football, drop baseball for a season', visibleEffects: ['+Speed', '+Aggression', '-1 season of baseball dev'] },
     ],
   },
+  {
+    stage: 'little_league', category: 'training', weight: 8,
+    title: 'Backyard Batting Practice',
+    description: 'Dad sets up the pitching machine in the backyard after dinner. It\'s getting dark but there\'s still light.',
+    choices: [
+      { label: 'Hit until it\'s too dark to see', visibleEffects: ['+2 Contact', '+1 Work Ethic', '+1 Dad Bond'] },
+      { label: 'Take 20 swings and go play', visibleEffects: ['+1 Contact', '+1 Social'] },
+      { label: 'Ask Dad to throw live instead', visibleEffects: ['+2 Eye', '+1 Dad Bond', '+1 Baseball IQ'] },
+    ],
+    recurring: true,
+  },
+  {
+    stage: 'little_league', category: 'social', weight: 7,
+    title: 'New Kid on the Team',
+    description: 'A new kid moved to town and joined your team. He\'s quiet and sits alone in the dugout. Nobody\'s talking to him.',
+    choices: [
+      { label: 'Go sit with him and introduce yourself', visibleEffects: ['+2 Charisma', '+2 Leadership', 'New friendship potential'] },
+      { label: 'Wait for him to come to you', visibleEffects: ['+0 — nothing changes'] },
+      { label: 'Invite him to throw during warmups', visibleEffects: ['+1 Leadership', '+1 Clubhouse', 'He might become your closest teammate'] },
+    ],
+  },
+  {
+    stage: 'little_league', category: 'health', weight: 5,
+    title: 'Growth Spurt Pains',
+    description: 'Your knees hurt. Your back aches. You grew 2 inches this summer and your body hasn\'t caught up yet.',
+    choices: [
+      { label: 'Play through the pain', visibleEffects: ['+1 Toughness', 'Risk: joint problems later'] },
+      { label: 'Take a week off and rest', visibleEffects: ['+Recovery', '-1 week of development'] },
+      { label: 'Ask mom to take you to the doctor', visibleEffects: ['+1 Health awareness', 'Learn about stretching'] },
+    ],
+  },
+  {
+    stage: 'little_league', category: 'moral', weight: 4,
+    title: 'The Stolen Bat',
+    description: 'After the game, you notice a really nice bat in the dugout. It\'s not yours. Nobody\'s around. It\'s a $300 Easton.',
+    choices: [
+      { label: 'Leave it — someone will come back for it', visibleEffects: ['+2 Integrity'] },
+      { label: 'Take it to the coach to hold', visibleEffects: ['+1 Integrity', '+1 Coach relationship'] },
+      { label: 'Take it — nobody saw', visibleEffects: ['-3 Integrity', '+Equipment upgrade'], hiddenEffects: ['Guilt weighs on you'] },
+    ],
+  },
+  {
+    stage: 'little_league', category: 'family', weight: 7,
+    title: 'Mom and Dad Disagree',
+    description: 'Mom thinks you\'re playing too much baseball. "You need to be a kid." Dad thinks more reps is the answer. They\'re arguing about it.',
+    choices: [
+      { label: 'Side with Dad — "I love baseball"', visibleEffects: ['+1 Dad Bond', '-1 Mom Bond', '+1 Work Ethic'] },
+      { label: 'Side with Mom — "I want to play with friends"', visibleEffects: ['+1 Mom Bond', '-1 Dad Bond', '+1 Social'] },
+      { label: '"Can I do both?"', visibleEffects: ['+1 Composure', 'Both parents consider it'] },
+    ],
+  },
+  {
+    stage: 'little_league', category: 'training', weight: 6,
+    title: 'Winter Workout Plan',
+    description: 'Baseball season is over. Winter\'s coming. What do you do for the next three months?',
+    choices: [
+      { label: 'Indoor hitting facility every weekend', visibleEffects: ['+3 Contact', '+1 Eye', '-Family time'] },
+      { label: 'Play basketball to stay athletic', visibleEffects: ['+2 Speed', '+2 Eye', '+1 Agility'] },
+      { label: 'Just be a kid — play in the snow, ride bikes', visibleEffects: ['+2 Mental health', '+1 Social', '+0 baseball development'] },
+      { label: 'Watch baseball videos and study the game', visibleEffects: ['+2 Baseball IQ', '+0 physical'] },
+    ],
+    recurring: true,
+  },
+  {
+    stage: 'little_league', category: 'career', weight: 6,
+    title: 'All-Star Team Selection',
+    description: 'The league All-Star team is being picked. Your coach has to submit names. You\'re on the bubble.',
+    choices: [
+      { label: 'Ask coach directly if you made it', visibleEffects: ['Get an honest answer', '+1 Courage'] },
+      { label: 'Wait for the list to be posted', visibleEffects: ['+1 Composure', 'Anxiety builds'] },
+      { label: 'Have your parent call the coach', visibleEffects: ['Might help', 'Risk: labeled a "parent problem"'], hiddenEffects: ['Coach might resent it'] },
+    ],
+  },
+  {
+    stage: 'little_league', category: 'rivalry', weight: 6,
+    title: 'The Better Kid',
+    description: 'There\'s a kid on the other travel ball team who plays your position. Everyone says he\'s better than you. He hit a home run last game and stared at your dugout.',
+    choices: [
+      { label: 'Use it as fuel — train harder', visibleEffects: ['+2 Work Ethic', '+1 Motivation', '+1 Aggression'] },
+      { label: 'Try to befriend him', visibleEffects: ['+1 Charisma', 'Could become a friend or rival'] },
+      { label: 'Ignore him — focus on your own game', visibleEffects: ['+2 Composure', '+1 Baseball IQ'] },
+      { label: 'Talk trash back next game', visibleEffects: ['+2 Aggression', '-1 Composure', 'Rivalry intensifies'] },
+    ],
+  },
+  {
+    stage: 'little_league', category: 'financial', weight: 5,
+    title: 'Equipment Upgrade',
+    description: 'Your bat is cracked and your glove is too small. New gear costs $400. Your family\'s tight on money this month.',
+    choices: [
+      { label: 'Ask parents for new gear', visibleEffects: ['+Equipment', '-Family budget stress'] },
+      { label: 'Use hand-me-downs from an older kid', visibleEffects: ['+Resourcefulness', 'Gear is okay, not great'] },
+      { label: 'Do chores to earn the money yourself', visibleEffects: ['+2 Work Ethic', '+$50 saved', 'Takes 2 months'] },
+    ],
+  },
+  {
+    stage: 'little_league', category: 'social', weight: 5,
+    title: 'Birthday Party or Practice',
+    description: 'Your best friend\'s birthday party is Saturday afternoon. Practice is at the same time. Coach said everyone needs to be there.',
+    choices: [
+      { label: 'Go to the party — friends matter', visibleEffects: ['+2 Social', '+1 Friend Bond', '-Coach relationship'] },
+      { label: 'Go to practice — team comes first', visibleEffects: ['+1 Coach relationship', '+1 Work Ethic', '-1 Friend Bond'] },
+      { label: 'Go to practice, then show up late to the party', visibleEffects: ['+1 Work Ethic', '+1 Social', 'Both sides slightly annoyed'] },
+    ],
+  },
 ];
 
 const HIGH_SCHOOL_EVENTS: Omit<DecisionEvent, 'id'>[] = [
@@ -218,14 +322,22 @@ export function generateDecisionEvent(stage: CareerStage, rng: () => number = Ma
 /** Generate multiple events for a season */
 export function generateSeasonEvents(stage: CareerStage, count: number, rng: () => number = Math.random): DecisionEvent[] {
   const events: DecisionEvent[] = [];
-  const usedCategories = new Set<string>();
+  const usedTitles = new Set<string>();
 
-  for (let i = 0; i < count; i++) {
+  // Try up to count*3 times to fill the event quota (avoid infinite loops with small pools)
+  let attempts = 0;
+  const maxAttempts = count * 3;
+
+  while (events.length < count && attempts < maxAttempts) {
+    attempts++;
     const event = generateDecisionEvent(stage, rng);
-    if (event && (!usedCategories.has(event.category) || event.recurring)) {
-      events.push(event);
-      usedCategories.add(event.category);
-    }
+    if (!event) continue;
+
+    // Skip duplicate titles (prevents "Travel Ball Tryout" appearing twice)
+    if (usedTitles.has(event.title) && !event.recurring) continue;
+
+    events.push(event);
+    usedTitles.add(event.title);
   }
   return events;
 }

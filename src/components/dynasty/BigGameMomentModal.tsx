@@ -96,14 +96,14 @@ export function BigGameMomentModal({ moment, onPlay, onSim, onSkip }: BigGameMom
               onClick={onSim}
               className="flex-1"
             >
-              Sim It
+              Sim It (50/50)
             </Button>
             <Button
               variant="primary"
               onClick={onPlay}
               className="flex-1 bg-gradient-to-r from-gold to-gold-dim text-navy font-bold"
             >
-              Play This Moment
+              Step Up to the Plate
             </Button>
           </div>
           <div className="text-center">
