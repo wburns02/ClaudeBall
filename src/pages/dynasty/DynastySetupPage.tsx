@@ -810,7 +810,7 @@ export function DynastySetupPage() {
                 ).map(([label, key]) => (
                   <AttributeControl key={`pot_${key}`} label={label} value={potential[key as keyof PlayerAttributes]}
                     onChange={(v) => handlePotential(key as keyof PlayerAttributes, v)}
-                    min={20} max={80}
+                    min={20} max={getEffectiveMax(key as keyof AttrBonus)}
                     pointsRemaining={potentialRemaining}
                     isMaxedOut={attrs[key as keyof PlayerAttributes] === potential[key as keyof PlayerAttributes]} />
                 ))}
